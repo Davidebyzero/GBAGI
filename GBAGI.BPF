@@ -1,0 +1,25 @@
+USEUNIT("main.c");
+USEUNIT("agimain.c");
+USEUNIT("gamedata.c");
+USEUNIT("input.c");
+USEUNIT("invobj.c");
+USEUNIT("logic.c");
+USEUNIT("picture.c");
+USEUNIT("screen.c");
+USEUNIT("status.c");
+USEUNIT("variables.c");
+USEUNIT("views.c");
+USEUNIT("system.c");
+USEUNIT("commands.c");
+USEUNIT("cmdagi.c");
+USEUNIT("cmdtest.c");
+USEUNIT("errmsg.c");
+USEUNIT("text.c");
+USEUNIT("menu.c");
+USEUNIT("wingui.c");
+USEUNIT("parse.c");
+//---------------------------------------------------------------------------
+This file is used by the project manager only and should be treated like the project file
+
+main
+

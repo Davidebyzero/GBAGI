@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="GBAGI.exe"/>
+    <OBJFILES value="GBAGI.obj AGIMAIN.obj CMDAGI.obj CMDTEST.obj COMMANDS.obj ERRMSG.obj 
+      GAMEDATA.obj INPUT.obj INVOBJ.obj LOGIC.obj MAIN.obj MENU.obj PARSE.obj 
+      PICTURE.obj SCREEN.obj STATUS.obj SYSTEM.obj TEXT.obj variables.obj 
+      VIEWS.obj WINGUI.obj saverestore.obj keyboard.obj"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="vcl50.lib"/>
+    <SPARELIBS value="vcl50.lib"/>
+    <PACKAGES value="vcl50.bpi vclx50.bpi bcbsmp50.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="_WINDOWS"/>
+    <SYSDEFINES value="_NO_VCL;_VIS_NOLIB"/>
+    <MAINSOURCE value="GBAGI.cpp"/>
+    <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder4\Projects\&quot;;$(BCB)\include"/>
+    <LIBPATH value="&quot;C:\Program Files\Borland\CBuilder4\Projects\&quot;;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+    <WARNOPTSTR value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-src_suffix cpp -D_WINDOWS 
+      -I&quot;C:\Program Files\Borland\CBuilder4\Projects\.&quot; -I$(BCB)\include -boa"/>
+    <CFLAG1 value="-Od -Tkh30000 -X- -r- -a8 -b -k -y -v -vi- -c -tWM -tWC"/>
+    <PFLAGS value="-$YD -$W -$O- -v -JPHN -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zd"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) import32.lib cw32mt.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=4105
+CodePage=1252
+
+[Version Info Keys]
+CompanyName=
+FileDescription=Executable (Console)
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=2
+Item0=C:\Program Files\Borland\CBuilder4\Projects;$(BCB)\include
+Item1=$(BCB)\include
+
+[HistoryLists\hlLibraryPath]
+Count=2
+Item0=C:\Program Files\Borland\CBuilder4\Projects;$(BCB)\lib
+Item1=$(BCB)\lib
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_WINDOWS
+
+[Debugging]
+DebugSourceDirs=
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=1
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+  </IDEOPTIONS>
+</PROJECT>
