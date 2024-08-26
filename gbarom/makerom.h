@@ -22,7 +22,7 @@
 #define _MAKEROM_H
 /******************************************************************************/
 #include <stdio.h>
-#include <alloc.h>
+#include <malloc.h>
 #include <string.h>  
 #include <stdarg.h>
 #include <stdlib.h>
@@ -60,15 +60,15 @@ typedef struct {
 
 typedef struct {
 	GVER *version;
-	char *vID;
-	char *title;
-	char *path;
+	const char *vID;
+	const char *title;
+	const char *path;
 } GAMEINFO;
                
 typedef struct {
 	U32 addr;
 	U16 group;
-    char *string;
+    const char *string;
 } WORDSET;
 /******************************************************************************/
 extern GAMEINFO *gi;
@@ -82,36 +82,36 @@ extern BOOL VUSED[16];
 extern U8 *volData;
 extern U32 volSize;
 
-extern char *objNames[256];
+extern const char *objNames[256];
 extern char *objNameData;
 extern U8 objRoomsStart[256];
 
-extern char *words[26];
+extern const char *words[26];
 extern U8 *vocabData, *wordData;
 
 extern FILE *fout;
 
 extern U32 offs, giPos;
 /******************************************************************************/    
-int ErrorMessage(char *s, ...);
+int ErrorMessage(const char *s, ...);
 U16 fgetw(FILE *f);
 U32 fgett(FILE *f);
 U32 fgetl(FILE *f);
 void fputw(U16 l, FILE *f);
 void fputt(U32 l, FILE *f);
 void fputl(U32 l, FILE *f);
-U16 bGetW(U8 *p);
-U16 beGetW(U8 *p);
+U16 bGetW(const U8 *p);
+U16 beGetW(const U8 *p);
 BOOL LoadDir(BOOL SINGLE, int num);
 BOOL PrepDirs(void);
 BOOL ProcessDirs(void);
 BOOL ProcessObject(void);
-U8 *LoadFile(BOOL G_PATH, char *name, int *len);
-int FindWordx(char *s,U8 *b);
-void AddWord(int group, char *string);
-char *FindWord(int group);
-char *FindWord2(int group);
-int FindWordStr(char *s);
+U8 *LoadFile(BOOL G_PATH, const char *name, int *len);
+int FindWordx(const char *s,U8 *b);
+void AddWord(int group, const char *string);
+const char *FindWord(int group);
+const char *FindWord2(int group);
+int FindWordStr(const char *s);
 void ClearGroup(int group);
 void DoSolidGroups(void);
 void DoSolidWords(void);

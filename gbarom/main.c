@@ -115,10 +115,8 @@ int main()
     	fputc(0,fout);
     offs += totalGames*80;
 
-    clrscr();
     for(i=0;i<totalGames;i++) {
-    	gotoxy(1,1);
-        printf("Packing game: %s...\t\t\t",games[i].title);
+        printf("Packing game: %s...\n",games[i].title);
 		if(!ProcessGame(&games[i])) {
     		FreeGame();
     		fclose(fout);

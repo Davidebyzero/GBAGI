@@ -131,7 +131,7 @@ BOOL LZW_expand(U8 *in, U8 *out, S32 len)
 	setBITS(START_BITS);	/* Starts at 9-bits */
 	lzwnext = 257;			/* Next available code to define */
 
-	end = (unsigned char *)((long)out + (long)len);
+	end = (unsigned char *)((intptr_t)out + (intptr_t)len);
 
 	lzwold = input_code(&in);	/* Read in the first code */
 	c = lzwold;

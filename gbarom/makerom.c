@@ -37,11 +37,11 @@ BOOL VUSED[16];
 U8 *volData;
 U32 volSize;
 
-char *objNames[256];
+const char *objNames[256];
 char *objNameData;
 U8 objRoomsStart[256];
 
-char *words[26];
+const char *words[26];
 U8 *vocabData, *wordData;
 U32 wordsSize;
 
@@ -56,7 +56,7 @@ BOOL LOG_DONE[256];
 int strSize;   
 U8 *code;
 /******************************************************************************/
-char *solidWords[] = {
+const char *solidWords[] = {
 	"look","marry", "take", "button", "phone", "hallway", "drinks", "hole", "cigarette",
 	"yes", "no", "wall", "area", "wallet", "ground", "stairs", "window", "open", "move", "climb", "talk",
 	"garbage", "ledge", "under", "over", "drawer", "carpet", "out", "key", "give",
@@ -87,7 +87,7 @@ char *solidWords[] = {
 #define SG_TOTAL 8
 #define SG_WORDMAX 20
 
-char *solidGroups[SG_TOTAL][SG_WORDMAX] = {
+const char *solidGroups[SG_TOTAL][SG_WORDMAX] = {
 	{"enter","exit", ""},
 	{"taste", "eat", "drink", ""},
 	{"hug", "kiss", ""},
@@ -98,7 +98,7 @@ char *solidGroups[SG_TOTAL][SG_WORDMAX] = {
 	{""}
 };
 /******************************************************************************/
-int ErrorMessage(char *s, ...)
+int ErrorMessage(const char *s, ...)
 {
 	va_list argptr;
 	int cnt;
@@ -149,12 +149,12 @@ void fputl(U32 l, FILE *f)
 	fputc((l>>24)&0xFF,f);
 }
 /******************************************************************************/
-U16 bGetW(U8 *p)
+U16 bGetW(const U8 *p)
 {
 	return (*p)+(p[1]<<8);
 }
 /******************************************************************************/
-U16 beGetW(U8 *p)
+U16 beGetW(const U8 *p)
 {
 	return (p[1])+(p[0]<<8);
 }
@@ -267,7 +267,7 @@ BOOL ProcessDirs()
 				if(dirs[t][i].vol == vn) {
 					fseek(f,dirs[t][i].offset+2,SEEK_SET);
 
-					dirs[t][i].offset = (S32)((S32)pvol-(S32)volData);
+					dirs[t][i].offset = (intptr_t)((intptr_t)pvol-(intptr_t)volData);
 					vi 		= fgetc(f);
 					declen 	= fgetw(f);
 					enclen 	= (gi->version->flags&PACKED_DIRS)?fgetw(f):declen;
@@ -281,10 +281,10 @@ BOOL ProcessDirs()
 					fread(fbuf,enclen,1,f);
 					if(enclen==declen) { // not compressed
 		               	if(t==0) { // logic
-		            		msg = fbuf+bGetW(fbuf)+2;	// pointer to messages
+		            		msg = (char*)(fbuf+bGetW(fbuf)+2);	// pointer to messages
 				    		msgTotal = (U8)*msg++;			// number of messages
 							if(msgTotal)
-								DecryptBlock(msg + ((msgTotal + 1)<<1),msg+bGetW(msg));
+								DecryptBlock(msg + ((msgTotal + 1)<<1),msg+bGetW((U8*)msg));
 		                }
 						memcpy(pvol,fbuf,declen);
 					} else if(vi&0x80) { // compressed picture file
@@ -325,7 +325,7 @@ BOOL ProcessObject()
 
 	q=bGetW(p);
 	if( q>l || q<3 )// || (gi->version->flags & ENCRYPT_OBJ))
-		DecryptBlock(p,p+l);
+		DecryptBlock((char*)p,(char*)p+l);
 
     f=fopen("object.bin","wb");
     fwrite(p,l,1,f);
@@ -336,7 +336,7 @@ BOOL ProcessObject()
     objCount	= nameStart/entSize;
     iPtr		= p+entSize;
     strSize		= l-nameStart;
-	if((objNameData = (U8*) malloc(strSize))==NULL) {
+	if((objNameData = (char*) malloc(strSize))==NULL) {
      	ErrorMessage("Unable to allocate %d bytes of memory!", strSize);
      	return FALSE;
     }
@@ -354,7 +354,7 @@ BOOL ProcessObject()
     return TRUE;
 }
 /******************************************************************************/
-U8 *LoadFile(BOOL G_PATH, char *name, int *len)
+U8 *LoadFile(BOOL G_PATH, const char *name, int *len)
 {
 	FILE *f;
 	int l;
@@ -382,9 +382,9 @@ U8 *LoadFile(BOOL G_PATH, char *name, int *len)
     return p;
 }
 /******************************************************************************/
-int FindWordx(char *s,U8 *b)
+int FindWordx(const char *s,U8 *b)
 {
-	char *s1,*s2;
+	const char *s1,*s2;
 	while(*b) {
     	s1 = (char*)b+3;
         s2 = s;
@@ -396,7 +396,7 @@ int FindWordx(char *s,U8 *b)
     return -1;
 }   
 /******************************************************************************/
-void AddWord(int group, char *string)
+void AddWord(int group, const char *string)
 {
 	if(string[0]==0)
     	string=string;
@@ -405,12 +405,12 @@ void AddWord(int group, char *string)
 	pwords++;
 }
 /******************************************************************************/
-char *FindWord(int group)
+const char *FindWord(int group)
 {
 	int a;
     U8 *p;
 	for(a=0;a<26;a++) {
-		p=words[a];
+		p=(U8*)words[a];
         if(!p) continue;
         while(*p!=0) {
          	if((p[1]+(p[2]<<8))==group)
@@ -421,7 +421,7 @@ char *FindWord(int group)
     return "^";
 }
 /******************************************************************************/
-char *FindWord2(int group)
+const char *FindWord2(int group)
 {
 	WORDSET *w;
 	w = wordset;
@@ -433,12 +433,12 @@ char *FindWord2(int group)
     return "^";
 }
 /******************************************************************************/
-int FindWordStr(char *s)
+int FindWordStr(const char *s)
 {
 	int group, a;
     U8 *p;
 	for(a=0;a<26;a++) {
-		p=words[a];
+		p=(U8*)words[a];
         if(!p) continue;
         while(*p!=0) {
          	if(strcmp(s,(char*)(p+3))==0) {
@@ -457,7 +457,7 @@ void ClearGroup(int group)
     int a;
 	if(group)
 	for(a=0;a<26;a++) {
-		p=words[a];
+		p=(U8*)words[a];
         if(!p) continue;
         while(*p!=0) {
          	if(((p[1]+(p[2]<<8))&0x1FFF)==group) {
@@ -472,7 +472,7 @@ void ClearGroup(int group)
 void DoSolidGroups()
 {
 	int set=0,idx,groups[5];
-    char *s;
+    const char *s;
 
     while(solidGroups[set][0][0]) {
     	idx=0;
@@ -491,7 +491,7 @@ void DoSolidGroups()
 void DoSolidWords()
 {
 	int idx=0,group;
-    char *s;
+    const char *s;
 
     while((s=solidWords[idx])[0]) {
     	if((group = FindWordStr(s))!=0) {
@@ -504,7 +504,7 @@ void DoSolidWords()
 /******************************************************************************/
 void DoRemainingWords()
 {
-	char *s;
+	const char *s;
     int i;
 	for(i=1;i<9999;i++) {
 		if((s=FindWord(i))[0]!='^') {
@@ -559,7 +559,7 @@ BOOL ProcessWords()
 	if((tokData = LoadFile(TRUE, "words.tok", NULL))==NULL)
     	return FALSE;
 
-    wordData = (char*)malloc(64000);
+    wordData = (U8*)malloc(64000);
     memset(words,0,sizeof(words));
     wPtr = wordData;
     wc=0;
@@ -567,7 +567,7 @@ BOOL ProcessWords()
      	offs = 0;
         if(bGetW(tokData+(i<<1))==0) continue;
         msg = tokData + ((tokData[i<<1]<<8)|(tokData[(i<<1)+1]));
-        words[i] = wPtr;
+        words[i] = (const char *)wPtr;
         do {
         	offs = *msg++;
         	do
@@ -758,7 +758,7 @@ BOOL OutputGame()
     for(i=0;i<256;i++) {
         fputl(
           	(objNames[i])?
-            	(ptrs[6]+(U32)((U32)objNames[i]-(U32)objNameData)):0,
+            	(ptrs[6]+(intptr_t)((intptr_t)objNames[i]-(intptr_t)objNameData)):0,
             fout
         );
     }
@@ -865,7 +865,7 @@ BOOL OutputGame()
 
     	for(i=0;i<26;i++) {
         	q = (words[i])?
-        		(ptrs[9]+(long)((long)words[i]-(long)wBuf)):0;
+        		(ptrs[9]+(intptr_t)((intptr_t)words[i]-(intptr_t)wBuf)):0;
         	fwrite(&q,4,1,fout);
     	}
     } else {
