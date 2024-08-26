@@ -76,7 +76,7 @@ const char *solidWords[] = {
 	"shout", "dive", "under water", "bucket", "leg", "bubbles", "credit card", "pause",
 	"suit", "cooler", "information", "cheer", "stop", "inventory", "crack", "crap", "leak",
 	"screw", "fart", "boobs", "ass", "dong", "up yours", "business card", "work",
-	"computer console", "transporter", "screen", "fuel pump", "close", "catch", "rock",
+	"computer console", "transporter", "screen", "fuel pump", /*"close"*/"shut", "catch", "rock",
 	"push", "position", "forest", "help", "swim", "climb", "ground", "plants", "smell", "stand up",
     "knife", "torch", "soup", "catch", "opening", "bag", "get in", "tree", "key", "light",
     "knight", "pump", "eat", "silence", "name", "bird", "feed", "diamond", "throw", "drop",
