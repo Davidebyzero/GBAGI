@@ -27,7 +27,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#include "E:\programming\GBAGI\gbagi.h"
+#include "../gbagi.h"
 /******************************************************************************/
 #define LF_INFILE	1
 #define LF_MSG 		2

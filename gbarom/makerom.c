@@ -554,7 +554,7 @@ BOOL ProcessWords()
     U8 *msg,*tokData,*wPtr;
 	WORDSET *w;
 
-	if((vocabData = LoadFile(FALSE, "E:\\programming\\gbagi\\gbarom\\vocab.bin", NULL))==NULL)
+	if((vocabData = LoadFile(FALSE, "vocab.bin", NULL))==NULL)
     	return FALSE;
 	if((tokData = LoadFile(TRUE, "words.tok", NULL))==NULL)
     	return FALSE;
