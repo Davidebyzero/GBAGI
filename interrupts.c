@@ -207,7 +207,10 @@ void TIMER2(void)
 		}*/
 		if(pSnds[0]&&!sndWaits[0]--) {
 				if((len = pSnds[0][0]+(pSnds[0][1]<<8))==0xFFFF) {
-					StopSound();
+					REG_SOUND1CNT_L=0;
+					REG_SOUND1CNT_H=0;
+					REG_SOUND1CNT_X=SOUND1INIT+0;
+					REG_SOUND1CNT_X=0;
 					freq=1;
 					pSnds[0]=NULL;
 				} else {
@@ -286,6 +289,8 @@ void TIMER2(void)
 					pSnds[2]+=5;
 				}
 		}
+		if (!pSnds[0]&&!pSnds[1]&&!pSnds[2])
+			StopSound();
 	} else {
 		if(!TestFlag(fSOUND))
 			StopSound();
