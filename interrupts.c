@@ -154,13 +154,13 @@ void TIMER1(void)
 }
 
 int volumesX[16]={
-	 8, 8, 9, 9,
+	 0, 8, 9, 9,
 	10,10,11,11,
 	12,12,13,13,
 	14,14,15,15
 };
 int volumesY[16]={
-	1,1,2,2,
+	0,1,2,2,
 	3,3,4,4,
 	5,5,6,6,
 	7,7,8,8
@@ -170,6 +170,12 @@ int volumes2[16]={
 	3,3,4,4,
 	5,5,6,6,
 	7,7,8,8
+};
+int volumes3[16]={
+	0,3,3,3,
+	2,2,2,2,
+	4,4,4,4,
+	1,1,1,1
 };
 U16 sweeptime=0,sweepdir=0,sweepshifts=0,envinit=15,envdir=1,envsteptime=7,
 	waveduty=3,loopmode=0;
@@ -184,7 +190,7 @@ void TIMER2(void)
 	if(TestFlag(fSOUND)&&sndBuf) {/*
 		if(!sndWaits[3]--) {
 			if((len = pSnds[3][0]+(pSnds[3][1]<<8))!=0xFFFF) {
-				sndWaits[3] = len;	
+				sndWaits[3] = len-1;
 				envinit=volumes2[((pSnds[3][4]&0xF))^0xF];
 				if(envinit) {
 					REG_SOUND4CNT_L=(volumes[envinit]<<12)+(envdir<<11)+(envsteptime<<8);
@@ -198,12 +204,13 @@ void TIMER2(void)
 				REG_SOUND4CNT_H=0;
 			}	
 		}*/
-		if(pSnds[0]&&(!sndWaits[0]--)) {
+		if(pSnds[0]&&!sndWaits[0]--) {
 				if((len = pSnds[0][0]+(pSnds[0][1]<<8))==0xFFFF) {
 					StopSound();
 					freq=1;
+                    pSnds[0]=NULL;
 				} else {
-					sndWaits[0]=len;
+					sndWaits[0]=len-1;
 					len =0;
 					nfreq = (((U16)pSnds[0][2] & 0x3F) << 4) | (U16)(pSnds[0][3] & 0xF);
 					freq = 0x7FF-(nfreq);
@@ -216,14 +223,15 @@ void TIMER2(void)
 				//RectFill(2, 156-24, 4, 156, 0);
 				//	RectFill(2, 156-(sndWaits[0]>>2), 4, 156, envinit);
 		}
-		if(!sndWaits[1]--) {
+		if(pSnds[1]&&!sndWaits[1]--) {
 				if((len = pSnds[1][0]+(pSnds[1][1]<<8))==0xFFFF) {
 					REG_SOUND2CNT_L=0;
 					REG_SOUND2CNT_H=SOUND2INIT+0;
 					REG_SOUND2CNT_H=0;
 					freq=1;
+                    pSnds[1]=NULL;
 				} else {
-					sndWaits[1]=len;
+					sndWaits[1]=len-1;
 					len =0;
 					nfreq = (((U16)pSnds[1][2] & 0x3F) << 4) | (U16)(pSnds[1][3] & 0xF);
 					freq = 0x7FF-(nfreq);
@@ -234,25 +242,28 @@ void TIMER2(void)
 				}
 				//RectFill(6, 156-24, 8, 156, 0);
 				//RectFill(6, 156-(sndWaits[1]>>2), 8, 156, envinit);
-		}/*
-		if(!sndWaits[2]--) {
+		}
+		if(pSnds[2]&&!sndWaits[2]--) {
 				if((len = pSnds[2][0]+(pSnds[2][1]<<8))==0xFFFF) {
-					REG_SOUND2CNT_L=0;
-					REG_SOUND2CNT_H=SOUND2INIT;
+					REG_SOUND3CNT_L=0;
+					REG_SOUND3CNT_H=SOUND3INIT+0;
+					REG_SOUND3CNT_H=0;
+					REG_SOUND3CNT_X=0;
+                    pSnds[2]=NULL;
 				} else {
-					sndWaits[2]=len;
+					sndWaits[2]=len-1;
 					len =0;
 					nfreq = (((U16)pSnds[2][2] & 0x3F) << 4) | (U16)(pSnds[2][3] & 0xF);
 					freq = 0x7FF-(nfreq);
-					envinit = ((pSnds[2][5]&0xF));
-					if(envinit!=0xF) {
-						envinit=(envinit^0xF);
-						REG_SOUND2CNT_L=(envinit<<12)+(envdir<<11)+(envsteptime<<8)+(waveduty<<6);
-						REG_SOUND2CNT_H=SOUND1INIT+(loopmode<<14)+freq;
-					}
+					envinit = volumes3[((pSnds[2][4]&0xF))^0xF];
+                    for (i=0; i<4; i++)
+                        (&REG_WAVE_RAM0)[i] = 0xF0F0F0F0;
+					REG_SOUND3CNT_L=SOUND3PLAY;
+					REG_SOUND3CNT_H=(envinit<<13)+7;
+					REG_SOUND3CNT_X=SOUND3INIT+SOUND3PLAYLOOP+freq;
 					pSnds[2]+=5;
 				}
-		}*/ 
+		}
 	} else {
 		if(!TestFlag(fSOUND))
 			StopSound();
