@@ -178,7 +178,7 @@ int volumes3[16]={
 	1,1,1,1
 };
 U16 sweeptime=0,sweepdir=0,sweepshifts=0,envinit=15,envdir=1,envsteptime=7,
-	waveduty=3,loopmode=0;
+	waveduty=2,loopmode=0;
 S16 freq=0,nfreq=0,totalwa; 
 
 void TIMER2(void)
