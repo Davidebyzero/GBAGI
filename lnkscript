@@ -61,6 +61,7 @@ SECTIONS
 
   .eh_frame :
   {
+    __EH_FRAME_BEGIN__ = .;
     KEEP (*(.eh_frame))
     . = ALIGN(4);
   } = 0
