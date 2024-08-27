@@ -1619,6 +1619,7 @@ void cSaveGame()
 void cRestoreGame()
 {
 	RestoreGame();
+	EnableAllMenuItems();
 }
 /******************************************************************************/
 //init.disk();
