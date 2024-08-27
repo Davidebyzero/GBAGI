@@ -180,6 +180,7 @@ int volumes3[16]={
 U16 sweeptime=0,sweepdir=0,sweepshifts=0,envinit=15,envdir=1,envsteptime=7,
 	waveduty=2,loopmode=0;
 S16 freq=0,nfreq=0,totalwa; 
+const unsigned int freqNumerator=117, freqDenominator=100;
 
 void TIMER2(void)
 {
@@ -213,7 +214,7 @@ void TIMER2(void)
 					sndWaits[0]=len-1;
 					len =0;
 					nfreq = (((U16)pSnds[0][2] & 0x3F) << 4) | (U16)(pSnds[0][3] & 0xF);
-					freq = 0x7FF-(nfreq);
+					freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
 					envinit=volumes[((pSnds[0][4]&0xF))^0xF];
 					if (envinit==0) {
 						REG_SOUND1CNT_L=0;
@@ -241,7 +242,7 @@ void TIMER2(void)
 					sndWaits[1]=len-1;
 					len =0;
 					nfreq = (((U16)pSnds[1][2] & 0x3F) << 4) | (U16)(pSnds[1][3] & 0xF);
-					freq = 0x7FF-(nfreq);
+					freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
 					envinit=volumes[((pSnds[1][4]&0xF))^0xF];
 					if (envinit==0) {
 						REG_SOUND2CNT_L=0;
@@ -267,7 +268,7 @@ void TIMER2(void)
 					sndWaits[2]=len-1;
 					len =0;
 					nfreq = (((U16)pSnds[2][2] & 0x3F) << 4) | (U16)(pSnds[2][3] & 0xF);
-					freq = 0x7FF-(nfreq);
+					freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
 					envinit = volumes3[((pSnds[2][4]&0xF))^0xF];
 					if (envinit==0) {
 						REG_SOUND3CNT_L=0;
