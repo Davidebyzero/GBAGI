@@ -14,20 +14,20 @@ gcc -c -O3 -mthumb -mthumb-interwork    -o keyboard.o keyboard.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o invobj.o invobj.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o logic.o logic.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o picture.o picture.c
-gcc -c -O2 -mthumb -mthumb-interwork    -o screen.o screen.c
+gcc -c -O3 -mthumb -mthumb-interwork    -o screen.o screen.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o status.o status.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o variables.o variables.c
-gcc -c -O2 -mthumb -mthumb-interwork    -o views.o views.c
+gcc -c -O3 -mthumb -mthumb-interwork    -o views.o views.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o system.o system.c
-gcc -c -O2 -mthumb -mthumb-interwork    -o commands.o commands.c
-gcc -c -O2 -mthumb -mthumb-interwork    -o cmdagi.o cmdagi.c
+gcc -c -O3 -mthumb -mthumb-interwork    -o commands.o commands.c
+gcc -c -O3 -mthumb -mthumb-interwork    -o cmdagi.o cmdagi.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o cmdtest.o cmdtest.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o errmsg.o errmsg.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o text.o text.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o menu.o menu.c
-gcc -c -O2 -mthumb -mthumb-interwork    -o wingui.o wingui.c
+gcc -c -O3 -mthumb -mthumb-interwork    -o wingui.o wingui.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o parse.o parse.c
-gcc -c -O2 -mthumb -mthumb-interwork    -o saverestore.o saverestore.c
+gcc -c -O3 -mthumb -mthumb-interwork    -o saverestore.o saverestore.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o interrupts.o interrupts.c
 
 

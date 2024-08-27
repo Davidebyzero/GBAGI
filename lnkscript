@@ -157,6 +157,8 @@ SECTIONS
 
   __ewram_overlay_end = . ;
 
+  __agi_gamedata_start = ADDR(.text) + SIZEOF(.text) + SIZEOF(.rodata) + SIZEOF(.ctors) + SIZEOF(.dtors) + SIZEOF(.eh_frame) + SIZEOF(.gcc_except_table) + SIZEOF(.iwram) + SIZEOF(.data) + SIZEOF(.ewram) ;
+
   __eheap_start = . ;
 
   _end = DEFINED (__gba_iwram_heap) ? __iheap_start : .; /* v1.3 */

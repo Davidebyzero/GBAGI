@@ -50,8 +50,7 @@ GAMEENT *GameEnts;
 //U32 totalWords;
 int totalGames;
 
-#define BASEx0X	0x00020000
-#define BASE80X	0x08020000
+extern void *__agi_gamedata_start;
 /*****************************************************************************/
 char s[100];
 #define IDSIZE	24
@@ -171,6 +170,7 @@ BOOL GameDataInit()
     if(strcmp((char*)buf,agiid)!=0)
     	ErrorMessage(0,"Game data invalid! Signature check failed!");
 #else
+	U32 BASE80X = ((U32)&__agi_gamedata_start + AGI_DATA_ALIGNMENT-1) & -AGI_DATA_ALIGNMENT;
 	#define _BASE (BASE80X+0x20)
     #define bb(x) (b)[x]
     #define bn(x) (((U8*)BASE80X)[x])

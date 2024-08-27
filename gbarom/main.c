@@ -18,14 +18,13 @@
  ***************************************************************************/
 
 /******************************************************************************/
+#include "../gbagi.h"
 #include "makerom.h"
 #include "decompress.h"
 #include <conio.h>
+#include <cstdint>
 /******************************************************************************/   
 #define BASE800	0x08000000
-#define BASEx0X	0x00020000
-
-#define BASE80X	(BASE800|BASEx0X)
 
 #define IDSIZE	24
 char agiid[]="GBAGI 1.0 '''BRIPRO'''\0";
@@ -98,8 +97,10 @@ int main()
     for(i=0;i<l;i++)
     	fputc(fgetc(fin),fout);
     fclose(fin);
+    uint32_t BASEx0X = (l + AGI_DATA_ALIGNMENT-1) & -AGI_DATA_ALIGNMENT;
     for(i=l;i<BASEx0X;i++)
     	fputc(0xFF,fout);
+    uint32_t BASE80X = BASE800 + BASEx0X;
 
     offs = BASE80X;
 
