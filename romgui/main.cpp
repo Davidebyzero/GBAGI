@@ -234,8 +234,10 @@ BOOL TFormMain::PackGames()
 	for(i=0;i<l;i++)
     	fputc(fgetc(fin),fout);
 	fclose(fin);
+	S32 BASEx0X = (l + AGI_DATA_ALIGNMENT-1) & -AGI_DATA_ALIGNMENT;
 	for(i=l;i<BASEx0X;i++)
     	fputc(0xFF,fout);
+	U32 BASE80X = BASE800 + BASEx0X;
 
 	offs = BASE80X;
 
