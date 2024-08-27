@@ -256,10 +256,11 @@ void TIMER2(void)
 					nfreq = (((U16)pSnds[2][2] & 0x3F) << 4) | (U16)(pSnds[2][3] & 0xF);
 					freq = 0x7FF-(nfreq);
 					envinit = volumes3[((pSnds[2][4]&0xF))^0xF];
-                    for (i=0; i<4; i++)
-                        (&REG_WAVE_RAM0)[i] = 0xF0F0F0F0;
-					REG_SOUND3CNT_L=SOUND3PLAY;
-					REG_SOUND3CNT_H=(envinit<<13)+7;
+					REG_SOUND3CNT_L=           SOUND3SETBANK1+SOUND3BANK32; // select bank 0 for writing (bank 1 for playing)
+					for (i=0; i<4; i++)
+						(&REG_WAVE_RAM0)[i] = i&1 ? 0 : 0xFFFFFFFF;
+					REG_SOUND3CNT_L=SOUND3PLAY+SOUND3SETBANK0+SOUND3BANK32; // select bank 0 for playing
+					REG_SOUND3CNT_H=(envinit<<13)+0;
 					REG_SOUND3CNT_X=SOUND3INIT+SOUND3PLAYLOOP+freq;
 					pSnds[2]+=5;
 				}
