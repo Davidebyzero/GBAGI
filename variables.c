@@ -27,7 +27,7 @@ U8 flags[MAX_FLAGS/8];
 U8 toggleFlags[MAX_FLAGS];
 U8 controllers[MAX_CONTROLLERS];
 CTLMAP ctlMap[MAX_CONTROLLERS];
-char strings[MAX_STRINGS][MAX_STRINGS_LEN];
+char strings[MAX_STRINGS][MAX_STRINGS_LEN+1];
 
 
 /*****************************************************************************/

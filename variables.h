@@ -41,7 +41,7 @@ extern CTLMAP ctlMap[MAX_CONTROLLERS];
 
 #define MAX_STRINGS			24
 #define MAX_STRINGS_LEN		40
-extern char strings[MAX_STRINGS][MAX_STRINGS_LEN];
+extern char strings[MAX_STRINGS][MAX_STRINGS_LEN+1];
 
 
 enum {

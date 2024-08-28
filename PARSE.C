@@ -277,7 +277,10 @@ void FillListBox(int mode)
         	if(!p) continue;
         	while(*p) {
         		g = bGetW(p+1);
-        	    if((((xflg[(g&0x1FFF)>>2]>>(((g&0x1FFF)&3)<<1))&1 ))||(mode&&( ((xflg[(g&0x1FFF)>>2]>>(((g&0x1FFF)&3)<<1))&3 )/*==2*/))) {
+        	    if(/*mode || */(
+                       (((xflg[(g&0x1FFF)>>2]>>(((g&0x1FFF)&3)<<1))&1 ))||(mode&&( ((xflg[(g&0x1FFF)>>2]>>(((g&0x1FFF)&3)<<1))&3 )/*==2*/))
+                   ))
+                {
         	    		if((g&0x8000))
                     		ListBoxAdd(&lbSelWords,(char*)(p+3));
                     	else
