@@ -1,0 +1,34 @@
+name: Build
+on: [workflow_dispatch]
+
+jobs:
+  Build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          # Download DevKitAdv R4
+          curl https://master.dl.sourceforge.net/project/devkitadv/Windows/Release%204/agb-win-gcc-r4.zip?viasf=1 -o agb-win-gcc-r4.zip
+          curl https://master.dl.sourceforge.net/project/devkitadv/Windows/Release%204/agb-win-newlib-r4.zip?viasf=1 -o agb-win-newlib-r4.zip
+          curl https://master.dl.sourceforge.net/project/devkitadv/Windows/Release%204/agb-win-patch-r4.zip?viasf=1 -o agb-win-patch-r4.zip
+          curl https://master.dl.sourceforge.net/project/devkitadv/Windows/Release%204/agb-win-binutils-r4.zip?viasf=1 -o agb-win-binutils-r4.zip
+          # Download Cygwin binaries
+          curl http://ctm.crouchingtigerhiddenfruitbat.org/pub/cygwin/release/cygwin/cygwin-1.3.10-1.tar.bz2 -o cygwin-1.3.10-1.tar.bz2
+          curl http://ctm.crouchingtigerhiddenfruitbat.org/pub/cygwin/release/gettext/libintl/libintl-0.10.38-3.tar.bz2 -o libintl-0.10.38-3.tar.bz2
+          # Unpack DevKitAdv
+          7z x agb-win-gcc-r4.zip -y
+          7z x agb-win-patch-r4.zip -y
+          7z x agb-win-newlib-r4.zip -y
+          7z x agb-win-binutils-r4.zip -y
+          7z x cygwin-1.3.10-1.tar.bz2
+          7z x cygwin-1.3.10-1.tar usr/bin/cygwin1.dll
+          7z x libintl-0.10.38-3.tar.bz2
+          7z x libintl-0.10.38-3.tar usr/bin/cygintl.dll
+          Move-Item -Path usr/bin/cygwin1.dll -Destination devkitadv/bin/cygwin1.dll
+          Move-Item -Path usr/bin/cygintl.dll -Destination devkitadv/bin/cygintl.dll
+          Copy-Item devkitadv C:\DevKitAdv\ -Recurse
+      - run: cmd /c make.bat
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gbagi
+          path: gbagi.bin
