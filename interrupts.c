@@ -172,7 +172,7 @@ int volumes3[16]={
 	1,1,1,1
 };
 U16 sweeptime=0,sweepdir=0,sweepshifts=0,envinit=15,envdir=1,envsteptime=7,
-	waveduty=2,loopmode=0;
+	waveduty=2,loopmode=0,prestepper=0;
 S16 freq=0,nfreq=0,totalwa; 
 const unsigned int freqNumerator=181, freqDenominator=153;
 
@@ -181,23 +181,33 @@ void TIMER2(void)
 	U16 len;
 	int i;
 	
-	if(TestFlag(fSOUND)&&sndBuf) {/*
-		if(!sndWaits[3]--) {
-			if((len = pSnds[3][0]+(pSnds[3][1]<<8))!=0xFFFF) {
-				sndWaits[3] = len-1;
-				envinit=volumes2[((pSnds[3][4]&0xF))^0xF];
-				if(envinit) {
-					REG_SOUND4CNT_L=(volumes[envinit]<<12)+(envdir<<11)+(envsteptime<<8);
-					REG_SOUND4CNT_H=SOUND4INIT+(loopmode<<14)+(7-(pSnds[3][4]&3));
+	if(TestFlag(fSOUND)&&sndBuf) {
+		// noise channel
+		if(pSnds[3]&&!sndWaits[3]--) {
+				if((len = pSnds[3][0]+(pSnds[3][1]<<8))==0xFFFF) {
+					REG_SOUND4CNT_L=0;
+					REG_SOUND4CNT_H=SOUND4INIT+0;
+					REG_SOUND4CNT_H=0;
+					freq=1;
+					pSnds[3]=NULL;
+				} else {
+					sndWaits[3] = len-1;
+					len =0;
+					envinit=volumes2[((pSnds[3][4]&0xF))^0xF];
+					if(envinit==0) {
+						REG_SOUND4CNT_L=0;
+						REG_SOUND4CNT_H=SOUND4INIT+0;
+						REG_SOUND4CNT_H=0;
+					} else {
+						nfreq = (U16)(pSnds[3][3] & 3);
+						freq = 1 << nfreq;
+						REG_SOUND4CNT_L=(volumes[envinit]<<12)+(envdir<<11)+(envsteptime<<8);
+						REG_SOUND4CNT_H=SOUND4INIT+(loopmode<<14)+(prestepper<<4)+freq;
+					}
+					pSnds[3]+=5;
 				}
-				volumes=volumesY;
-				pSnds[3]+=5;
-			} else {
-				REG_SOUND4CNT_L=0;
-				REG_SOUND4CNT_H=SOUND4INIT+0;
-				REG_SOUND4CNT_H=0;
-			}	
-		}*/
+		}
+		// tonal channels
 		if(pSnds[0]&&!sndWaits[0]--) {
 				if((len = pSnds[0][0]+(pSnds[0][1]<<8))==0xFFFF) {
 					REG_SOUND1CNT_L=0;
@@ -288,7 +298,7 @@ void TIMER2(void)
 					pSnds[2]+=5;
 				}
 		}
-		if (!pSnds[0]&&!pSnds[1]&&!pSnds[2])
+		if (!pSnds[0]&&!pSnds[1]&&!pSnds[2]&&!pSnds[3])
 			StopSound();
 	} else {
 		if(!TestFlag(fSOUND))

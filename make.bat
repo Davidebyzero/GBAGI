@@ -23,7 +23,7 @@ gcc -c -O2 -mthumb -mthumb-interwork    -o commands.o commands.c
 gcc -c -O2 -mthumb -mthumb-interwork    -o cmdagi.o cmdagi.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o cmdtest.o cmdtest.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o errmsg.o errmsg.c
-gcc -c -O3 -mthumb -mthumb-interwork    -o text.o text.c
+gcc -c -O2 -mthumb -mthumb-interwork    -o text.o text.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o menu.o menu.c
 gcc -c -O2 -mthumb -mthumb-interwork    -o wingui.o wingui.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o parse.o parse.c
