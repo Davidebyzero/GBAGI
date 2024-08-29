@@ -216,8 +216,6 @@ void TIMER2(void)
 				} else {
 					sndWaits[0]=len-1;
 					len =0;
-					nfreq = (((U16)pSnds[0][2] & 0x3F) << 4) | (U16)(pSnds[0][3] & 0xF);
-					freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
 					envinit=volumes[((pSnds[0][4]&0xF))^0xF];
 					if (envinit==0) {
 						REG_SOUND1CNT_L=0;
@@ -225,6 +223,8 @@ void TIMER2(void)
 						REG_SOUND1CNT_X=SOUND1INIT+0;
 						REG_SOUND1CNT_X=0;
 					} else {
+						nfreq = (((U16)pSnds[0][2] & 0x3F) << 4) | (U16)(pSnds[0][3] & 0xF);
+						freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
 						REG_SOUND1CNT_L=0;//(sweeptime<<4)+(sweepdir<<3)+sweepshifts;
 						REG_SOUND1CNT_H=(envinit<<12)+(envdir<<11)+(envsteptime<<8)+(waveduty<<6);
 						REG_SOUND1CNT_X=SOUND1INIT+(loopmode<<14)+freq;
@@ -244,14 +244,14 @@ void TIMER2(void)
 				} else {
 					sndWaits[1]=len-1;
 					len =0;
-					nfreq = (((U16)pSnds[1][2] & 0x3F) << 4) | (U16)(pSnds[1][3] & 0xF);
-					freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
 					envinit=volumes[((pSnds[1][4]&0xF))^0xF];
 					if (envinit==0) {
 						REG_SOUND2CNT_L=0;
 						REG_SOUND2CNT_H=SOUND2INIT+0;
 						REG_SOUND2CNT_H=0;
 					} else {
+						nfreq = (((U16)pSnds[1][2] & 0x3F) << 4) | (U16)(pSnds[1][3] & 0xF);
+						freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
 						REG_SOUND2CNT_L=(envinit<<12)+(envdir<<11)+(envsteptime<<8)+(waveduty<<6);
 						REG_SOUND2CNT_H=SOUND2INIT+(loopmode<<14)+freq;
 					}
@@ -270,8 +270,6 @@ void TIMER2(void)
 				} else {
 					sndWaits[2]=len-1;
 					len =0;
-					nfreq = (((U16)pSnds[2][2] & 0x3F) << 4) | (U16)(pSnds[2][3] & 0xF);
-					freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
 					envinit = volumes3[((pSnds[2][4]&0xF))^0xF];
 					if (envinit==0) {
 						REG_SOUND3CNT_L=0;
@@ -279,6 +277,8 @@ void TIMER2(void)
 						REG_SOUND3CNT_X=SOUND3INIT+0;
 						REG_SOUND3CNT_X=0;
 					} else {
+						nfreq = (((U16)pSnds[2][2] & 0x3F) << 4) | (U16)(pSnds[2][3] & 0xF);
+						freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
 						REG_SOUND3CNT_L=           SOUND3SETBANK1+SOUND3BANK32; // select bank 0 for writing (bank 1 for playing)
 						for (i=0; i<4; i++)
 							(&REG_WAVE_RAM0)[i] = i&1 ? 0 : 0xFFFFFFFF;
