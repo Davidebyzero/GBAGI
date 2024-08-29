@@ -153,17 +153,11 @@ void TIMER1(void)
 
 }
 
-int volumesX[16]={
-	 0, 8, 9, 9,
-	10,10,11,11,
-	12,12,13,13,
-	14,14,15,15
-};
-int volumesY[16]={
-	0,1,2,2,
-	3,3,4,4,
-	5,5,6,6,
-	7,7,8,8
+int volumes[16]={
+	 0, 1, 2, 3,
+	 4, 5, 6, 7,
+	 8, 9,10,11,
+	12,13,14,15
 };
 int volumes2[16]={
 	0,1,2,2,
@@ -186,7 +180,6 @@ void TIMER2(void)
 {
 	U16 len;
 	int i;
-	int *volumes=volumesX;
 	
 	if(TestFlag(fSOUND)&&sndBuf) {/*
 		if(!sndWaits[3]--) {
