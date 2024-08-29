@@ -180,7 +180,7 @@ int volumes3[16]={
 U16 sweeptime=0,sweepdir=0,sweepshifts=0,envinit=15,envdir=1,envsteptime=7,
 	waveduty=2,loopmode=0;
 S16 freq=0,nfreq=0,totalwa; 
-const unsigned int freqNumerator=117, freqDenominator=100;
+const unsigned int freqNumerator=181, freqDenominator=153;
 
 void TIMER2(void)
 {
@@ -224,7 +224,9 @@ void TIMER2(void)
 						REG_SOUND1CNT_X=0;
 					} else {
 						nfreq = (((U16)pSnds[0][2] & 0x3F) << 4) | (U16)(pSnds[0][3] & 0xF);
-						freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
+						nfreq = (nfreq * freqNumerator + freqDenominator/2) / freqDenominator;
+						if (nfreq==0) nfreq=1;
+						freq = 0x800 - nfreq;
 						REG_SOUND1CNT_L=0;//(sweeptime<<4)+(sweepdir<<3)+sweepshifts;
 						REG_SOUND1CNT_H=(envinit<<12)+(envdir<<11)+(envsteptime<<8)+(waveduty<<6);
 						REG_SOUND1CNT_X=SOUND1INIT+(loopmode<<14)+freq;
@@ -251,7 +253,9 @@ void TIMER2(void)
 						REG_SOUND2CNT_H=0;
 					} else {
 						nfreq = (((U16)pSnds[1][2] & 0x3F) << 4) | (U16)(pSnds[1][3] & 0xF);
-						freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
+						nfreq = (nfreq * freqNumerator + freqDenominator/2) / freqDenominator;
+						if (nfreq==0) nfreq=1;
+						freq = 0x800 - nfreq;
 						REG_SOUND2CNT_L=(envinit<<12)+(envdir<<11)+(envsteptime<<8)+(waveduty<<6);
 						REG_SOUND2CNT_H=SOUND2INIT+(loopmode<<14)+freq;
 					}
@@ -278,7 +282,9 @@ void TIMER2(void)
 						REG_SOUND3CNT_X=0;
 					} else {
 						nfreq = (((U16)pSnds[2][2] & 0x3F) << 4) | (U16)(pSnds[2][3] & 0xF);
-						freq = 0x7FF-((nfreq * freqNumerator + freqDenominator/2) / freqDenominator);
+						nfreq = (nfreq * freqNumerator + freqDenominator/2) / freqDenominator;
+						if (nfreq==0) nfreq=1;
+						freq = 0x800 - nfreq;
 						REG_SOUND3CNT_L=           SOUND3SETBANK1+SOUND3BANK32; // select bank 0 for writing (bank 1 for playing)
 						for (i=0; i<4; i++)
 							(&REG_WAVE_RAM0)[i] = i&1 ? 0 : 0xFFFFFFFF;
