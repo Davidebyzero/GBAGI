@@ -182,31 +182,6 @@ void TIMER2(void)
 	int i;
 	
 	if(TestFlag(fSOUND)&&sndBuf) {
-		// noise channel
-		if(pSnds[3]&&!sndWaits[3]--) {
-				if((len = pSnds[3][0]+(pSnds[3][1]<<8))==0xFFFF) {
-					REG_SOUND4CNT_L=0;
-					REG_SOUND4CNT_H=SOUND4INIT+0;
-					REG_SOUND4CNT_H=0;
-					freq=1;
-					pSnds[3]=NULL;
-				} else {
-					sndWaits[3] = len-1;
-					len =0;
-					envinit=volumes2[((pSnds[3][4]&0xF))^0xF];
-					if(envinit==0) {
-						REG_SOUND4CNT_L=0;
-						REG_SOUND4CNT_H=SOUND4INIT+0;
-						REG_SOUND4CNT_H=0;
-					} else {
-						nfreq = (U16)(pSnds[3][3] & 3);
-						freq = 1 << nfreq;
-						REG_SOUND4CNT_L=(volumes[envinit]<<12)+(envdir<<11)+(envsteptime<<8);
-						REG_SOUND4CNT_H=SOUND4INIT+(loopmode<<14)+(prestepper<<4)+freq;
-					}
-					pSnds[3]+=5;
-				}
-		}
 		// tonal channels
 		if(pSnds[0]&&!sndWaits[0]--) {
 				if((len = pSnds[0][0]+(pSnds[0][1]<<8))==0xFFFF) {
@@ -296,6 +271,31 @@ void TIMER2(void)
 						REG_SOUND3CNT_X=SOUND3INIT+SOUND3PLAYLOOP+freq;
 					}
 					pSnds[2]+=5;
+				}
+		}
+		// noise channel
+		if(pSnds[3]&&!sndWaits[3]--) {
+				if((len = pSnds[3][0]+(pSnds[3][1]<<8))==0xFFFF) {
+					REG_SOUND4CNT_L=0;
+					REG_SOUND4CNT_H=SOUND4INIT+0;
+					REG_SOUND4CNT_H=0;
+					freq=1;
+					pSnds[3]=NULL;
+				} else {
+					sndWaits[3] = len-1;
+					len =0;
+					envinit=volumes2[((pSnds[3][4]&0xF))^0xF];
+					if(envinit==0) {
+						REG_SOUND4CNT_L=0;
+						REG_SOUND4CNT_H=SOUND4INIT+0;
+						REG_SOUND4CNT_H=0;
+					} else {
+						nfreq = (U16)(pSnds[3][3] & 3);
+						freq = 1 << nfreq;
+						REG_SOUND4CNT_L=(volumes[envinit]<<12)+(envdir<<11)+(envsteptime<<8);
+						REG_SOUND4CNT_H=SOUND4INIT+(loopmode<<14)+(prestepper<<4)+freq;
+					}
+					pSnds[3]+=5;
 				}
 		}
 		if (!pSnds[0]&&!pSnds[1]&&!pSnds[2]&&!pSnds[3])
