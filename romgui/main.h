@@ -22,18 +22,13 @@
 #ifndef mainH
 #define mainH
 //---------------------------------------------------------------------------
-#include <Classes.hpp>
-#include <Controls.hpp>
-#include <StdCtrls.hpp>
-#include <Forms.hpp>
-#include <ExtCtrls.hpp>
+#include <vcl-shim.h>
  
 #include "dirdialog.h"
 #include "makerom.h"
 #include "decompress.h"
 #include "commands.h"
 #include "verdef.h"
-#include <Dialogs.hpp>
 //---------------------------------------------------------------------------
 class TAddGameObj
 {
@@ -95,6 +90,9 @@ __published:	// IDE-managed Components
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Label3Click(TObject *Sender);
 private:	// User declarations
+	void CreateControls();
+	void OnInitDialog(HWND hWnd);
+	void OnCommand(WPARAM wParam, LPARAM lParam);
 public:		// User declarations
 	__fastcall TFormMain(TComponent* Owner);
 
@@ -114,7 +112,5 @@ public:		// User declarations
 
     LPCTSTR GetProgramPath();
 };
-//---------------------------------------------------------------------------
-extern PACKAGE TFormMain *FormMain;
 //---------------------------------------------------------------------------
 #endif
