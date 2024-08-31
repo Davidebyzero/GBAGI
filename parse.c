@@ -153,7 +153,7 @@ char *favWords[TOTAL_FAV] = {
     "give"
 };
 
-char *spaceChars=" ,.?!();:[]{}'`-\"";
+char *spaceChars=" ,.?!();:[]{}`-\"";
 /*****************************************************************************/
 char *StripInput(char *sStart)
 {
