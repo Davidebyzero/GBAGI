@@ -27,7 +27,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
-#include "..\gbagi.h"
+#include "../gbagi.h"
 /******************************************************************************/
 #define BASE800	0x08000000
 #define BASEx0X	0x00020000
