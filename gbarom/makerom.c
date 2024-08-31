@@ -398,8 +398,6 @@ int FindWordx(const char *s,U8 *b)
 /******************************************************************************/
 void AddWord(int group, const char *string)
 {
-	if(string[0]==0)
-    	string=string;
 	pwords->group = group;
 	pwords->string = string;
 	pwords++;
@@ -419,6 +417,52 @@ const char *FindWord(int group)
         }
     }
     return "^";
+}
+/******************************************************************************/
+int FindTotalWordsInGroup(int group)
+{
+	int a;
+    int groupcount = 0;
+    U8 *p;
+	for(a=0;a<26;a++) {
+		p=(U8*)words[a];
+        if(!p) continue;
+        while(*p!=0) {
+         	if((p[1]+(p[2]<<8))==group)
+            	groupcount++;
+            p+=*p;
+        }
+    }
+    return groupcount;
+}
+/******************************************************************************/
+const char **FindExtraWordInGroup(int group)
+{
+	int a;
+    U8 *p;
+    const char **slist;
+
+    int maxgroups = FindTotalWordsInGroup(group);
+    int gcnt = 0;
+    if(maxgroups<2) return NULL;
+
+    slist = (const char **)malloc(sizeof(const char **)*(maxgroups+1));
+
+	for(a=0;a<26;a++) {
+		p=(U8*)words[a];
+        if(!p) continue;
+        while(*p!=0) {
+         	if((p[1]+(p[2]<<8))==group) {
+                if(gcnt) {
+                 	slist[gcnt-1] = ((char*)p+3);
+                }
+             	gcnt++;
+            }
+            p+=*p;
+        }
+    }
+    slist[gcnt-1] = NULL;
+    return slist;
 }
 /******************************************************************************/
 const char *FindWord2(int group)
@@ -511,6 +555,17 @@ void DoRemainingWords()
         	AddWord(i,s);
         }
 	}
+	for(i=1;i<9999;i++) {
+    	const char **slist = FindExtraWordInGroup(i);
+        if(slist) {
+        	const char **sl = slist;
+        	if(*sl) {
+        		AddWord(i,*sl);
+        	    sl++;
+        	}
+        	free(slist);
+        }
+	}
 }
 /******************************************************************************/
 void AlphaSortWords()
@@ -538,7 +593,11 @@ void AlphaSortWords()
         }
 		w0 = w1;
         w1++;
-    }               /*
+    }
+    w1 = wordset;
+    while(w1->group) {
+        w1++;
+    }         /*
     w1 = wordset;
     while(w1->group) {
     	Form1->ListBox3->Items->Add(AnsiString(w1->string));
@@ -626,7 +685,7 @@ void DumpLog(int num)
     LOG_DONE[num]=TRUE;
 
 	if(dirs[0][num].vol==-1) return;
-	if(!(logDir = &volData[dirs[0][num].offset])) return;
+	if((logDir = &volData[dirs[0][num].offset]) == NULL) return;
 
 	log=logDir+5;
     end=logDir+7+(logDir[5]+(logDir[6]<<8));
