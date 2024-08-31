@@ -46,7 +46,7 @@ char *objNames[256];
 char *objNameData;
 U8 objRoomsStart[256];
 
-char *words[26];
+U8 *words[26];
 U8 *vocabData, *wordData;
 U32 wordsSize;
 
@@ -61,7 +61,7 @@ BOOL LOG_DONE[256];
 int strSize;   
 U8 *code;
 /******************************************************************************/
-char *solidWords[] = {
+const char *solidWords[] = {
 	"look","marry", "take", "button", "phone", "hallway", "drinks", "hole", "cigarette",
 	"yes", "no", "wall", "area", "wallet", "ground", "stairs", "window", "open", "move", "climb", "talk",
 	"garbage", "ledge", "under", "over", "drawer", "carpet", "out", "key", "give",
@@ -92,7 +92,7 @@ char *solidWords[] = {
 #define SG_TOTAL 8
 #define SG_WORDMAX 20
 
-char *solidGroups[SG_TOTAL][SG_WORDMAX] = {
+const char *solidGroups[SG_TOTAL][SG_WORDMAX] = {
 	{"enter","exit", ""},
 	{"taste", "eat", "drink", ""},
 	{"hug", "kiss", ""},
@@ -105,7 +105,7 @@ char *solidGroups[SG_TOTAL][SG_WORDMAX] = {
 /******************************************************************************/
 char strbuf[4096];
 #include <windows.h>
-int ErrorMessage(char *s, ...)
+int ErrorMessage(const char *s, ...)
 {
 	va_list argptr;
 	int cnt;
@@ -393,7 +393,7 @@ BOOL ProcessObject()
     return TRUE;
 }
 /******************************************************************************/
-U8 *LoadFile(BOOL G_PATH, char *name, int *len)
+U8 *LoadFile(BOOL G_PATH, const char *name, int *len)
 {
 	FILE *f;
 	int l;
@@ -421,9 +421,9 @@ U8 *LoadFile(BOOL G_PATH, char *name, int *len)
     return p;
 }
 /******************************************************************************/
-int FindWordx(char *s,U8 *b)
+int FindWordx(const char *s,U8 *b)
 {
-	char *s1,*s2;
+	const char *s1,*s2;
 	while(*b) {
     	s1 = (char*)b+3;
         s2 = s;
@@ -435,14 +435,14 @@ int FindWordx(char *s,U8 *b)
     return -1;
 }   
 /******************************************************************************/
-void AddWord(int group, char *string)
+void AddWord(int group, const char *string)
 {
 	pwords->group = group;
 	pwords->string = string;
 	pwords++;
 }
 /******************************************************************************/
-char *FindWord(int group)
+const char *FindWord(int group)
 {
 	int a;
     U8 *p;
@@ -504,7 +504,7 @@ char **FindExtraWordInGroup(int group)
     return slist;
 }
 /******************************************************************************/
-char *FindWord2(int group)
+const char *FindWord2(int group)
 {
 	WORDSET *w;
 	w = wordset;
@@ -516,7 +516,7 @@ char *FindWord2(int group)
     return "^";
 }
 /******************************************************************************/
-int FindWordStr(char *s)
+int FindWordStr(const char *s)
 {
 	int group, a;
     U8 *p;
@@ -555,7 +555,7 @@ void ClearGroup(int group)
 void DoSolidGroups()
 {
 	int set=0,idx,groups[5];
-    char *s;
+    const char *s;
 
     while(solidGroups[set][0][0]) {
     	idx=0;
@@ -574,7 +574,7 @@ void DoSolidGroups()
 void DoSolidWords()
 {
 	int idx=0,group;
-    char *s;
+    const char *s;
 
     while((s=solidWords[idx])[0]) {
     	if((group = FindWordStr(s))!=0) {
@@ -587,7 +587,7 @@ void DoSolidWords()
 /******************************************************************************/
 void DoRemainingWords()
 {
-	char *s;
+	const char *s;
     int i;
 	for(i=1;i<9999;i++) {
 		if((s=FindWord(i))[0]!='^') {
@@ -662,7 +662,7 @@ BOOL ProcessWords()
 	if((tokData = LoadFile(TRUE, "words.tok", NULL))==NULL)
     	return FALSE;
 
-    wordData = (char*)malloc(64000);
+    wordData = (U8*)malloc(64000);
     memset(words,0,sizeof(words));
     wPtr = wordData;
     wc=0;
@@ -958,7 +958,7 @@ BOOL OutputGame()
 		w = wordset;
     	while(w->group&0x1FFF) {
     		if(w->string[0]==ccc) {
-        		words[a] = w->string-3;
+        		words[a] = (U8*)w->string-3;
                 break;
             }
         	w++;
