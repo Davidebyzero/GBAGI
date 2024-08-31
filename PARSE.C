@@ -237,9 +237,9 @@ char *FindWordN(char *szWord)
     while(*p) {
     	s1 = p+3;
         s2 = szWord;
-        while(*s1&&*s1++==*s2) s2++;
-     	if(!*s1&&(*s2==' '||*s2=='\0')) {
-           	if(!possible || strlen(possible)<strlen(p+3) && p[3+strlen(possible)]==' ') {
+        while(*s1&&*s1==*s2) {s1++;s2++;}
+     	if(*s1=='\0'&&(*s2==' '||*s2=='\0')) {
+           	if(!possible || strlen(possible)<strlen(p+3)) {
             	possible = p+3; // ensures that "escape pod" will be checked for in the case of another word such as "escape"
             }
         }
