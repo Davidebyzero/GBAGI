@@ -67,21 +67,21 @@ typedef struct {
 } GVER;
 
 typedef struct {
-	char *name;
+	const char *name;
 	GVER ver;
 } VERLIST;
 
 typedef struct {
 	VERLIST *version;
-	char *vID;
-	char *title;
-	char *path;
+	const char *vID;
+	const char *title;
+	const char *path;
 } GAMEINFO;
                
 typedef struct {
 	U32 addr;
 	U16 group;
-    char *string;
+	const char *string;
 } WORDSET;
 /******************************************************************************/
 extern GAMEINFO *gi;
@@ -101,14 +101,14 @@ extern char *objNames[256];
 extern char *objNameData;
 extern U8 objRoomsStart[256];
 
-extern char *words[26];
+extern U8 *words[26];
 extern U8 *vocabData, *wordData;
 
 extern FILE *fout;
 
 extern U32 offs, giPos;
 /******************************************************************************/    
-int ErrorMessage(char *s, ...);
+int ErrorMessage(const char *s, ...);
 U16 fgetw(FILE *f);
 U32 fgett(FILE *f);
 U32 fgetl(FILE *f);
@@ -121,12 +121,12 @@ BOOL LoadDir(BOOL SINGLE, int num);
 BOOL PrepDirs(void);
 BOOL ProcessDirs(void);
 BOOL ProcessObject(void);
-U8 *LoadFile(BOOL G_PATH, char *name, int *len);
-int FindWordx(char *s,U8 *b);
-void AddWord(int group, char *string);
-char *FindWord(int group);
-char *FindWord2(int group);
-int FindWordStr(char *s);
+U8 *LoadFile(BOOL G_PATH, const char *name, int *len);
+int FindWordx(const char *s,U8 *b);
+void AddWord(int group, const char *string);
+const char *FindWord(int group);
+const char *FindWord2(int group);
+int FindWordStr(const char *s);
 void ClearGroup(int group);
 void DoSolidGroups(void);
 void DoSolidWords(void);

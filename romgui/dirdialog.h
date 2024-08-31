@@ -30,7 +30,7 @@ public:
     HWND Handle;
     AnsiString Title,Caption,InitialDir,FullPath;
     BOOL MAP_CHECK;
-    void CheckMap(char *szDir);
+    void CheckMap(const char *szDir);
 };
 #endif
  

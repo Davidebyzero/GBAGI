@@ -29,15 +29,15 @@
 
 /*****************************************************************************/
 typedef struct {
-	char *name;
-	char *name2;
+	const char *name;
+	const char *name2;
 	U8 nParams;
 	U8 pMask;
 } AGICMD;
 
 typedef struct {
-	char *name;
-	char *name2;
+	const char *name;
+	const char *name2;
 	U8 nParams;
 	U8 pMask;
 } AGITEST;

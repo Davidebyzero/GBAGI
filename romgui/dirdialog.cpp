@@ -63,7 +63,7 @@ TDirDialog::TDirDialog()
 }       
 //---------------------------------------------------------------------------
 char DirectoryString[2048];
-void TDirDialog::CheckMap(char *szDir)
+void TDirDialog::CheckMap(const char *szDir)
 {
     BOOL FILE_FOUND;
     WIN32_FIND_DATA FindFileData;
