@@ -1,0 +1,40 @@
+#if !defined main_hpp_
+#define main_hpp_
+
+#define IDC_TFORMMAIN 1000
+
+#define IDC_LABEL1 100
+#define IDC_LABEL2 101
+#define IDC_LABEL3 102
+#define IDC_PANEL1 103
+#define IDC_PANEL2 104
+#define IDC_PANEL3 115
+#define IDC_PANEL4 116
+#define IDC_LISTBOX 121
+#define IDC_PANEL8 122
+#define IDC_PANEL9 127
+#define IDC_FORMMAIN 128
+#define IDC_LABEL4 117
+#define IDC_LABEL7 123
+#define IDC_TXSTATUS 129
+#define IDC_PANEL6 105
+#define IDC_TBOUTPUT 118
+#define IDC_PANEL10 124
+#define IDC_PANEL11 130
+#define IDC_PANEL7 110
+#define IDC_PANEL14 119
+#define IDC_LABEL6 106
+#define IDC_LABEL5 111
+#define IDC_TBINPUT 107
+#define IDC_TBVOCAB 112
+#define IDC_BTNBROWSEOUT 120
+#define IDC_BTNADD 125
+#define IDC_BTNEXIT 131
+#define IDC_PANEL12 108
+#define IDC_PANEL13 113
+#define IDC_BTNREMOVE 126
+#define IDC_BTNBUILD 132
+#define IDC_BTNBROWSEINP 109
+#define IDC_BTNBROWSEVOC 114
+
+#endif
