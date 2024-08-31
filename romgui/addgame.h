@@ -22,11 +22,7 @@
 #ifndef addgameH
 #define addgameH
 //---------------------------------------------------------------------------
-#include <Classes.hpp>
-#include <Controls.hpp>
-#include <StdCtrls.hpp>
-#include <Forms.hpp>
-#include <ExtCtrls.hpp>
+#include <vcl-shim.h>
 
 #include "makerom.h"
 #include "decompress.h"
@@ -59,6 +55,9 @@ __published:	// IDE-managed Components
 	void __fastcall btnAutodetectClick(TObject *Sender);
 	void __fastcall dropGamesChange(TObject *Sender);
 private:	// User declarations
+	virtual void CreateControls();
+	virtual void OnInitDialog(HWND hWnd);
+	virtual void OnCommand(WPARAM wParam, LPARAM lParam);
 public:		// User declarations
 	__fastcall TFormAddGame(TComponent* Owner);
 
@@ -73,7 +72,5 @@ public:		// User declarations
     BOOL okClose;
     GAMEINFO gameinfo;
 };
-//---------------------------------------------------------------------------
-extern PACKAGE TFormAddGame *FormAddGame;
 //---------------------------------------------------------------------------
 #endif

@@ -19,7 +19,7 @@
 
 //---------------------------------------------------------------------------
 
-#include <vcl.h>     
+#include <vcl-shim.h>     
 #include <shlobj.h>
 #pragma hdrstop
 

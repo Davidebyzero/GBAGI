@@ -19,7 +19,7 @@
 
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
+#include <vcl-shim.h>
 #include <shellapi.h>
 #pragma hdrstop
 
@@ -28,11 +28,13 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TFormMain *FormMain;
+
 //---------------------------------------------------------------------------
 __fastcall TFormMain::TFormMain(TComponent* Owner)
 	: TForm(Owner)
 {
+    CreateControls();
+
     strcpy(szPath,GetCurrentDir().c_str());
     if(!FileExists(ProgramDir+"\\gbinjectb.exe"))
     	GetProgramPath();
@@ -65,6 +67,16 @@ void __fastcall TFormMain::UpdateControls()
 {
 	btnBuild->Enabled 	= (tbOutput->Text!="" && listbox->Items->Count > 0);
 	btnRemove->Enabled 	= (listbox->Items->Count > 0);
+
+	// Generated;
+	this->Update();
+	btnBuild->Update();
+	btnRemove->Update();
+	tbOutput->Update();
+	tbInput->Update();
+	tbVocab->Update();
+	txStatus->Update();
+	listbox->Update();
 }
 //---------------------------------------------------------------------------
 
@@ -172,8 +184,8 @@ int TFormMain::RemoveAddGame(int num)
     	addGamePtr = o->next?o->next:o->prev;
 
 
-    free( o->gameinfo.title );
-    free( o->gameinfo.path );
+    free((void*) o->gameinfo.title );
+    free((void*) o->gameinfo.path );
 
     delete o;
 

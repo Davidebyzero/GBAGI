@@ -19,21 +19,26 @@
 
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
+#include <vcl-shim.h>
 #pragma hdrstop
 
 #include "addgame.h"
 #include "main.h"
+
+#if defined(_MSC_VER) 
+#define strdup _strdup
+#endif
+
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
-TFormAddGame *FormAddGame;
-
 
 //---------------------------------------------------------------------------
 __fastcall TFormAddGame::TFormAddGame(TComponent* Owner)
 	: TForm(Owner)
 {
+	CreateControls();
+
 	okClose = FALSE;
 }
 //---------------------------------------------------------------------------
@@ -41,6 +46,14 @@ void TFormAddGame::UpdateControls()
 {
 	tbId->Enabled = (dropVersion->ItemIndex >= 3)? true : false;
     tbId->Color = tbId->Enabled? clWindow: clBtnFace;
+
+	// Generated
+	this->Update();
+	dropGames->Update();
+	dropVersion->Update();
+	tbId->Update();
+	tbName->Update();
+	tbPath->Update();
 }
 //---------------------------------------------------------------------------
 void TFormAddGame::SetUp(AnsiString path)
@@ -142,17 +155,15 @@ void __fastcall TFormAddGame::btnAutodetectClick(TObject *Sender)
 		if(version) {
 			char s[128];
 			sprintf(s,"Found Version: %s, %d.%04X",version->name,version->ver.major,version->ver.minor);
-			Application->MessageBox(
+			ShowMessage(
 					s,
-					"Version found!",
-                    0
+					"Version found!"
 				);
 			dropVersion->ItemIndex = version - verlist;
 		} else {
-			Application->MessageBox(
+			ShowMessage(
 					"Unable to find version",
-					"Version not found!",
-                    0
+					"Version not found!"
 				);
 		}
 	}

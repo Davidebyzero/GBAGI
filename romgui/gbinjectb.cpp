@@ -19,29 +19,25 @@
 
 //---------------------------------------------------------------------------
 
-#include <vcl.h>
+#include <vcl-shim.h>
+#include "main.h"
+#include "addgame.h"
 #pragma hdrstop
-USERES("gbinjectb.res");
-USEFORM("main.cpp", FormMain);
-USEFORM("addgame.cpp", FormAddGame);
-USEUNIT("dirdialog.cpp");
-USEUNIT("commands.cpp");
-USEUNIT("decompress.cpp");
-USEUNIT("makerom.cpp");
-USEUNIT("verdef.cpp");
+
 //---------------------------------------------------------------------------
-WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-	try
+	TFormMain* FormMain = new TFormMain(NULL);
+	FormMain->CreateForm();
+	MSG msg = { };
+	while (GetMessage(&msg, NULL, 0, 0) > 0)
 	{
-		Application->Initialize();
-		Application->CreateForm(__classid(TFormMain), &FormMain);
-		Application->Run();
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
-	catch (Exception &exception)
-	{
-		Application->ShowException(&exception);
-	}
+
+	delete FormMain;
+
 	return 0;
 }
 //---------------------------------------------------------------------------
