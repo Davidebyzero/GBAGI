@@ -120,6 +120,8 @@ int ErrorMessage(const char *s, ...)
 	return(cnt);
 }
 /******************************************************************************/
+// Disable optimizations for cl which swaps the bytes
+#pragma optimize( "", off )
 U16 fgetw(FILE *f)
 {
 	return (fgetc(f))+(fgetc(f)<<8);
@@ -134,6 +136,8 @@ U32 fgetl(FILE *f)
 {
 	return (fgetc(f))+(fgetc(f)<<8)+(fgetc(f)<<16)+(fgetc(f)<<24);
 }
+#pragma optimize( "", on ) 
+
 /******************************************************************************/
 void fputw(U16 l, FILE *f)
 {
