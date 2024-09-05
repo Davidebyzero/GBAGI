@@ -92,7 +92,7 @@ struct TOpenDialog : TComponent {
         delete this->dlgOfn.lpstrFile;
     }
 
-    bool Execute() {
+    BOOL Execute() {
         BOOL bRetValdlgSaveOut = ::GetOpenFileName(&dlgOfn);
         FileName = dlgOfn.lpstrFile;
         return bRetValdlgSaveOut;
@@ -111,7 +111,7 @@ struct TSaveDialog : TComponent {
         delete this->dlgOfn.lpstrFile;
     }
 
-    bool Execute() {
+    BOOL Execute() {
         BOOL bRetValdlgSaveOut = ::GetSaveFileName(&dlgOfn);
         FileName = dlgOfn.lpstrFile;
         return bRetValdlgSaveOut;

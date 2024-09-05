@@ -88,7 +88,7 @@ U8 *decode_string(U8 *buffer, U32 code)
             return NULL;
 		}
 	}
-	*buffer=code;
+	*buffer=(U8)code;
 
 	return buffer;
 }
@@ -156,7 +156,7 @@ BOOL LZW_expand(U8 *in, U8 *out, S32 len)
 			if (lzwnew >= lzwnext)
 			{
 				/* Handles special LZW scenario */
-				*decode_stack = c;
+				*decode_stack = (U8)c;
 				s = decode_string(decode_stack+1, lzwold);
 			}
 			else
@@ -173,7 +173,7 @@ BOOL LZW_expand(U8 *in, U8 *out, S32 len)
 				setBITS(BITS + 1);
 
 			prefix_code[lzwnext] = lzwold;
-			append_character[lzwnext] = c;
+			append_character[lzwnext] = (U8)c;
 			lzwnext++;
 			lzwold = lzwnew;
 

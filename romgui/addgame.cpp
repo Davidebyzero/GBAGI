@@ -89,7 +89,7 @@ void TFormAddGame::SetUp(AnsiString path)
 char *TFormAddGame::GetPathString()
 {
 	char *pathstr = new char[tbPath->Text.Length()+tbId->Text.Length()+32];
-	int pathlen = tbPath->Text.Length(), i;
+	int pathlen = tbPath->Text.Length();
 
     strcpy(pathstr, tbPath->Text.c_str());
 
@@ -143,7 +143,6 @@ void __fastcall TFormAddGame::dropVersionChange(TObject *Sender)
 void __fastcall TFormAddGame::btnAutodetectClick(TObject *Sender)
 {
 	char *pathstr;
-	long len;
 
 	pathstr = GetPathString();
 	strcat(pathstr,"\\agidata.ovl");

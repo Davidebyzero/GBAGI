@@ -237,7 +237,7 @@ BOOL PrepDirs()
                 	if((fr=fopen(fname,"rb"))!=NULL) {
                         dirs[t][i].vol = 0x7F;
                         fseek(fr,0,SEEK_END);
-						dirs[t][i].length = ftell(fr);
+						dirs[t][i].length = (U16)ftell(fr);
 						volSize += dirs[t][i].length+5;
                         fclose(fr);
                     } else {
@@ -262,7 +262,7 @@ BOOL ProcessDirs()
 {
 	int vn, vi, t,i,msgTotal;
 	FILE *f;
-	U8 *pvol,*p;
+	U8 *pvol;
 	U16 enclen,declen;
 	U8 *fbuf;
     char *msg;
@@ -306,7 +306,7 @@ BOOL ProcessDirs()
 						dirs[t][i].offset = (S32)((S32)pvol-(S32)volData);
 						vi 		= 0;
                         fseek(f,0,SEEK_END);
-						declen 	= ftell(f);
+						declen 	= (U16)ftell(f);
 						enclen 	= declen;  
                         fseek(f,0,SEEK_SET);
                     }
@@ -351,7 +351,7 @@ BOOL ProcessObject()
     U16 l;
     int q, nameStart;
     int objCount, i, entSize;
-    U8 *p, *iPtr, *wPtr, *u;
+    U8 *p, *iPtr, *u;
 
 	sprintf(fname,"%sobject",gi->path);
 	if((f=fopen(fname,"rb")) == NULL) {
@@ -359,7 +359,7 @@ BOOL ProcessObject()
 		return FALSE;
 	}
 	fseek(f,0,SEEK_END);
-	l=ftell(f);
+	l=(U16)ftell(f);
 	fseek(f,0,SEEK_SET);
 
 	p = (U8*) malloc(l);
@@ -655,11 +655,9 @@ int AlphaSortWords()
 /******************************************************************************/
 BOOL ProcessWords()
 {
-	FILE *f;
     U16 l, wc;
-    int strSize, objCount, i, offs,g;
+    int i, offs,g;
     U8 *msg,*tokData,*wPtr;
-	WORDSET *w;
 
 	if((vocabData = LoadFile(FALSE, vocabName, NULL))==NULL)
     	return FALSE;
@@ -708,9 +706,9 @@ BOOL ProcessWords()
     //if(pwords!=wordset)
     	AlphaSortWords();
                      /*
-    f=fopen("words.txt","w");
+    FILE *f=fopen("words.txt","w");
 
-	w = wordset;
+	WORDSET *w = wordset;
     while(w->group) {
      	fprintf(f,"%05d:%s\n",w->group,w->string);
         w++;
@@ -725,9 +723,8 @@ int curlogsX[256], *curlogs;
 U8 vVals[256][8];
 void DumpLog(int num)
 {
-	U8 *xcode=code,*log,*end,*flags,*logDir;
-    int pc,op,g,a,i;
-    char *p;
+	U8 *xcode=code,*log,*end,*logDir;
+    int op,i;
 
 	if(LOG_DONE[num]) return;
     LOG_DONE[num]=TRUE;
@@ -1041,7 +1038,6 @@ BOOL OutputGame()
 BOOL ProcessGame(GAMEINFO *gmInfo)
 {
 	int i;
-    FILE *f;
 
 	memset(VUSED,0,sizeof(VUSED));
 	volData = NULL;
@@ -1070,7 +1066,7 @@ BOOL ProcessGame(GAMEINFO *gmInfo)
     if(!OutputGame())
     	return FALSE;
                          /*
-    f=fopen("vols.bin","wb");
+    FILE *f=fopen("vols.bin","wb");
     fwrite(volData,volSize,1,f);
     fclose(f);     */
 
@@ -1099,8 +1095,6 @@ VERLIST *FindAGIVersion(char *filename)
 	long len;
 	U8 *buffer,*p,*pend;
 	int major=-1,minor;
-	VERLIST *v,*v2;
-	BOOL FOUND;
 
 	if((f=fopen(filename,"rb"))==NULL)
 		return NULL;
@@ -1165,8 +1159,9 @@ VERLIST *FindAGIVersion(char *filename)
 	if(major == -1)
 		return NULL;
 /*
+	VERLIST *v,*v2;
 	v=v2=verlist;
-	FOUND = FALSE;
+	BOOL FOUND = FALSE;
 	while(v->name) {
 		if(v->ver.major == major) {
 			if((v->ver.flags&AMIGA) || v->ver.minor > minor) {

@@ -170,7 +170,7 @@ TAddGameObj *TFormMain::FindAddGame(int num)
 //---------------------------------------------------------------------------
 int TFormMain::RemoveAddGame(int num)
 {
-	TAddGameObj *o = FindAddGame(num), *next;
+	TAddGameObj *o = FindAddGame(num);
 
     if(o==NULL) return -1;
 
@@ -209,9 +209,9 @@ BOOL TFormMain::PackGames()
 
 	int totalGames = listbox->Items->Count;
 
-	inromName	= strdup(tbInput->Text.c_str());
-	outromName	= strdup(tbOutput->Text.c_str());
-	vocabName	= strdup(tbVocab->Text.c_str());
+	inromName	= _strdup(tbInput->Text.c_str());
+	outromName	= _strdup(tbOutput->Text.c_str());
+	vocabName	= _strdup(tbVocab->Text.c_str());
 
 	if(FileExists(vocabName) == false || (fin=fopen(vocabName,"rb"))==NULL) {
  		ShowMessage("Error opening vocab definition file! Please specify the location of the file included with this program by clicking on the \"Browse...\" button.");
