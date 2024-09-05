@@ -1,23 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="vcl-shim">
-      <UniqueIdentifier>{8540fc79-0a8a-4d8f-a4c8-73192efc2128}</UniqueIdentifier>
+    <Filter Include="Header Files\vcl-shim">
+      <UniqueIdentifier>{a2c3dea1-8378-430f-93f4-71c5cdc78e22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vcl-shim">
+      <UniqueIdentifier>{84e53d53-8dfd-44f1-aa70-0b90db2c8f17}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="addgame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,9 +42,6 @@
     <ClCompile Include="gbinjectb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.form.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,14 +51,17 @@
     <ClCompile Include="verdef.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vcl-shim\vcl-shim.cpp">
-      <Filter>vcl-shim</Filter>
-    </ClCompile>
     <ClCompile Include="vcl-shim\Form.cpp">
-      <Filter>vcl-shim</Filter>
+      <Filter>Header Files\vcl-shim</Filter>
+    </ClCompile>
+    <ClCompile Include="vcl-shim\vcl-shim.cpp">
+      <Filter>Source Files\vcl-shim</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="addgame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -71,7 +77,7 @@
     <ClInclude Include="dirdialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="main.h">
+    <ClInclude Include="main.res.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="makerom.h">
@@ -80,33 +86,36 @@
     <ClInclude Include="verdef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vcl-shim\Form.h">
-      <Filter>vcl-shim</Filter>
-    </ClInclude>
-    <ClInclude Include="vcl-shim\StdCtrls.h">
-      <Filter>vcl-shim</Filter>
-    </ClInclude>
-    <ClInclude Include="vcl-shim\vcl-shim.h">
-      <Filter>vcl-shim</Filter>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vcl-shim\AnsiString.h">
-      <Filter>vcl-shim</Filter>
+      <Filter>Header Files\vcl-shim</Filter>
     </ClInclude>
     <ClInclude Include="vcl-shim\ComboBox.h">
-      <Filter>vcl-shim</Filter>
+      <Filter>Header Files\vcl-shim</Filter>
+    </ClInclude>
+    <ClInclude Include="vcl-shim\Form.h">
+      <Filter>Header Files\vcl-shim</Filter>
     </ClInclude>
     <ClInclude Include="vcl-shim\ListBox.h">
-      <Filter>vcl-shim</Filter>
+      <Filter>Header Files\vcl-shim</Filter>
+    </ClInclude>
+    <ClInclude Include="vcl-shim\StdCtrls.h">
+      <Filter>Header Files\vcl-shim</Filter>
+    </ClInclude>
+    <ClInclude Include="vcl-shim\vcl-shim.h">
+      <Filter>Header Files\vcl-shim</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="main.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
     <ResourceCompile Include="addgame.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
     <ResourceCompile Include="gbinjectb.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="main.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

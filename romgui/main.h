@@ -22,7 +22,7 @@
 #ifndef mainH
 #define mainH
 //---------------------------------------------------------------------------
-#include <vcl-shim.h>
+#include "vcl-shim/vcl-shim.h"
  
 #include "dirdialog.h"
 #include "makerom.h"

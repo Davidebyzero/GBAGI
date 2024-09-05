@@ -69,8 +69,8 @@ struct TComponent : TObject {
 
         // Controls remove themselves so delete from a copy
         auto controls = this->Controls;
-        for (auto control : controls) {
-            delete control;
+        for (auto i=controls.begin(); i!=controls.end(); ++i) {
+            delete *i;
         }
 
         if (hCursor) {

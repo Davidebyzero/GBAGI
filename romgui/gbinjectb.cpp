@@ -19,7 +19,7 @@
 
 //---------------------------------------------------------------------------
 
-#include <vcl-shim.h>
+#include "vcl-shim/vcl-shim.h"
 #include "main.h"
 #include "addgame.h"
 #pragma hdrstop
