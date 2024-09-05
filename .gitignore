@@ -1,0 +1,17 @@
+*.o
+gbagi.bin
+test.elf
+
+gbarom/gbagi.gba
+gbarom/aginject.exe
+gbarom/object.bin
+
+romgui/resource.h
+romgui/*.aps
+romgui/*.opensdf
+romgui/*.sdf
+romgui/*.suo
+romgui/romgui.vcxproj.user
+romgui/ipch
+romgui/Debug
+romgui/Release
