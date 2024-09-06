@@ -563,14 +563,14 @@ BOOL MessageBox(char *szMsg)
 			delay = vars[vPRINTDURATION];
 			//Start the timer
             while(delay--) {
-				REG_TM0CNT	= TIME_FREQUENcy256 | TIME_ENABLE;
-				REG_TM0D	= 0;
-				while(REG_TM0D<0x8000)
+				REG_TM0CNT_H	= TIME_FREQUENcy256 | TIME_ENABLE;
+				REG_TM0CNT_L	= 0;
+				while(REG_TM0CNT_L<0x8000)
             		if((ENTER_CLOSE = CheckUserReply()) != -1) {
                     	delay = 0;
                         break;
                     }
-				REG_TM0CNT	= 0;
+				REG_TM0CNT_H	= 0;
             }
 			vars[vPRINTDURATION] = 0;
         } else

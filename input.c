@@ -67,21 +67,21 @@ void Delay(int amt)
 #else
 	if(amt==-1) {
      	delay = (DelayTimes[vars[vDELAY]<4?vars[vDELAY]:4])*10+1;
-		while(REG_TM1D <= delay){
+		while(REG_TM1CNT_L <= delay){
 			PollInput();
         }
-        REG_TM1CNT=0;
-		REG_TM1D = 0;
-		REG_TM1CNT = TIME_FREQUENcy1024 | TIME_ENABLE;
+        REG_TM1CNT_H=0;
+		REG_TM1CNT_L = 0;
+		REG_TM1CNT_H = TIME_FREQUENcy1024 | TIME_ENABLE;
     } else {
 		delay = (64*amt)+1;
 		//Start the timer
-		REG_TM0CNT = TIME_FREQUENcy1024 | TIME_ENABLE;
-		REG_TM0D = 0;
-		while(REG_TM0D <= delay){
+		REG_TM0CNT_H = TIME_FREQUENcy1024 | TIME_ENABLE;
+		REG_TM0CNT_L = 0;
+		while(REG_TM0CNT_L <= delay){
 			//PollInput();
         }
-		REG_TM0CNT = 0;
+		REG_TM0CNT_H = 0;
     }
 #endif
 }

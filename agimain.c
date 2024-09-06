@@ -181,8 +181,8 @@ void AGIMain()
 	 int m=1;
 #endif
 #ifndef _WINDOWS
-	REG_TM1CNT = TIME_FREQUENcy1024 | TIME_ENABLE;
-	REG_TM1D = 0;
+	REG_TM1CNT_H = TIME_FREQUENcy1024 | TIME_ENABLE;
+	REG_TM1CNT_L = 0;
 #endif
 	for (;;) {
 		ClearControllers();
