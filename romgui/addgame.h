@@ -61,10 +61,10 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TFormAddGame(TComponent* Owner);
 
-    void SetUp(AnsiString path);
+    void SetUp(VclString path);
     
-	char *GetPathString(void);
-	char *GetPathFolderName(void);
+	TCHAR *GetPathString(void);
+	TCHAR *GetPathFolderName(void);
 
     void UpdateControls();
 

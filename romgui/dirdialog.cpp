@@ -33,7 +33,7 @@ TDirDialog *ddPtr;
 //---------------------------------------------------------------------------
 int __stdcall BrowseProc(HWND hwnd,UINT uMsg, LPARAM lParam, LPARAM lpData )
 {
-    char szDir[MAX_PATH];
+    TCHAR szDir[MAX_PATH];
 
     switch(uMsg)
     {
@@ -41,7 +41,7 @@ int __stdcall BrowseProc(HWND hwnd,UINT uMsg, LPARAM lParam, LPARAM lpData )
             // Set the initial directory. If WPARAM is TRUE, then LPARAM is a
             // string that contains the path. If WPARAM is FALSE, then LPARAM
             // should be a lovely PIDL
-            if(ddPtr->InitialDir!="") SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)ddPtr->InitialDir.c_str());
+            if(ddPtr->InitialDir!=_T("")) SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)ddPtr->InitialDir.c_str());
             SetWindowText(hwnd,ddPtr->Title.c_str());
             ddPtr->Handle = hwnd;
             
@@ -57,13 +57,13 @@ int __stdcall BrowseProc(HWND hwnd,UINT uMsg, LPARAM lParam, LPARAM lpData )
 //---------------------------------------------------------------------------
 TDirDialog::TDirDialog()
 {
-    AnsiString Title = "Select a folder.";
-    InitialDir = "";
+    VclString Title = _T("Select a folder.");
+    InitialDir = _T("");
     MAP_CHECK = FALSE;
 }       
 //---------------------------------------------------------------------------
-char DirectoryString[2048];
-void TDirDialog::CheckMap(const char *szDir)
+TCHAR DirectoryString[2048];
+void TDirDialog::CheckMap(const TCHAR *szDir)
 {
     BOOL FILE_FOUND;
     WIN32_FIND_DATA FindFileData;
@@ -71,15 +71,15 @@ void TDirDialog::CheckMap(const char *szDir)
 	if(!MAP_CHECK) return;
 
     if(szDir[3])
-        wsprintf(DirectoryString, "%s\\words.tok", szDir);
+        wsprintf(DirectoryString, _T("%s\\words.tok"), szDir);
     else
-        wsprintf(DirectoryString, "%swords.tok", szDir);
+        wsprintf(DirectoryString, _T("%swords.tok"), szDir);
 
     FILE_FOUND = FindFirstFile((LPCTSTR)DirectoryString,(LPWIN32_FIND_DATA)&FindFileData)!=INVALID_HANDLE_VALUE;
  	if(!FILE_FOUND) {
-    	SendMessage(Handle, BFFM_SETSTATUSTEXT, FALSE, (LPARAM)"AGI Game exists: NO");
+    	SendMessage(Handle, BFFM_SETSTATUSTEXT, FALSE, (LPARAM)_T("AGI Game exists: NO"));
    	} else {
-    	SendMessage(Handle, BFFM_SETSTATUSTEXT, FALSE, (LPARAM)"AGI Game exists: YES");
+    	SendMessage(Handle, BFFM_SETSTATUSTEXT, FALSE, (LPARAM)_T("AGI Game exists: YES"));
     }
     SendMessage(Handle, BFFM_ENABLEOK, 0, LPARAM(FILE_FOUND));
 }
@@ -87,8 +87,8 @@ void TDirDialog::CheckMap(const char *szDir)
 BOOL TDirDialog::Execute()
 {
     BROWSEINFO    info;
-    char          szDir[MAX_PATH];
-    char          szDisplayName[MAX_PATH];
+    TCHAR         szDir[MAX_PATH];
+    TCHAR         szDisplayName[MAX_PATH];
     LPITEMIDLIST  pidl;
     LPMALLOC      pShellMalloc;
 
@@ -112,10 +112,10 @@ BOOL TDirDialog::Execute()
         {
             if(SHGetPathFromIDList(pidl, szDir))
             {
-            	int sl=strlen(szDir);
+            	int sl=_tcsclen(szDir);
     			if(szDir[sl-1]=='\\')
              		szDir[sl-1]='\0';
-                FullPath = AnsiString(szDir);
+                FullPath = VclString(szDir);
             }
 
             pShellMalloc->Free(pidl);

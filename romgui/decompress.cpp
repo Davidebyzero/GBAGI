@@ -84,7 +84,7 @@ U8 *decode_string(U8 *buffer, U32 code)
 		code=prefix_code[code];
 		if (i++>=4000)
 		{
-			ErrorMessage("lzw: error in code expansion.\n");
+			ErrorMessage(_T("lzw: error in code expansion.\n"));
             return NULL;
 		}
 	}

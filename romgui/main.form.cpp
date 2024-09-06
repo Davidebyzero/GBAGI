@@ -110,12 +110,12 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     ofnSaveOut.Flags = 0x0000 | OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_ENABLESIZING;
     ofnSaveOut.lpstrFile = new TCHAR[260];
     ofnSaveOut.nMaxFile = 260;
-    strcpy(ofnSaveOut.lpstrFile, "");
-    ofnSaveOut.lpstrFilter = "GBA ROM (*.gba)\0*.gba\0";
+    _tcscpy(ofnSaveOut.lpstrFile, _T(""));
+    ofnSaveOut.lpstrFilter = _T("GBA ROM (*.gba)\0*.gba\0");
     ofnSaveOut.nFilterIndex = 0;
-    ofnSaveOut.lpstrTitle = "";
-    ofnSaveOut.lpstrDefExt = "gba";
-    ofnSaveOut.lpstrInitialDir = "";
+    ofnSaveOut.lpstrTitle = _T("");
+    ofnSaveOut.lpstrDefExt = _T("gba");
+    ofnSaveOut.lpstrInitialDir = _T("");
 
     this->dlgSaveOut = new TSaveDialog(this, ofnSaveOut);
 
@@ -126,12 +126,12 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     ofnOpenVoc.Flags = 0x0000 | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ENABLESIZING;
     ofnOpenVoc.lpstrFile = new TCHAR[260];
     ofnOpenVoc.nMaxFile = 260;
-    strcpy(ofnOpenVoc.lpstrFile, "");
-    ofnOpenVoc.lpstrFilter = "VOCAB.BIN\0vocab.bin\0";
+    _tcscpy(ofnOpenVoc.lpstrFile, _T(""));
+    ofnOpenVoc.lpstrFilter = _T("VOCAB.BIN\0vocab.bin\0");
     ofnOpenVoc.nFilterIndex = 0;
-    ofnOpenVoc.lpstrTitle = "";
-    ofnOpenVoc.lpstrDefExt = "";
-    ofnOpenVoc.lpstrInitialDir = "";
+    ofnOpenVoc.lpstrTitle = _T("");
+    ofnOpenVoc.lpstrDefExt = _T("");
+    ofnOpenVoc.lpstrInitialDir = _T("");
     this->dlgOpenVoc = new TOpenDialog(this, ofnOpenVoc);
 
     OPENFILENAME ofnOpenInp;
@@ -141,12 +141,12 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     ofnOpenInp.Flags = 0x0000 | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ENABLESIZING;
     ofnOpenInp.lpstrFile = new TCHAR[260];
     ofnOpenInp.nMaxFile = 260;
-    strcpy(ofnOpenInp.lpstrFile, "");
-    ofnOpenInp.lpstrFilter = "GBAGI.BIN\0gbagi.bin\0";
+    _tcscpy(ofnOpenInp.lpstrFile, _T(""));
+    ofnOpenInp.lpstrFilter = _T("GBAGI.BIN\0gbagi.bin\0");
     ofnOpenInp.nFilterIndex = 0;
-    ofnOpenInp.lpstrTitle = "";
-    ofnOpenInp.lpstrDefExt = "";
-    ofnOpenInp.lpstrInitialDir = "";
+    ofnOpenInp.lpstrTitle = _T("");
+    ofnOpenInp.lpstrDefExt = _T("");
+    ofnOpenInp.lpstrInitialDir = _T("");
     this->dlgOpenInp = new TOpenDialog(this, ofnOpenInp);
 }
 

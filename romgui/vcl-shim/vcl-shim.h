@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <vector>
 #include <algorithm>
-#include "AnsiString.h"
+#include "VclString.h"
 
 #define __published public
 #define __fastcall
@@ -15,9 +15,9 @@
 
 typedef std::exception Exception;
 
-AnsiString GetCurrentDir();
+VclString GetCurrentDir();
 BOOL FileExists(LPCTSTR szPath);
-void ShowMessage(const AnsiString& Message, const AnsiString& Title = "romgui");
+void ShowMessage(const VclString& Message, const VclString& Title = _T("romgui"));
 
 struct TObject {
     virtual ~TObject() {}
@@ -108,7 +108,7 @@ struct TComponent : TObject {
         ::SetWindowLongPtr(this->hWnd, GWLP_USERDATA, (LONG_PTR)this);
     }
 
-    AnsiString GetText() {
+    VclString GetText() {
         TCHAR currentText[1024];
         ::GetWindowText(this->hWnd, currentText, 1024);
         return currentText;
@@ -119,7 +119,7 @@ struct TComponent : TObject {
             ::DeleteObject(this->hFont);
         }
 
-        this->hFont = ::CreateFont(cHeight, 0, 0, 0, cWeight, bItalic, bUnderline, bStrikeOut, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "Verdana");
+        this->hFont = ::CreateFont(cHeight, 0, 0, 0, cWeight, bItalic, bUnderline, bStrikeOut, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Verdana"));
         ::PostMessage(this->hWnd, WM_SETFONT, (WPARAM)this->hFont, TRUE);
     }
 

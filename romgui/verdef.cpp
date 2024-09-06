@@ -18,37 +18,38 @@
  ***************************************************************************/
 
 /******************************************************************************/
+#include <tchar.h>
 #include "makerom.h"
 /******************************************************************************/
 
 VERLIST verlist[] = {
 	{
-		"Early version 2",
+		_T("Early version 2"),
 	    0,
 	    	0x02, 0x0272
 	},
 	{
-		"Common version 2",
+		_T("Common version 2"),
 	    ENCRYPT_OBJ,
 	    	0x02, 0x0917
 	},
 	{
-	  	"Amiga version 2 equiv",
+	  	_T("Amiga version 2 equiv"),
 	    ENCRYPT_OBJ|AMIGA,
 	    	0x02, 0x0917
 	},
 	{
-	  	"Early version 3",
+	  	_T("Early version 3"),
 	    SINGLE_DIR|PACKED_DIRS|ENCRYPT_OBJ,
 	    	0x03, 0x2086
 	},
 	{
-	  	"Common version 3",
+	  	_T("Common version 3"),
 	    SINGLE_DIR|PACKED_DIRS|ENCRYPT_OBJ,
 	    	0x03, 0x2149
 	},
 	{
-	  	"Amiga version 3 equiv",
+	  	_T("Amiga version 3 equiv"),
 	    SINGLE_DIR|PACKED_DIRS|ENCRYPT_OBJ|AMIGA,
 	    	0x03, 0x2149
 	},
@@ -58,23 +59,23 @@ VERLIST verlist[] = {
 };
 /******************************************************************************/
 GAMEINFO games[] = {
-	{&verlist[1],	"",		"King's Quest 1", 				"D:\\agigames\\King's Quest 1 (AGI)\\"},
-	{&verlist[1],	"",		"King's Quest 2", 				"D:\\agigames\\King's Quest 2\\"},
-	{&verlist[1],	"",		"King's Quest 3",				"D:\\agigames\\KingsQuest3\\"},
-	{&verlist[3],	"KQ4",	"King's Quest 4", 				"D:\\agigames\\King's Quest 4 (AGI)\\"},
-	{&verlist[4],	"DM", 	"King's Quest 4 Demo", 			"D:\\agigames\\King's Quest 4 (Demo)\\"},
-	{&verlist[1],	"",		"Leisure Suit Larry",			"D:\\agigames\\Leisure Suit Larry 1\\"},
-	{&verlist[4],	"MH",	"Manhunter 1:New York", 		"D:\\agigames\\Manhunter 1 - New York\\"},
-	{&verlist[4],	"MH2",	"Manhunter 2:San Francisco",	"D:\\agigames\\Manhunter 2 - San Francisco\\"},
-	{&verlist[1], "",		"Police Quest", 				"D:\\agigames\\Police Quest 1 (AGI)\\"},   
-	{&verlist[1], "",		"Space Quest 1", 				"D:\\agigames\\Space Quest 1 (AGI)\\"},
-	{&verlist[1], "",		"Space Quest 2", 				"D:\\agigames\\Space Quest 2\\"},    
-	{&verlist[4],	"GR",	"Gold Rush!",					"D:\\agigames\\Goldrush\\"},
-	{&verlist[1],	"",		"The Black Cauldron", 			"D:\\agigames\\The Black Cauldron\\"},
-	{&verlist[0],	"",   	"Donald Duck's Playground", 	"D:\\agigames\\Donald Duck's Playground\\"},
-	{&verlist[1],	"",   	"Mixed Up Mother Goose", 		"D:\\agigames\\Mixed Up Mother Goose\\"},
-	{&verlist[4],	"DM", 	"Demo Pack #4", 				"D:\\agigames\\demopac4\\"},
-	{NULL,"","<Other>",""},
+	{&verlist[1], "",    "King's Quest 1",            _T("D:\\agigames\\King's Quest 1 (AGI)\\")},
+	{&verlist[1], "",    "King's Quest 2",            _T("D:\\agigames\\King's Quest 2\\")},
+	{&verlist[1], "",    "King's Quest 3",            _T("D:\\agigames\\KingsQuest3\\")},
+	{&verlist[3], "KQ4", "King's Quest 4",            _T("D:\\agigames\\King's Quest 4 (AGI)\\")},
+	{&verlist[4], "DM",  "King's Quest 4 Demo",       _T("D:\\agigames\\King's Quest 4 (Demo)\\")},
+	{&verlist[1], "",    "Leisure Suit Larry",        _T("D:\\agigames\\Leisure Suit Larry 1\\")},
+	{&verlist[4], "MH",  "Manhunter 1:New York",      _T("D:\\agigames\\Manhunter 1 - New York\\")},
+	{&verlist[4], "MH2", "Manhunter 2:San Francisco", _T("D:\\agigames\\Manhunter 2 - San Francisco\\")},
+	{&verlist[1], "",    "Police Quest",              _T("D:\\agigames\\Police Quest 1 (AGI)\\")},   
+	{&verlist[1], "",    "Space Quest 1",             _T("D:\\agigames\\Space Quest 1 (AGI)\\")},
+	{&verlist[1], "",    "Space Quest 2",             _T("D:\\agigames\\Space Quest 2\\")},    
+	{&verlist[4], "GR",  "Gold Rush!",                _T("D:\\agigames\\Goldrush\\")},
+	{&verlist[1], "",    "The Black Cauldron",        _T("D:\\agigames\\The Black Cauldron\\")},
+	{&verlist[0], "",    "Donald Duck's Playground",  _T("D:\\agigames\\Donald Duck's Playground\\")},
+	{&verlist[1], "",    "Mixed Up Mother Goose",     _T("D:\\agigames\\Mixed Up Mother Goose\\")},
+	{&verlist[4], "DM",  "Demo Pack #4",              _T("D:\\agigames\\demopac4\\")},
+	{NULL,"","<Other>",_T("")},
 	{NULL,NULL,NULL}
 };
 /******************************************************************************/

@@ -35,17 +35,17 @@ __fastcall TFormMain::TFormMain(TComponent* Owner)
 {
     CreateControls();
 
-    strcpy(szPath,GetCurrentDir().c_str());
-    if(!FileExists(ProgramDir+"\\gbinjectb.exe"))
+    _tcscpy(szPath,GetCurrentDir().c_str());
+    if(!FileExists(ProgramDir+_T("\\gbinjectb.exe")))
     	GetProgramPath();
-    int l=strlen(szPath);
+    int l=_tcslen(szPath);
     if(szPath[l-1]=='\\')
     	szPath[l-1]='\0'; 
-    ProgramDir=AnsiString(GetProgramPath());
+    ProgramDir=VclString(GetProgramPath());
 
-    tbInput->Text	= ProgramDir+"\\gbagi.bin";
-    tbVocab->Text	= ProgramDir+"\\vocab.bin";
-    tbOutput->Text	= ProgramDir+"\\agigames.gba";
+    tbInput->Text	= ProgramDir+_T("\\gbagi.bin");
+    tbVocab->Text	= ProgramDir+_T("\\vocab.bin");
+    tbOutput->Text	= ProgramDir+_T("\\agigames.gba");
 
 	DirDialog = new TDirDialog;
 
@@ -65,7 +65,7 @@ void __fastcall TFormMain::FormDestroy(TObject *Sender)
 
 void __fastcall TFormMain::UpdateControls()
 {
-	btnBuild->Enabled 	= (tbOutput->Text!="" && listbox->Items->Count > 0);
+	btnBuild->Enabled 	= (tbOutput->Text!=_T("") && listbox->Items->Count > 0);
 	btnRemove->Enabled 	= (listbox->Items->Count > 0);
 
 	// Generated;
@@ -90,13 +90,13 @@ void __fastcall TFormMain::FormResize(TObject *Sender)
 void __fastcall TFormMain::btnAddClick(TObject *Sender)
 {
 	if(listbox->Items->Count >= 16) {
-     	ShowMessage("Maximum games added to game list");
+     	ShowMessage(_T("Maximum games added to game list"));
         return;
     }
 
 	// Get the directory which the game is located
-    DirDialog->Title = "Add Game";
-    DirDialog->Caption = "Please select the directory which the game you wish to add is located in.";
+    DirDialog->Title = _T("Add Game");
+    DirDialog->Caption = _T("Please select the directory which the game you wish to add is located in.");
     DirDialog->MAP_CHECK = TRUE;
     if(!DirDialog->Execute()) {
         return;
@@ -209,22 +209,22 @@ BOOL TFormMain::PackGames()
 
 	int totalGames = listbox->Items->Count;
 
-	inromName	= _strdup(tbInput->Text.c_str());
-	outromName	= _strdup(tbOutput->Text.c_str());
-	vocabName	= _strdup(tbVocab->Text.c_str());
+	inromName	= _tcsdup(tbInput->Text.c_str());
+	outromName	= _tcsdup(tbOutput->Text.c_str());
+	vocabName	= _tcsdup(tbVocab->Text.c_str());
 
-	if(FileExists(vocabName) == false || (fin=fopen(vocabName,"rb"))==NULL) {
- 		ShowMessage("Error opening vocab definition file! Please specify the location of the file included with this program by clicking on the \"Browse...\" button.");
+	if(FileExists(vocabName) == false || (fin=_tfopen(vocabName,_T("rb")))==NULL) {
+ 		ShowMessage(_T("Error opening vocab definition file! Please specify the location of the file included with this program by clicking on the \"Browse...\" button."));
 		return FALSE;
 	}
 	fclose(fin);
-	if(FileExists(inromName) == false || (fin=fopen(inromName,"rb"))==NULL) {
- 		ShowMessage("Error opening input rom! Please specify the location of the file included with this program by clicking on the \"Browse...\" button.");
+	if(FileExists(inromName) == false || (fin=_tfopen(inromName,_T("rb")))==NULL) {
+ 		ShowMessage(_T("Error opening input rom! Please specify the location of the file included with this program by clicking on the \"Browse...\" button."));
 		return FALSE;
 	}
-	if((fout=fopen(outromName,"wb"))==NULL) {
+	if((fout=_tfopen(outromName,_T("wb")))==NULL) {
     	fclose(fin);
- 		ShowMessage("Error opening file for output!");
+ 		ShowMessage(_T("Error opening file for output!"));
 		return FALSE;
 	}
 
@@ -262,11 +262,11 @@ BOOL TFormMain::PackGames()
 		ginm.title = gameobj->gameinfo.title;
 		ginm.version = gameobj->gameinfo.version;
 		ginm.vID = gameobj->gameinfo.vID;
-		txStatus->Caption = "Adding Game: "+AnsiString(gameobj->gameinfo.title);
+		txStatus->Caption = _T("Adding Game: ")+VclString(gameobj->gameinfo.title);
 		if(!ProcessGame(&ginm)) {
     		FreeGame();
     		fclose(fout);
-			ShowMessage("Error adding game: "+AnsiString(gameobj->gameinfo.title));
+			ShowMessage(_T("Error adding game: ")+VclString(gameobj->gameinfo.title));
 			return FALSE;
 		}
     	FreeGame();
@@ -282,21 +282,21 @@ BOOL TFormMain::PackGames()
 //---------------------------------------------------------------------------
 void __fastcall TFormMain::btnBuildClick(TObject *Sender)
 {
-	if(tbOutput->Text == "" || tbInput->Text == "") {
-		ShowMessage("You must specify an input and output file name!");
+	if(tbOutput->Text == _T("") || tbInput->Text == _T("")) {
+		ShowMessage(_T("You must specify an input and output file name!"));
 	} else {
 	if(listbox->Items->Count == 0) {
-		ShowMessage("You must add games to embed in the ROM!");
+		ShowMessage(_T("You must add games to embed in the ROM!"));
 	} else {
 		Enabled = false;
 		if(PackGames()) {
-			ShowMessage("ROM Build finished. Enjoy!");
+			ShowMessage(_T("ROM Build finished. Enjoy!"));
 
-            tbOutput->Text = "";
+            tbOutput->Text = _T("");
             RemoveAddGames();
     		UpdateControls();
 		}
-		txStatus->Caption = "";
+		txStatus->Caption = _T("");
 		delete inromName;
 		delete outromName;
 		delete vocabName;
@@ -323,10 +323,10 @@ LPCTSTR TFormMain::GetProgramPath()
 	BOOL bInString = FALSE;
 	static TCHAR szPath[4096];
 
-	strcpy(szPath, GetCommandLine());
+	_tcscpy(szPath, GetCommandLine());
 
 	// Extract first argument
-	for (i = 0; i < (int)strlen(szPath); i++)
+	for (i = 0; i < (int)_tcslen(szPath); i++)
 	{
 		if (szPath[i] == '"')
 			bInString = !bInString;
@@ -341,7 +341,7 @@ LPCTSTR TFormMain::GetProgramPath()
 	// Remove file name
 	bool bFoundPath = FALSE;
 
-	for (i = strlen(szPath) - 1; i >= 0; i--)
+	for (i = _tcslen(szPath) - 1; i >= 0; i--)
 		if (szPath[i] == '\\')
 		{
 			szPath[i] = 0;
@@ -370,7 +370,7 @@ void __fastcall TFormMain::FormShow(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TFormMain::Label3Click(TObject *Sender)
 {
-	ShellExecute(NULL, NULL, "http://www.bripro.com", NULL, NULL, 0);
+	ShellExecute(NULL, NULL, _T("http://www.bripro.com"), NULL, NULL, 0);
 }
 //---------------------------------------------------------------------------
 

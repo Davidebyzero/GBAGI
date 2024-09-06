@@ -26,6 +26,7 @@
 #include <string.h>  
 #include <stdarg.h>
 #include <stdlib.h>
+#include <tchar.h>
 
 #include "../gbagi.h"
 /******************************************************************************/
@@ -67,7 +68,7 @@ typedef struct {
 } GVER;
 
 typedef struct {
-	const char *name;
+	const TCHAR *name;
 	GVER ver;
 } VERLIST;
 
@@ -75,7 +76,7 @@ typedef struct {
 	VERLIST *version;
 	const char *vID;
 	const char *title;
-	const char *path;
+	const TCHAR *path;
 } GAMEINFO;
                
 typedef struct {
@@ -87,11 +88,11 @@ typedef struct {
 extern GAMEINFO *gi;
 
 extern DIRENT dirs[4][256];
-extern const char *dirNames[4];
+extern const TCHAR *dirNames[4];
 
-extern char fname[1024];
+extern TCHAR fname[1024];
 
-extern char *inromName,*outromName,*vocabName;
+extern TCHAR *inromName,*outromName,*vocabName;
 
 extern BOOL VUSED[16];
 extern U8 *volData;
@@ -108,7 +109,7 @@ extern FILE *fout;
 
 extern U32 offs, giPos;
 /******************************************************************************/    
-int ErrorMessage(const char *s, ...);
+int ErrorMessage(const TCHAR *s, ...);
 U16 fgetw(FILE *f);
 U32 fgett(FILE *f);
 U32 fgetl(FILE *f);
@@ -121,7 +122,7 @@ BOOL LoadDir(BOOL SINGLE, int num);
 BOOL PrepDirs(void);
 BOOL ProcessDirs(void);
 BOOL ProcessObject(void);
-U8 *LoadFile(BOOL G_PATH, const char *name, int *len);
+U8 *LoadFile(BOOL G_PATH, const TCHAR *name, int *len);
 int FindWordx(const char *s,U8 *b);
 void AddWord(int group, const char *string);
 const char *FindWord(int group);
@@ -141,7 +142,7 @@ void FreeGame(void);
 int FindTotalWordsInGroup(int group);
 char **FindExtraWordInGroup(int group);
 
-VERLIST *FindAGIVersion(char *filename);
+VERLIST *FindAGIVersion(TCHAR *filename);
 /******************************************************************************/
 #endif
 /******************************************************************************/

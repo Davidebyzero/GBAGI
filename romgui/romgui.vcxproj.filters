@@ -57,6 +57,9 @@
     <ClCompile Include="vcl-shim\vcl-shim.cpp">
       <Filter>Source Files\vcl-shim</Filter>
     </ClCompile>
+    <ClCompile Include="vcl-shim\VclString.cpp">
+      <Filter>Source Files\vcl-shim</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -89,9 +92,6 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vcl-shim\AnsiString.h">
-      <Filter>Header Files\vcl-shim</Filter>
-    </ClInclude>
     <ClInclude Include="vcl-shim\ComboBox.h">
       <Filter>Header Files\vcl-shim</Filter>
     </ClInclude>
@@ -105,6 +105,9 @@
       <Filter>Header Files\vcl-shim</Filter>
     </ClInclude>
     <ClInclude Include="vcl-shim\vcl-shim.h">
+      <Filter>Header Files\vcl-shim</Filter>
+    </ClInclude>
+    <ClInclude Include="vcl-shim\VclString.h">
       <Filter>Header Files\vcl-shim</Filter>
     </ClInclude>
   </ItemGroup>

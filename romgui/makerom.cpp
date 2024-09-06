@@ -23,20 +23,21 @@
 #include "commands.h"   
 #include "verdef.h"
 #include <conio.h>
+#include <tchar.h>
 /******************************************************************************/
 
 /******************************************************************************/
 GAMEINFO *gi;
 
 DIRENT dirs[4][256];
-const char *dirNames[4] = {"logdir","picdir","viewdir","snddir"};
-const char *resnames[4] = {"logic","picture","view","sound"};
+const TCHAR *dirNames[4] = {_T("logdir"),_T("picdir"),_T("viewdir"),_T("snddir")};
+const TCHAR *resnames[4] = {_T("logic"),_T("picture"),_T("view"),_T("sound")};
 char agiid[IDSIZE]="GBAGI 1.0 '''BRIPRO'''\0";
 
-char fname[1024];
+TCHAR fname[1024];
 char wordbuf[128];
 
-char *inromName,*outromName,*vocabName;
+TCHAR *inromName,*outromName,*vocabName;
 
 BOOL VUSED[16];
 U8 *volData;
@@ -103,18 +104,18 @@ const char *solidGroups[SG_TOTAL][SG_WORDMAX] = {
 	{""}
 };
 /******************************************************************************/
-char strbuf[4096];
+TCHAR strbuf[4096];
 #include <windows.h>
-int ErrorMessage(const char *s, ...)
+int ErrorMessage(const TCHAR *s, ...)
 {
 	va_list argptr;
 	int cnt;
 
 	va_start(argptr, s);
-	cnt = vsprintf(strbuf, s, argptr);
+	cnt = _vstprintf(strbuf, _countof(strbuf), s, argptr);
 	va_end(argptr);
 
-	::MessageBox(NULL,strbuf,"Error",0);
+	::MessageBox(NULL,strbuf,_T("Error"),0);
     exit(1);
 
 	return(cnt);
@@ -177,9 +178,9 @@ BOOL LoadDir(BOOL SINGLE, int num)
 	U32 offs;
 	int totalEnts, i;
 	if(SINGLE) {
-		sprintf(fname,"%s%s%s",gi->path,gi->vID,gi->vID[0]?"dir":"dirs");
-		if((f=fopen(fname,"rb"))==NULL) {
-			ErrorMessage("Unable to open file: %s, for reading!",fname);
+		_stprintf_s(fname,_countof(fname),_T("%s%s%s"),gi->path,gi->vID,gi->vID[0]?_T("dir"):_T("dirs"));
+		if((f=_tfopen(fname,_T("rb")))==NULL) {
+			ErrorMessage(_T("Unable to open file: %s, for reading!"),fname);
 			return FALSE;
 		}
 		fseek(f,num<<1,SEEK_SET);
@@ -191,9 +192,9 @@ BOOL LoadDir(BOOL SINGLE, int num)
 			totalEnts = (fgetw(f)-offs)/3;
 		fseek(f,offs,SEEK_SET);
 	} else {
-		sprintf(fname,"%s%s",gi->path,dirNames[num]);
-		if((f=fopen(fname,"rb"))==NULL) {
-			ErrorMessage("Unable to open file: %s, for reading!",fname);
+		_stprintf_s(fname,_countof(fname),_T("%s%s"),gi->path,dirNames[num]);
+		if((f=_tfopen(fname,_T("rb")))==NULL) {
+			ErrorMessage(_T("Unable to open file: %s, for reading!"),fname);
 			return FALSE;
 		}
 		fseek(f,0,SEEK_END);
@@ -223,8 +224,8 @@ BOOL PrepDirs()
 	volSize=0;
 	for(vn=0;vn<16;vn++) {
     	if(!VUSED[vn]) continue;
-		sprintf(fname,"%s%svol.%d",gi->path,gi->vID,vn);
-		if((f=fopen(fname,"rb"))==NULL) {
+		_stprintf_s(fname,_countof(fname),_T("%s%svol.%d"),gi->path,gi->vID,vn);
+		if((f=_tfopen(fname,_T("rb")))==NULL) {
         	VUSED[vn] = FALSE;
         	continue;
 			//ErrorMessage("Unable to open file: \"%s\", for reading!",fname);
@@ -233,8 +234,8 @@ BOOL PrepDirs()
 		for(t=0;t<4;t++) {
 			for(i=0;i<256;i++) {
 				if(dirs[t][i].vol == vn) {
-					sprintf(fname,"%s%s.%03d",gi->path,resnames[t],i);
-                	if((fr=fopen(fname,"rb"))!=NULL) {
+					_stprintf_s(fname,_countof(fname),_T("%s%s.%03d"),gi->path,resnames[t],i);
+                	if((fr=_tfopen(fname,_T("rb")))!=NULL) {
                         dirs[t][i].vol = 0x7F;
                         fseek(fr,0,SEEK_END);
 						dirs[t][i].length = (U16)ftell(fr);
@@ -277,9 +278,9 @@ BOOL ProcessDirs()
 	for(vn=-1;vn<16;vn++) {
     	if(vn!=-1) {
         	if(!VUSED[vn]) continue;
-			sprintf(fname,"%s%svol.%d",gi->path,gi->vID,vn);
-			if((f=fopen(fname,"rb"))==NULL) {
-				ErrorMessage("Unable to open file: %s, for reading!",fname);
+			_stprintf_s(fname,_countof(fname),_T("%s%svol.%d"),gi->path,gi->vID,vn);
+			if((f=_tfopen(fname,_T("rb")))==NULL) {
+				ErrorMessage(_T("Unable to open file: %s, for reading!"),fname);
 				mFree(fbuf);
 				return FALSE;
 			}
@@ -297,9 +298,9 @@ BOOL ProcessDirs()
 						declen 	= fgetw(f);
 						enclen 	= (gi->version->ver.flags&PACKED_DIRS)?fgetw(f):declen;
                 	} else {
-						sprintf(fname,"%s%s.%03d",gi->path,resnames[t],i);
-						if((f=fopen(fname,"rb"))==NULL) {
-							ErrorMessage("Unable to open file: %s, for reading!",fname);
+						_stprintf_s(fname,_countof(fname),_T("%s%s.%03d"),gi->path,resnames[t],i);
+						if((f=_tfopen(fname,_T("rb")))==NULL) {
+							ErrorMessage(_T("Unable to open file: %s, for reading!"),fname);
 							mFree(fbuf);
 							return FALSE;
 						}          
@@ -353,9 +354,9 @@ BOOL ProcessObject()
     int objCount, i, entSize;
     U8 *p, *iPtr, *u;
 
-	sprintf(fname,"%sobject",gi->path);
-	if((f=fopen(fname,"rb")) == NULL) {
-		ErrorMessage("Unable to open file: \"%s\" for reading!", fname);
+	_stprintf_s(fname,_countof(fname),_T("%sobject"),gi->path);
+	if((f=_tfopen(fname,_T("rb"))) == NULL) {
+		ErrorMessage(_T("Unable to open file: \"%s\" for reading!"), fname);
 		return FALSE;
 	}
 	fseek(f,0,SEEK_END);
@@ -380,7 +381,7 @@ BOOL ProcessObject()
     iPtr		= p+entSize;
     strSize		= l-nameStart;
 	if((objNameData = (char*) malloc(strSize))==NULL) {
-     	ErrorMessage("Unable to allocate %d bytes of memory!", strSize);
+     	ErrorMessage(_T("Unable to allocate %d bytes of memory!"), strSize);
      	return FALSE;
     }
     memcpy(objNameData,iPtr+nameStart, strSize);
@@ -397,18 +398,18 @@ BOOL ProcessObject()
     return TRUE;
 }
 /******************************************************************************/
-U8 *LoadFile(BOOL G_PATH, const char *name, int *len)
+U8 *LoadFile(BOOL G_PATH, const TCHAR *name, int *len)
 {
 	FILE *f;
 	int l;
     U8 *p;
 
 	if(G_PATH)
-    	sprintf(fname,"%s%s",gi->path,name);
+    	_stprintf_s(fname,_countof(fname),_T("%s%s"),gi->path,name);
     else
-    	strcpy(fname,name);
-	if((f=fopen(fname,"rb")) == NULL) {
-		ErrorMessage("Unable to open file: \"%s\" for reading!", fname);
+    	_tcscpy(fname,name);
+	if((f=_tfopen(fname,_T("rb"))) == NULL) {
+		ErrorMessage(_T("Unable to open file: \"%s\" for reading!"), fname);
 		return FALSE;
 	}
 	fseek(f,0,SEEK_END);
@@ -621,7 +622,7 @@ int AlphaSortWords()
     Form1->ListBox2->Items->Clear();
     while(w1->group) {
     	q++;
-    	Form1->ListBox2->Items->Add(AnsiString(w1->string));
+    	Form1->ListBox2->Items->Add(VclString(w1->string));
 		w1++;
     }        */
     w1 = wordset;
@@ -646,7 +647,7 @@ int AlphaSortWords()
     }         /*
     w1 = wordset;
     while(w1->group) {
-    	Form1->ListBox3->Items->Add(AnsiString(w1->string));
+    	Form1->ListBox3->Items->Add(VclString(w1->string));
 		w1++;
     }   */
 
@@ -661,7 +662,7 @@ BOOL ProcessWords()
 
 	if((vocabData = LoadFile(FALSE, vocabName, NULL))==NULL)
     	return FALSE;
-	if((tokData = LoadFile(TRUE, "words.tok", NULL))==NULL)
+	if((tokData = LoadFile(TRUE, _T("words.tok"), NULL))==NULL)
     	return FALSE;
 
     wordData = (U8*)malloc(64000);
@@ -795,7 +796,7 @@ void ExecuteIF()
                         	n=*m;
                         	if(n<0||n>255) {
                             	m=m;
-                            	ErrorMessage("M");
+                            	ErrorMessage(_T("M"));
                             }
                             if(!lwPtrs[n])
                             	lwPtrs[n] = (U8*)calloc(lwfsize,1);
@@ -1089,14 +1090,14 @@ void FreeGame()
 }
 
 /******************************************************************************/
-VERLIST *FindAGIVersion(char *filename)
+VERLIST *FindAGIVersion(TCHAR *filename)
 {
 	FILE *f;
 	long len;
 	U8 *buffer,*p,*pend;
 	int major=-1,minor;
 
-	if((f=fopen(filename,"rb"))==NULL)
+	if((f=_tfopen(filename,_T("rb")))==NULL)
 		return NULL;
 
 	len = ftell(f);

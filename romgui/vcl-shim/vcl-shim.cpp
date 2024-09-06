@@ -8,12 +8,12 @@ BOOL FileExists(LPCTSTR szPath)
          !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-AnsiString GetCurrentDir() {
+VclString GetCurrentDir() {
   TCHAR NPath[MAX_PATH];
   GetCurrentDirectory(MAX_PATH, NPath);
-  return AnsiString(NPath);
+  return VclString(NPath);
 }
 
-void ShowMessage(const AnsiString& Message, const AnsiString& Title) {
+void ShowMessage(const VclString& Message, const VclString& Title) {
   MessageBox(NULL, Message.c_str(), Title.c_str(), MB_OK);
 }

@@ -28,9 +28,9 @@ public:
 	TDirDialog();
 	BOOL Execute();
     HWND Handle;
-    AnsiString Title,Caption,InitialDir,FullPath;
+    VclString Title,Caption,InitialDir,FullPath;
     BOOL MAP_CHECK;
-    void CheckMap(const char *szDir);
+    void CheckMap(const TCHAR *szDir);
 };
 #endif
  

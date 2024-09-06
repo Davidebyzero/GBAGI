@@ -17,6 +17,15 @@ struct TComboBox : TComponent {
             return pos;
         }
 
+#ifdef UNICODE
+        int Add(const char* str) {
+            VclString s(str);
+            int pos = (int)::SendMessage(self->hWnd, CB_ADDSTRING, 0, (LPARAM)s.c_str());
+            Count++;
+            return pos;
+        }
+#endif
+
         void Delete(int index) {
             ::SendMessage(self->hWnd, CB_DELETESTRING, 0, (LPARAM)index);
             Count--;
@@ -30,7 +39,7 @@ struct TComboBox : TComponent {
 
     ComboboxList* Items;
     int ItemIndex;
-    AnsiString Text;
+    VclString Text;
 
     TComboBox(TComponent* owner) : TComponent(owner) {
         this->Items = new ComboboxList(this);

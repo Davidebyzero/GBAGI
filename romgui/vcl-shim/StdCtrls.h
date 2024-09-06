@@ -12,7 +12,7 @@ struct TGroupBox : TComponent {
 };
 
 struct TEdit : TComponent {
-    AnsiString Text;
+    VclString Text;
 
     TEdit(TComponent* owner) : TComponent(owner) {
         this->Color = clWindow;
@@ -46,7 +46,7 @@ struct TEdit : TComponent {
 };
 
 struct TLabel : TComponent {
-    AnsiString Caption;
+    VclString Caption;
 
     TLabel(TComponent* owner) : TComponent(owner) {
         this->Color = clWindowText;
@@ -81,7 +81,7 @@ struct TPanel : TLabel {
 };
 
 struct TOpenDialog : TComponent {
-    AnsiString FileName;
+    VclString FileName;
     OPENFILENAME dlgOfn;
 
     TOpenDialog(TComponent* owner, const OPENFILENAME& ofn) : TComponent(owner) {
@@ -100,7 +100,7 @@ struct TOpenDialog : TComponent {
 };
 
 struct TSaveDialog : TComponent {
-    AnsiString FileName;
+    VclString FileName;
     OPENFILENAME dlgOfn;
 
     TSaveDialog(TComponent* owner, const OPENFILENAME& ofn) : TComponent(owner) {

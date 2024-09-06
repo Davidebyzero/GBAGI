@@ -106,9 +106,9 @@ public:		// User declarations
     TDirDialog *DirDialog;
 
     TAddGameObj *addGameFirst,*addGamePtr;
-	char szPath[4096];
+	TCHAR szPath[4096];
 
-    AnsiString ProgramDir;
+    VclString ProgramDir;
 
     LPCTSTR GetProgramPath();
 };

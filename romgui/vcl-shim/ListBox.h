@@ -18,6 +18,16 @@ struct TListBox : TComponent {
             return pos;
         }
 
+#ifdef UNICODE
+        int Add(const char* str) {
+            VclString s(str);
+            int pos = (int)::SendMessage(self->hWnd, LB_ADDSTRING, 0, (LPARAM)s.c_str());
+            Count++;
+            return pos;
+        }
+
+#endif
+
         void Delete(int index) {
             ::SendMessage(self->hWnd, LB_DELETESTRING, index, 0);
             Count--;
