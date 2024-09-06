@@ -6,19 +6,22 @@
 void TFormMain::OnInitDialog(HWND hWnd) {
     Attach(hWnd);
 
+    int width, height;
+    this->GetClientSize(width, height);
+
     PostMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)LoadIcon(GetModuleHandle(NULL), IDI_APPLICATION));
     PostMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(GetModuleHandle(NULL), IDI_APPLICATION));
 
     this->Label1 = new TLabel(this);
-    this->Label1->Attach(GetDlgItem(hWnd, IDC_LABEL1)); // GBAGI Injection Utility
+    this->Label1->Attach(GetDlgItem(hWnd, IDC_LABEL1)); /* GBAGI Injection Utility */ this->Label1->GetSize(this->Label1X, this->Label1Y); this->Label1X -= width;
     this->Label1->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
 
     this->Label2 = new TLabel(this);
-    this->Label2->Attach(GetDlgItem(hWnd, IDC_LABEL2)); // By Brian Provinciano
+    this->Label2->Attach(GetDlgItem(hWnd, IDC_LABEL2)); /* By Brian Provinciano */ this->Label2->GetSize(this->Label2X, this->Label2Y); this->Label2X -= width;
     this->Label2->SetFont(-13, FW_NORMAL, FALSE, FALSE, FALSE, "Verdana");
 
     this->Label3 = new TLabel(this);
-    this->Label3->Attach(GetDlgItem(hWnd, IDC_LABEL3)); // http://www.bripro.com
+    this->Label3->Attach(GetDlgItem(hWnd, IDC_LABEL3)); /* http://www.bripro.com */ this->Label3->GetSize(this->Label3X, this->Label3Y); this->Label3X -= width;
     this->Label3->SetFont(-11, FW_NORMAL, FALSE, TRUE, FALSE, "Verdana");
     this->Label3->Color = clBlue;
     this->Label3->hCursor = LoadCursor(NULL, IDC_HAND);
@@ -36,13 +39,13 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     this->Label6->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
 
     this->Label7 = new TLabel(this);
-    this->Label7->Attach(GetDlgItem(hWnd, IDC_LABEL7)); // Games To Inject
+    this->Label7->Attach(GetDlgItem(hWnd, IDC_LABEL7)); /* Games To Inject */ this->Label7->GetSize(this->Label7X, this->Label7Y); this->Label7X -= width;
     this->Label7->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
     this->Label7->SetBgColor(11829830);
     this->Label7->Color = clWhite;
 
     this->txStatus = new TLabel(this);
-    this->txStatus->Attach(GetDlgItem(hWnd, IDC_TXSTATUS));
+    this->txStatus->Attach(GetDlgItem(hWnd, IDC_TXSTATUS)); this->txStatus->GetPos(this->txStatusPosX, this->txStatusPosY); this->txStatusPosY -= height; this->txStatus->GetSize(this->txStatusSizeX, this->txStatusSizeY); this->txStatusSizeX -= width;
 
     this->Panel1 = new TPanel(this);
     this->Panel2 = new TPanel(this);
@@ -67,45 +70,45 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     this->Panel8->Attach(GetDlgItem(hWnd, IDC_PANEL8));
     this->Panel9->Attach(GetDlgItem(hWnd, IDC_PANEL9));
     this->Panel10->Attach(GetDlgItem(hWnd, IDC_PANEL10));
-    this->Panel11->Attach(GetDlgItem(hWnd, IDC_PANEL11));
+    this->Panel11->Attach(GetDlgItem(hWnd, IDC_PANEL11)); this->Panel11->GetPos(this->Panel11X, this->Panel11Y); this->Panel11X -= width; this->Panel11Y -= height;
     this->Panel12->Attach(GetDlgItem(hWnd, IDC_PANEL12));
     this->Panel13->Attach(GetDlgItem(hWnd, IDC_PANEL13));
     this->Panel14->Attach(GetDlgItem(hWnd, IDC_PANEL14));
-    this->FormMain->Attach(GetDlgItem(hWnd, IDC_FORMMAIN));
+    this->FormMain->Attach(GetDlgItem(hWnd, IDC_FORMMAIN)); this->FormMain->GetPos(this->FormMainPosX, this->FormMainPosY); this->FormMainPosY -= height; this->FormMain->GetSize(this->FormMainSizeX, this->FormMainSizeY); this->FormMainSizeX -= width;
 
     this->btnAdd = new TButton(this);
-    this->btnAdd->Attach(GetDlgItem(hWnd, IDC_BTNADD));
+    this->btnAdd->Attach(GetDlgItem(hWnd, IDC_BTNADD)); this->btnAdd->GetPos(this->btnAddX, this->btnAddY); this->btnAddX -= width;
 
     this->btnBrowseInp = new TButton(this);
-    this->btnBrowseInp->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEINP));
+    this->btnBrowseInp->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEINP)); this->btnBrowseInp->GetPos(this->btnBrowseInpX, this->btnBrowseInpY); this->btnBrowseInpX -= width;
 
     this->btnBrowseOut = new TButton(this);
-    this->btnBrowseOut->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEOUT));
+    this->btnBrowseOut->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEOUT)); this->btnBrowseOut->GetPos(this->btnBrowseOutX, this->btnBrowseOutY); this->btnBrowseOutX -= width;
 
     this->btnBrowseVoc = new TButton(this);
-    this->btnBrowseVoc->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEVOC));
+    this->btnBrowseVoc->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEVOC)); this->btnBrowseVoc->GetPos(this->btnBrowseVocX, this->btnBrowseVocY); this->btnBrowseVocX -= width;
 
     this->btnBuild = new TButton(this);
-    this->btnBuild->Attach(GetDlgItem(hWnd, IDC_BTNBUILD));
+    this->btnBuild->Attach(GetDlgItem(hWnd, IDC_BTNBUILD)); this->btnBuild->GetPos(this->btnBuildX, this->btnBuildY); this->btnBuildX -= width; this->btnBuildY -= height;
     this->btnBuild->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
 
     this->btnRemove = new TButton(this);
-    this->btnRemove->Attach(GetDlgItem(hWnd, IDC_BTNREMOVE));
+    this->btnRemove->Attach(GetDlgItem(hWnd, IDC_BTNREMOVE)); this->btnRemove->GetPos(this->btnRemoveX, this->btnRemoveY); this->btnRemoveX -= width;
 
     this->btnExit = new TButton(this);
-    this->btnExit->Attach(GetDlgItem(hWnd, IDC_BTNEXIT));
+    this->btnExit->Attach(GetDlgItem(hWnd, IDC_BTNEXIT)); this->btnExit->GetPos(this->btnExitX, this->btnExitY); this->btnExitX -= width; this->btnExitY -= height;
 
     this->tbOutput = new TEdit(this);
-    this->tbOutput->Attach(GetDlgItem(hWnd, IDC_TBOUTPUT));
+    this->tbOutput->Attach(GetDlgItem(hWnd, IDC_TBOUTPUT)); this->tbOutput->GetSize(this->tbOutputX, this->tbOutputY); this->tbOutputX -= width;
 
     this->tbInput = new TEdit(this);
-    this->tbInput->Attach(GetDlgItem(hWnd, IDC_TBINPUT));
+    this->tbInput->Attach(GetDlgItem(hWnd, IDC_TBINPUT)); this->tbInput->GetSize(this->tbInputX, this->tbInputY); this->tbInputX -= width;
 
     this->tbVocab = new TEdit(this);
-    this->tbVocab->Attach(GetDlgItem(hWnd, IDC_TBVOCAB));
+    this->tbVocab->Attach(GetDlgItem(hWnd, IDC_TBVOCAB)); this->tbVocab->GetSize(this->tbVocabX, this->tbVocabY); this->tbVocabX -= width;
 
     this->listbox = new TListBox(this);
-    this->listbox->Attach(GetDlgItem(hWnd, IDC_LISTBOX));
+    this->listbox->Attach(GetDlgItem(hWnd, IDC_LISTBOX)); this->listbox->GetSize(this->listboxX, this->listboxY); this->listboxX -= width; this->listboxY -= height;
 
     OPENFILENAME ofnSaveOut;
     ZeroMemory(&ofnSaveOut, sizeof(OPENFILENAME)); // dlgSaveOut
@@ -198,6 +201,37 @@ void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
     if (LOWORD(wParam) == IDC_LABEL3 && HIWORD(wParam) == STN_CLICKED) {
         this->Label3Click(this);
     }
+}
+
+BOOL TFormMain::OnSize(UINT width, UINT height) {
+    this->btnExit ->Move(width + this->btnExitX , height + this->btnExitY );
+    this->btnBuild->Move(width + this->btnBuildX, height + this->btnBuildY);
+    this->Panel11 ->Move(width + this->Panel11X , height + this->Panel11Y );
+    this->listbox ->Size(width + this->listboxX , height + this->listboxY );
+
+    this->FormMain->Move(        this->FormMainPosX , height + this->FormMainPosY );
+    this->FormMain->Size(width + this->FormMainSizeX,          this->FormMainSizeY);
+    this->txStatus->Move(        this->txStatusPosX , height + this->txStatusPosY );
+    this->txStatus->Size(width + this->txStatusSizeX,          this->txStatusSizeY);
+
+    this->btnBrowseOut->Move(width + this->btnBrowseOutX, this->btnBrowseOutY);
+    this->btnBrowseVoc->Move(width + this->btnBrowseVocX, this->btnBrowseVocY);
+    this->btnBrowseInp->Move(width + this->btnBrowseInpX, this->btnBrowseInpY);
+
+    this->btnAdd   ->Move(width + this->btnAddX   , this->btnAddY          );
+    this->btnRemove->Move(width + this->btnRemoveX, this->btnRemoveY       );
+    this->Label7   ->Size(width + this->Label7X   , this->Label7Y          );
+
+    this->tbOutput->Size(width + this->tbOutputX, this->tbOutputY);
+    this->tbVocab ->Size(width + this->tbVocabX , this->tbVocabY);
+    this->tbInput ->Size(width + this->tbInputX , this->tbInputY);
+
+    this->Label3->Size(width + this->Label3X, this->Label3Y);
+    this->Label2->Size(width + this->Label2X, this->Label2Y);
+    this->Label1->Size(width + this->Label1X, this->Label1Y);
+    
+    this->Invalidate();
+    return FALSE;
 }
 
 void TFormMain::CreateControls() {

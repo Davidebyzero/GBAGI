@@ -114,6 +114,41 @@ struct TComponent : TObject {
         return currentText;
     }
 
+    void Move(int x, int y) {
+        ::SetWindowPos(this->hWnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+    }
+
+    void Size(int width, int height) {
+        ::SetWindowPos(this->hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+    }
+
+    void GetPos(int &x, int &y) {
+        RECT rect;
+        ::GetWindowRect(this->hWnd, &rect);
+        POINT topleft = {rect.left, rect.top};
+        ::ScreenToClient(::GetParent(this->hWnd), &topleft);
+        x = topleft.x;
+        y = topleft.y;
+    }
+
+    void GetSize(int &width, int &height) {
+        RECT rect;
+        ::GetWindowRect(this->hWnd, &rect);
+        width  = rect.right - rect.left;
+        height = rect.bottom - rect.top;
+    }
+
+    void GetClientSize(int &width, int &height) {
+        RECT rect;
+        ::GetClientRect(this->hWnd, &rect);
+        width  = rect.right;
+        height = rect.bottom;
+    }
+
+    void Invalidate() {
+        ::InvalidateRect(this->hWnd, NULL, FALSE);
+    }
+
     void SetFont(int cHeight, int cWeight, BOOL bItalic, DWORD bUnderline, DWORD bStrikeOut, LPCSTR pszFaceName) {
         if (this->hFont) {
             ::DeleteObject(this->hFont);

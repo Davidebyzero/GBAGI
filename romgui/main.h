@@ -41,39 +41,39 @@ public:
 class TFormMain : public TForm
 {
 __published:	// IDE-managed Components
-	TLabel *Label1;
-	TLabel *Label2;
-	TLabel *Label3;
+	TLabel *Label1; int Label1X; int Label1Y;
+	TLabel *Label2; int Label2X; int Label2Y;
+	TLabel *Label3; int Label3X; int Label3Y;
 	TPanel *Panel1;
 	TPanel *Panel2;
 	TPanel *Panel3;
 	TPanel *Panel4;
-	TListBox *listbox;
+	TListBox *listbox; int listboxX; int listboxY;
 	TLabel *Label4;
 	TPanel *Panel6;
 	TPanel *Panel7;
-	TEdit *tbOutput;
-	TEdit *tbVocab;
+	TEdit *tbOutput; int tbOutputX; int tbOutputY;
+	TEdit *tbVocab; int tbVocabX; int tbVocabY;
 	TLabel *Label5;
-	TEdit *tbInput;
+	TEdit *tbInput; int tbInputX; int tbInputY;
 	TLabel *Label6;
 	TPanel *Panel8;
 	TPanel *Panel9;
-	TLabel *Label7;
+	TLabel *Label7; int Label7X; int Label7Y;
 	TPanel *Panel10;
-	TButton *btnAdd;
-	TButton *btnRemove;
+	TButton *btnAdd; int btnAddX; int btnAddY;
+	TButton *btnRemove; int btnRemoveX; int btnRemoveY;
 	TPanel *Panel12;
-	TButton *btnBrowseInp;
+	TButton *btnBrowseInp; int btnBrowseInpX; int btnBrowseInpY;
 	TPanel *Panel13;
-	TButton *btnBrowseVoc;
+	TButton *btnBrowseVoc; int btnBrowseVocX; int btnBrowseVocY;
 	TPanel *Panel14;
-	TButton *btnBrowseOut;
-	TPanel *FormMain;
-	TLabel *txStatus;
-	TPanel *Panel11;
-	TButton *btnExit;
-	TButton *btnBuild;
+	TButton *btnBrowseOut; int btnBrowseOutX; int btnBrowseOutY;
+	TPanel *FormMain; int FormMainPosX; int FormMainPosY; int FormMainSizeX; int FormMainSizeY;
+	TLabel *txStatus; int txStatusPosX; int txStatusPosY; int txStatusSizeX; int txStatusSizeY;
+	TPanel *Panel11; int Panel11X; int Panel11Y;
+	TButton *btnExit; int btnExitX; int btnExitY;
+	TButton *btnBuild; int btnBuildX; int btnBuildY;
 	TOpenDialog *dlgOpenInp;
 	TOpenDialog *dlgOpenVoc;
 	TSaveDialog *dlgSaveOut;
@@ -93,6 +93,7 @@ private:	// User declarations
 	void CreateControls();
 	void OnInitDialog(HWND hWnd);
 	void OnCommand(WPARAM wParam, LPARAM lParam);
+	BOOL OnSize(UINT width, UINT height);
 public:		// User declarations
 	__fastcall TFormMain(TComponent* Owner);
 

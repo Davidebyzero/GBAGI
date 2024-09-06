@@ -86,4 +86,8 @@ struct TForm : TComponent {
         ::SetWindowLongPtr(this->hWnd, DWLP_MSGRESULT, TRUE);
         return TRUE;
     }
+
+    virtual BOOL OnSize(UINT width, UINT height) {
+        return TRUE;
+    }
 };

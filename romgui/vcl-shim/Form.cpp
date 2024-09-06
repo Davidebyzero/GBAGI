@@ -36,6 +36,9 @@ INT_PTR CALLBACK TFormDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
                 ::PostQuitMessage(0);
             }
             return 0;
+        case WM_SIZE:
+            form = (TForm*)::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+            return form->OnSize(LOWORD(lParam), HIWORD(lParam));
 
     }
     return FALSE;
