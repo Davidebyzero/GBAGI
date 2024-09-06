@@ -25,12 +25,15 @@ void TFormMain::OnInitDialog(HWND hWnd) {
 
     this->Label4 = new TLabel(this);
     this->Label4->Attach(GetDlgItem(hWnd, IDC_LABEL4));
+    this->Label4->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
 
     this->Label5 = new TLabel(this);
     this->Label5->Attach(GetDlgItem(hWnd, IDC_LABEL5));
+    this->Label5->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
 
     this->Label6 = new TLabel(this);
     this->Label6->Attach(GetDlgItem(hWnd, IDC_LABEL6)); // ROM Input Filename
+    this->Label6->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
 
     this->Label7 = new TLabel(this);
     this->Label7->Attach(GetDlgItem(hWnd, IDC_LABEL7)); // Games To Inject
@@ -84,6 +87,7 @@ void TFormMain::OnInitDialog(HWND hWnd) {
 
     this->btnBuild = new TButton(this);
     this->btnBuild->Attach(GetDlgItem(hWnd, IDC_BTNBUILD));
+    this->btnBuild->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
 
     this->btnRemove = new TButton(this);
     this->btnRemove->Attach(GetDlgItem(hWnd, IDC_BTNREMOVE));
