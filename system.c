@@ -345,7 +345,7 @@ void GBA_Flip()
 	U16 *p1,*p2,*pend; /*
 	__asm //inline assembler
 	{
-        mov r0, #0x4000006 //0x4000006 is vertical trace counter it’s address is loaded into r0
+        mov r0, #0x4000006 //0x4000006 is vertical trace counter itâ€™s address is loaded into r0
         scanline_wait: //lable
         ldrh r1, [r0] //move the value stored in the scan line register into r1
         cmp r1, #160 //comp it with 160
@@ -424,10 +424,10 @@ BOOL SystemInit()
 	REG_SOUNDCNT_H = 0x0002;
 	
 	EnableInterupts(INT_TIMER3|INT_TIMER2);
-	REG_TM2CNT = TIME_FREQUENcy256 | TIME_ENABLE | TIME_IRQ_ENABLE;
-	REG_TM2D = 65535-1090;
-	REG_TM3CNT = TIME_FREQUENcy64 | TIME_ENABLE | TIME_IRQ_ENABLE;
-	REG_TM3D = 0;
+	REG_TM2CNT_H = TIME_FREQUENcy256 | TIME_ENABLE | TIME_IRQ_ENABLE;
+	REG_TM2CNT_L = 65535-1090;
+	REG_TM3CNT_H = TIME_FREQUENcy64 | TIME_ENABLE | TIME_IRQ_ENABLE;
+	REG_TM3CNT_L = 0;
 	             
     msgX			= -1;
     msgY			= -1;
