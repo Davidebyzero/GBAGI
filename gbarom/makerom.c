@@ -21,7 +21,6 @@
 #include "makerom.h"
 #include "decompress.h"
 #include "commands.h"
-#include <conio.h>
 /******************************************************************************/
 
 /******************************************************************************/
@@ -107,7 +106,7 @@ int ErrorMessage(const char *s, ...)
 	cnt = vprintf(s, argptr);
 	va_end(argptr);
 
-    getch();
+    // getch();
     exit(1);
 
 	return(cnt);

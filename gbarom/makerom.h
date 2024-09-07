@@ -26,6 +26,7 @@
 #include <string.h>  
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "../gbagi.h"
 /******************************************************************************/
