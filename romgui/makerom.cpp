@@ -112,7 +112,7 @@ int ErrorMessage(const TCHAR *s, ...)
 	int cnt;
 
 	va_start(argptr, s);
-	cnt = _vstprintf(strbuf, _countof(strbuf), s, argptr);
+	cnt = _vstprintf_s(strbuf, _countof(strbuf), s, argptr);
 	va_end(argptr);
 
 	::MessageBox(NULL,strbuf,_T("Error"),0);

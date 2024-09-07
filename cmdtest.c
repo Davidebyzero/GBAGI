@@ -107,8 +107,8 @@ void cIssetv()
 }
 /******************************************************************************/
 //if (has(iA)) { .....
-//	Returns true if the inventory item iA is in the player’s inventory (i.e. the
-//	item’s room number is 255).
+//	Returns true if the inventory item iA is in the playerâ€™s inventory (i.e. the
+//	itemâ€™s room number is 255).
 void cHas()
 {
 	IF_RESULT = (invObjRooms[*code++]==0xFF);
@@ -157,22 +157,22 @@ void cHaveKey()
 		IF_RESULT = FALSE;
 }
 /******************************************************************************/
-//if (said(“word1”,”word2”....”wordn”)) { .....
+//if (said(â€œword1â€,â€word2â€....â€wordnâ€)) { .....
 //	The said test command is different to all other commands in the language in
 //	that it accepts a special type of parameter and can have any number of
 //	parameters. It is used to test if the player has entered certain words.
 //
 //	First, the process of parsing player input needs to be explained. When the
 //	player enters a command, the interpreter does the following things with it:
-//	·	Removes certain punctuation characters
-//	·	Assigns each word entered a number starting from 1. When doing this, it
+//	Â·	Removes certain punctuation characters
+//	Â·	Assigns each word entered a number starting from 1. When doing this, it
 //		tries to find the longest sequence of characters that match a word in
-//		the WORDS.TOK file (so for example if the words “door”, “knob” and
-//		“door knob” were in the WORDS.TOK file and the player entered “turn door
-//		knob” then the words would be “turn” and “door knob” instead of “turn”,
-//		“door” and “knob”). Words in group 0 (usually things like “a”, “my”,
-//		“the”) are skipped (not assigned numbers).
-//	·	If one or more words that are not in the WORDS.TOK file are found, it
+//		the WORDS.TOK file (so for example if the words â€œdoorâ€, â€œknobâ€ and
+//		â€œdoor knobâ€ were in the WORDS.TOK file and the player entered â€œturn door
+//		knobâ€ then the words would be â€œturnâ€ and â€œdoor knobâ€ instead of â€œturnâ€,
+//		â€œdoorâ€ and â€œknobâ€). Words in group 0 (usually things like â€œaâ€, â€œmyâ€,
+//		â€œtheâ€) are skipped (not assigned numbers).
+//	Â·	If one or more words that are not in the WORDS.TOK file are found, it
 //		will set v9 (unknown_word_no in the template game) to the first unknown
 //		word.
 //
@@ -192,14 +192,14 @@ void cHaveKey()
 //
 //	There are a couple of special word groups:
 //
-//	Word group 1: “anyword” - if this word is given as a parameter, then any
-//	word will do. So if you test for said(“eat”,”anyword”) then the result will
-//	be true if the player enters “eat cake”, “eat chocolate”, “eat worm”, “eat
-//	sword”, etc.
+//	Word group 1: â€œanywordâ€ - if this word is given as a parameter, then any
+//	word will do. So if you test for said(â€œeatâ€,â€anywordâ€) then the result will
+//	be true if the player enters â€œeat cakeâ€, â€œeat chocolateâ€, â€œeat wormâ€, â€œeat
+//	swordâ€, etc.
 //
-//	Word group 9999: “rol” (rest of line) - this means the rest of the line. If
-//	you test for said(“kill”,”rol”) then the result will be true if the player
-//	enters “kill lion”, “kill lion with sword”, etc.
+//	Word group 9999: â€œrolâ€ (rest of line) - this means the rest of the line. If
+//	you test for said(â€œkillâ€,â€rolâ€) then the result will be true if the player
+//	enters â€œkill lionâ€, â€œkill lion with swordâ€, etc.
 void cSaid()
 {
 	int i,curWord,wordCnt=*code++,m=inpos;
@@ -240,7 +240,7 @@ void cSaid()
 //	exclamation marks are ignored.
 void cCompareStrings()
 {
-	IF_RESULT = (strcmpi(strings[code[0]],strings[code[1]])==0);
+	IF_RESULT = (strcasecmp(strings[code[0]],strings[code[1]])==0);
 	code += 2;
 }
 /******************************************************************************/

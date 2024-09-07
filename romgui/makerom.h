@@ -31,9 +31,6 @@
 #include "../gbagi.h"
 /******************************************************************************/
 #define BASE800	0x08000000
-#define BASEx0X	0x00020000
-
-#define BASE80X	(BASE800|BASEx0X)
 
 #define IDSIZE	24
 extern char agiid[IDSIZE];
