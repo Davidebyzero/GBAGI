@@ -162,6 +162,7 @@ SECTIONS
 
   _end = DEFINED (__gba_iwram_heap) ? __iheap_start : .; /* v1.3 */
   __end__ = _end ;
+  __rom_end__ = __end__; /* backported from new linkscript */
   PROVIDE (end = _end);
 
   .stab 0 : { *(.stab) }

@@ -35,6 +35,7 @@
 #include "gba.h"
 
 #define FANCY_WINDOWS
+#define AGI_DATA_ALIGNMENT 0x400
 
 /*****************************************************************************/
 #endif
