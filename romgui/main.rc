@@ -12,7 +12,7 @@ FONT 8, "Verdana", 400, 0
 {
  CONTROL "GBAGI Injection Utility 2.0", IDC_LABEL1, "static", WS_CHILD | SS_NOTIFY | SS_CENTER | WS_VISIBLE, 0 , 0, 306 , 11, 0x00
  CONTROL "By Brian Provinciano", IDC_LABEL2, "static", WS_CHILD | SS_NOTIFY | SS_CENTER | WS_VISIBLE, 0 , 11, 306 , 10, 0x00
- CONTROL "http://www.bripro.com", IDC_LABEL3, "static", WS_CHILD | SS_NOTIFY | SS_CENTER | WS_VISIBLE, 0 , 21, 306 , 10, 0x00
+ CONTROL "https://github.com/Davidebyzero/GBAGI", IDC_LABEL3, "static", WS_CHILD | SS_NOTIFY | SS_CENTER | WS_VISIBLE, 0 , 21, 306 , 10, 0x00
  CONTROL "", IDC_PANEL1, "static", WS_CHILD | NOT WS_VISIBLE | WS_TABSTOP, 0 , 29, 306 , 2, 0x00
  CONTROL "", IDC_PANEL2, "static", WS_CHILD | NOT WS_VISIBLE | WS_TABSTOP, 0 , 32, 306 , 25, 0x00
  CONTROL "", IDC_PANEL3, "static", WS_CHILD | NOT WS_VISIBLE | WS_TABSTOP, 0 , 57, 306 , 2, 0x00

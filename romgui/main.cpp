@@ -372,7 +372,10 @@ void __fastcall TFormMain::FormShow(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TFormMain::Label3Click(TObject *Sender)
 {
-	ShellExecute(NULL, NULL, _T("http://www.bripro.com"), NULL, NULL, 0);
+	// This URL was originally "http://www.bripro.com", but that is a broken link now.
+	// An archive of its last state can be seen at:
+	// https://web.archive.org/web/20090512184610/http://www.bripro.com:80/gbagi/index.php
+	ShellExecute(NULL, NULL, _T("https://github.com/Davidebyzero/GBAGI"), NULL, NULL, 0);
 }
 //---------------------------------------------------------------------------
 
