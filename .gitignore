@@ -1,10 +1,10 @@
 *.o
 gbagi.bin
 test.elf
+gbagi.gba
+object.bin
 
-gbarom/gbagi.gba
 gbarom/aginject.exe
-gbarom/object.bin
 
 romgui/resource.h
 romgui/*.aps

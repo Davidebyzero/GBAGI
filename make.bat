@@ -33,6 +33,4 @@ gcc -c -O3 -mthumb -mthumb-interwork    -o interrupts.o interrupts.c
 
 gcc -nostartfiles -Wl,-Tlnkscript  -mthumb -mthumb-interwork  -o test.elf crt0.o main.o interrupts.o agimain.o gamedata.o input.o keyboard.o invobj.o logic.o picture.o screen.o status.o variables.o views.o system.o commands.o cmdagi.o cmdtest.o errmsg.o text.o menu.o parse.o saverestore.o wingui.o
 objcopy -O binary test.elf gbagi.bin
-cd gbarom
-.\aginject
-cd ..
+gbarom\aginject

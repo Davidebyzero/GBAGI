@@ -28,7 +28,7 @@
 #define IDSIZE	24
 char agiid[]="GBAGI 1.0 '''BRIPRO'''\0";
 
-#define IN_FILE "../gbagi.bin"
+#define IN_FILE "gbagi.bin"
 #define OUT_FILE "gbagi.gba"
 /******************************************************************************/
   	// early version 2
