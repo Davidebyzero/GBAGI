@@ -265,6 +265,7 @@ BOOL TFormMain::PackGames()
 		ginm.version = gameobj->gameinfo.version;
 		ginm.vID = gameobj->gameinfo.vID;
 		txStatus->Caption = _T("Adding Game: ")+VclString(gameobj->gameinfo.title);
+		txStatus->Update();
 		if(!ProcessGame(&ginm)) {
     		FreeGame();
     		fclose(fout);
