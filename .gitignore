@@ -1,6 +1,6 @@
 *.o
+gbagi.elf
 gbagi.bin
-test.elf
 gbagi.gba
 object.bin
 
