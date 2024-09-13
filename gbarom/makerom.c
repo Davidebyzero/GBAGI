@@ -388,8 +388,7 @@ int FindWordx(const char *s,U8 *b)
 	while(*b) {
     	s1 = (char*)b+3;
         s2 = s;
-        while(*s1&&*s1==*s2) {s1++;s2++;}
-     	if(*s1=='\0'&&(*s2==' '||*s2=='\0'))
+        if(strcmp(s1,s2)==0)
         	return (b[1]+(b[2]<<8));
         b+=b[0]+1;
     }
@@ -878,7 +877,7 @@ BOOL OutputGame()
     	len = strlen(w->string)+1;
 
         *wPtr++ = (len+3);
-        q=FindWordx(w->string,vocabData);
+        //q=FindWordx(w->string,vocabData);
 
         *wPtr++ = (w->group&0xFF);
         *wPtr++ = (w->group>>8);
