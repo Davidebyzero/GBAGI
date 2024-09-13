@@ -178,7 +178,7 @@ BOOL LoadDir(BOOL SINGLE, int num)
 	U32 offs;
 	int totalEnts, i;
 	if(SINGLE) {
-		_stprintf_s(fname,_countof(fname),_T("%s%s%s"),gi->path,gi->vID,gi->vID[0]?_T("dir"):_T("dirs"));
+		_stprintf_s(fname,_countof(fname),_T("%s%hs%s"),gi->path,gi->vID,gi->vID[0]?_T("dir"):_T("dirs"));
 		if((f=_tfopen(fname,_T("rb")))==NULL) {
 			ErrorMessage(_T("Unable to open file: %s, for reading!"),fname);
 			return FALSE;
@@ -224,7 +224,7 @@ BOOL PrepDirs()
 	volSize=0;
 	for(vn=0;vn<16;vn++) {
     	if(!VUSED[vn]) continue;
-		_stprintf_s(fname,_countof(fname),_T("%s%svol.%d"),gi->path,gi->vID,vn);
+		_stprintf_s(fname,_countof(fname),_T("%s%hsvol.%d"),gi->path,gi->vID,vn);
 		if((f=_tfopen(fname,_T("rb")))==NULL) {
         	VUSED[vn] = FALSE;
         	continue;
@@ -278,7 +278,7 @@ BOOL ProcessDirs()
 	for(vn=-1;vn<16;vn++) {
     	if(vn!=-1) {
         	if(!VUSED[vn]) continue;
-			_stprintf_s(fname,_countof(fname),_T("%s%svol.%d"),gi->path,gi->vID,vn);
+			_stprintf_s(fname,_countof(fname),_T("%s%hsvol.%d"),gi->path,gi->vID,vn);
 			if((f=_tfopen(fname,_T("rb")))==NULL) {
 				ErrorMessage(_T("Unable to open file: %s, for reading!"),fname);
 				mFree(fbuf);
