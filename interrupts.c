@@ -172,7 +172,7 @@ int volumes3[16]={
 	1,1,1,1
 };
 U16 sweeptime=0,sweepdir=0,sweepshifts=0,envinit=15,envdir=1,envsteptime=7,
-	waveduty=2,loopmode=0,prestepper=0;
+	waveduty=2,loopmode=0,counterstages=0,prestepper=4;
 S16 freq=0,nfreq=0,totalwa; 
 const unsigned int freqNumerator=181, freqDenominator=153;
 
@@ -293,7 +293,7 @@ void TIMER2(void)
 						nfreq = (U16)(pSnds[3][3] & 3);
 						freq = 1 << nfreq;
 						REG_SOUND4CNT_L=(volumes[envinit]<<12)+(envdir<<11)+(envsteptime<<8);
-						REG_SOUND4CNT_H=SOUND4INIT+(loopmode<<14)+(prestepper<<4)+freq;
+						REG_SOUND4CNT_H=SOUND4INIT+(loopmode<<14)+(prestepper<<4)+(counterstages<<3)+freq;
 					}
 					pSnds[3]+=5;
 				}
