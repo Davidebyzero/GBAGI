@@ -4,6 +4,7 @@ gbagi.bin
 gbagi.gba
 object.bin
 
+
 gbarom/aginject.exe
 
 romgui/resource.h
@@ -15,3 +16,14 @@ romgui/romgui.vcxproj.user
 romgui/ipch
 romgui/Debug
 romgui/Release
+
+
+*.opensdf
+*.sdf
+*.suo
+gbagi.vcxproj.user
+ipch
+Debug
+Release
+
+flog.txt

@@ -151,27 +151,31 @@ BOOL GameDataInit()
 {
     int tw;
 #ifdef _WINDOWS
-	U32 *p,*pend;
-    LISTITEM *li;
-	FILE *f=fopen("E:\\agigames.gba"//myagigames.gba"//gbagi081beta-sq2.gba"//
-    	,"rb");
-    long l;
+    U32 BASEx0X,BASE80X;
+    U32 *p,*pend;
     U8 *buf;
+    long l;
+    FILE *f=fopen("gbagi.bin","rb");
+    fseek(f,0,SEEK_END);
+    l = ftell(f);
+    fclose(f);
+    BASEx0X = (l + AGI_DATA_ALIGNMENT-1) & -AGI_DATA_ALIGNMENT;
+
+    f=fopen("agigames.gba","rb");
     fseek(f,0,SEEK_END);
     l = ftell(f)-BASEx0X;
     fseek(f,BASEx0X,SEEK_SET);
     buf = (U8*)malloc(l);
     fread(buf,l,1,f);
     fclose(f);
-	#define _BASE (buf+0x20)
-    #define bb(x) (buf+(b[x]-BASE80X))
-    #define bn(x) (((U8*)b-0x20)[x])
+    #define _BASE (buf+0x20)
+    #define bn(x) buf[x]
     if(strcmp((char*)buf,agiid)!=0)
     	ErrorMessage(0,"Game data invalid! Signature check failed!");
+    BASE80X = 0x8000000 + BASEx0X;
 #else
 	U32 BASE80X = ((U32)&__rom_end + AGI_DATA_ALIGNMENT-1) & -AGI_DATA_ALIGNMENT;
 	#define _BASE (BASE80X+0x20)
-    #define bb(x) (b)[x]
     #define bn(x) (((U8*)BASE80X)[x])
     if(strcmp((char*)BASE80X,agiid)!=0) return FALSE;
 #endif
