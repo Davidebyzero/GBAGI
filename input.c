@@ -26,6 +26,9 @@
 #include "text.h"
 #include "wingui.h"
 #include "keyboard.h"
+#ifdef _WINDOWS
+#include <windows.h>
+#endif
 /*****************************************************************************/
 EVENT tmpEvent, evStopEgo = {EV_DIRECTION, dirNONE};
 BTNSTATE btnstate;
@@ -43,7 +46,7 @@ const KEY keyDirs[]={
 };
 /*****************************************************************************/
 #ifdef _WINDOWS
-int DelayTimes[5] = {0,0,0,0,0};//{0,12,24,32,60};//{0,12,24,40};
+int DelayTimes[5] = {1,20,30,50,60};//{0,12,24,32,60};//{0,12,24,40};
 #else
 int DelayTimes[5] = {0,96,140,280,560};//{0,32,96,320};
 #endif
@@ -56,12 +59,19 @@ void DoDelayNPoll()
 void Delay(int amt)
 {
 #ifdef _WINDOWS    
-	if(amt==-1)
+	if(amt==-1) {
 		amt = (DelayTimes[vars[vDELAY]<4?vars[vDELAY]:4]);
-	while(amt>>4) {
-    	SystemUpdate();
-    	amt--;
-    	PollInput();
+	    while(amt>>4) {
+    	    SystemUpdate();
+    	    PollInput();
+            Sleep(5);
+    	    amt--;
+        }
+    } else {
+        while(amt>0) {
+            Sleep(5);
+            amt--;
+        }
     }
 #else
 	int delay;

@@ -479,10 +479,12 @@ void SystemDoit()
 void SystemUpdate()
 {
 #ifdef _WINDOWS
-        GetMessage(&Msg, NULL, 0, 0);
-        TranslateMessage(&Msg);
-        DispatchMessage(&Msg);
-        InvalidateRect(hwnd,0,0);
+        if (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&Msg);
+            DispatchMessage(&Msg);
+            InvalidateRect(hwnd,0,0);
+        }
 #else
 	if(GUI_ACTIVE)
 		GBA_Flip();
