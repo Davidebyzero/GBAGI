@@ -295,7 +295,7 @@ BOOL SaveGame()
 /*****************************************************************************/
 BOOL RestoreGame()
 {
-	int temp4,i;
+	int i;
     int totalPViews, totalOverlays;
     VOBJ *v;
 

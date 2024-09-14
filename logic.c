@@ -64,7 +64,6 @@ U8 *CallLogic(U8 num)
 {
 	LOGIC *prevLog,log;
 	U8 *pLog = (U8*)logDir[num];
-    int i;
     U8 *c=code,*c2;
 
 

@@ -64,14 +64,14 @@ U16 penFill;
 // Set up the initial picture variables
 void InitPicSystem(BOOL FULL)
 {
-	picX1			=
-	picY1			=
-	picX2			=
-	picY2			=
-	penX 			=
-	penY 			=
-	penMode 		=
-	penFill 		=
+	picX1			= 0;
+	picY1			= 0;
+	picX2			= 0;
+	picY2			= 0;
+	penX 			= 0;
+	penY 			= 0;
+	penMode 		= 0;
+	penFill 		= 0;
 	plotMask		= 0;
 	col				= 0xFF;
 
@@ -313,8 +313,8 @@ void PicCmd_PlotPen()
 			do {
 				if(((penMode&PEN_RECTANGLE) || ((0x8000>>(x>>1))&*p))) {
                   	if((!(penMode&PEN_SPLATTER))) {
-                  		picY1 = penY;
-                        picX1 = penX;
+                  		picY1 = (U8)penY;
+                        picX1 = (U8)penX;
                         PicBufPlot();
                   	} else {
 						int pfillbit = pfill &1;
@@ -322,8 +322,8 @@ void PicCmd_PlotPen()
 						if(pfillbit)
 							pfill ^= 0xB8;
 						if( (pfill & 3) == 1 ) {
-                  			picY1 = penY;
-							picX1 = penX;
+                  			picY1 = (U8)penY;
+							picX1 = (U8)penX;
 							PicBufPlot();
                     	}
                   	}
@@ -551,7 +551,7 @@ void FillPush()
 		FILLSTACK_PUSH(prevLeft);
 }
 /*****************************************************************************/
-BOOL FillCallback(U8 *b)
+void FillCallback(U8 *b)
 {
 	U8 *b2, *b3;
 	U8 origCol;

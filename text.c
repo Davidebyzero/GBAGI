@@ -485,7 +485,10 @@ char *WordWrap(char *s)
 /******************************************************************************/
 BOOL MessageBox(char *szMsg)
 {
-    int y, delay;
+    int y;
+#ifndef _WINDOWS
+    int delay;
+#endif
 	char *s;
     BOOL ENTER_CLOSE=TRUE,DOFIX=FALSE;
 	PUSH_TEXT_STYLE();

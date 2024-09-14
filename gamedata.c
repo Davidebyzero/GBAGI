@@ -130,7 +130,6 @@ void ExecuteGameSelectDialog()
 /*****************************************************************************/
 S16 wnGameSelectProc(WND *w, U16 msg, U16 wParam, U32 lParam)
 {
-	U8 *p;
 	switch(msg) {
     	case wmBUTTON_CLICK:
         	if(w==&bnAbout) {
@@ -150,7 +149,7 @@ S16 wnGameSelectProc(WND *w, U16 msg, U16 wParam, U32 lParam)
 /*****************************************************************************/
 BOOL GameDataInit()
 {
-    int tw,i;
+    int tw;
 #ifdef _WINDOWS
 	U32 *p,*pend;
     LISTITEM *li;

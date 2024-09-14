@@ -532,8 +532,8 @@ void cGetPosn()
 {
 	VOBJ *v = &ViewObjs[ code[0] ];
 
-    vars[ code[1] ] = v->x;
-    vars[ code[2] ] = v->y;
+    vars[ code[1] ] = (U8)v->x;
+    vars[ code[2] ] = (U8)v->y;
 
 	code += 3;
 }

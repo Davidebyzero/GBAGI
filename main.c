@@ -38,7 +38,6 @@ char szerr[] = "- ERROR:  No AGI Game embedded in ROM! -";
 
 int main()
 {
-    int x,y,i;
 	if(!SystemInit())
     	return 1;
 	//DrawStringAbs(0,0,"System Initialized...",0xF7);

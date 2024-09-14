@@ -54,10 +54,10 @@ WND kbKeyboard = {
 /*****************************************************************************/
 void ExecuteKeyboardDialog()
 {
-	kbKeyboard.ext.keyboard.state 	= btnstate.kbstate;
-	kbKeyboard.ext.keyboard.col 	= btnstate.kbcol;
-	kbKeyboard.ext.keyboard.row	 	= btnstate.kbrow;
-	kbKeyboard.ext.keyboard.selkey 	= btnstate.kbkey;
+	kbKeyboard.ext.keyboard.state  =     btnstate.kbstate;
+	kbKeyboard.ext.keyboard.col    = (U8)btnstate.kbcol;
+	kbKeyboard.ext.keyboard.row    = (U8)btnstate.kbrow;
+	kbKeyboard.ext.keyboard.selkey =     btnstate.kbkey;
 
     AddWindow(&wnKeys);
     AddWindow(&kbKeyboard);
@@ -67,7 +67,6 @@ void ExecuteKeyboardDialog()
 /*****************************************************************************/
 S16 wnKeysProc(WND *w, U16 msg, U16 wParam, U32 lParam)
 {
-	U8 *p;
 	switch(msg) {
     	case wmBUTTON_CLICK:
         	switch(wParam) {

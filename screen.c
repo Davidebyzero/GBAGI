@@ -81,7 +81,7 @@ void RotatePicBuf()
 #endif
 void RenderShake(int offs,int amt)
 {
-	int i,x,y,yy;
+	int x,y,yy;
 	if(offs) {
     	vsync();
 		DrawScreenBlock(
@@ -334,7 +334,7 @@ void RenderUpdate(int x1, int y1, int x2, int y2)
 
 	U8 *p;
 	U16 *s;
-	int w,h,aX1,aX2,aY1,aY2,maxY, yd,ye,i;
+	int w,h,maxY, yd,ye;
 
 	if((x1>=PIC_WIDTH)||x2<0)
 		return;
@@ -382,7 +382,7 @@ void ClearLine(int row, U8 c)
 /*****************************************************************************/
 void ClearTextRect(int x1, int y1, int x2, int y2, U8 c)
 {
-	int x,size,w,mr;
+	int size,w;
 	U16 wC;
     U16 *p;
     y1 = ((y1-1)*CHAR_HEIGHT)-Y_ADJUST_CL;

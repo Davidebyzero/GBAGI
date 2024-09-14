@@ -227,8 +227,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 /*****************************************************************************/
 BOOL SystemInit()
 {
-	int i,j;
+	int i;
                    /*
+	int j;
     FILE *f=fopen("pal.pal","w");
     fprintf(f,"JASC-PAL\r\n0100\r\n256\r\n");
     for(i=0;i<256;i++)
@@ -257,7 +258,7 @@ BOOL SystemInit()
     g_hInst = 0;
 
     WndClass.cbSize        = sizeof(WNDCLASSEX);
-    WndClass.style         = NULL;
+    WndClass.style         = 0;
     WndClass.lpfnWndProc   = WndProc;
     WndClass.cbClsExtra    = 0;
     WndClass.cbWndExtra    = 0;

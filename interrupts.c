@@ -43,7 +43,7 @@ void COMUNICATION(void) ;
 //here is a function to enable interupts.  If it is VBLANK or HBLANK it sets REG_DISPSTAT to the apropriate values
 //all others you will have to do on your own.
 
-void EnableInterupts(U16 interupts)
+void EnableInterupts(volatile U16 interupts)
 {
 	REG_IME = 0;  //probably not necessary but not a good idea to change interupt registers when an interupt is ocuring
 
@@ -61,7 +61,7 @@ void EnableInterupts(U16 interupts)
 
 }
 
-void DissableInterupts(U16 interupts)
+void DissableInterupts(volatile U16 interupts)
 {
 	REG_IE &= ~interupts;
 

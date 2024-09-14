@@ -250,9 +250,6 @@ char *FindWordN(char *szWord)
 /*****************************************************************************/
 void InitParseSystem()
 {
-	int i;
-	char *p;
-
 	memset(input,0,sizeof(input));
 	inpos = wordCount = 0;
 	memset(wordStrings,0,sizeof(wordStrings));

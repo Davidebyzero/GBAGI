@@ -176,7 +176,6 @@ void AGIShutDown()
 //#define SKIPTOSCREEN 18
 void AGIMain()
 {
-	int i;
 #ifdef SKIPTOSCREEN
 	 int m=1;
 #endif

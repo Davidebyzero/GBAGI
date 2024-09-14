@@ -644,7 +644,7 @@ WND *WndFindNext(WND *w)
 /******************************************************************************/
 WND *WndSelect(WND *wSelect, int direction)
 {
-	WND *wLast,*wFirst,*wPrev,*wNext;
+	WND *wLast,*wFirst,*wNext;
     if(!wSelect || !(wSelect->style&wsSELECTABLE) || (!wSelect->next && !wSelect->prev) ||
       !(BOOL)(wFirst = wSelect->parent->children) || (wFirst==NULL) || (wFirst==wSelect) ||
       !(BOOL)(wLast=GetWndLast(wSelect->parent)) || (wLast==wFirst))
@@ -1006,7 +1006,7 @@ void EditScrollCol(WND *w,int dir, BOOL del)
 S16 ExecuteWndProc(WND *w, U32 msg, U16 wParam, void *pParam)
 {
  	if(w && w->proc && !(w->state&wtNOUPDATE))
-    	return w->proc(w, msg, wParam, pParam);
+    	return w->proc(w, (U16)msg, wParam, pParam);
     return 0;
 }
 /******************************************************************************/
@@ -1483,7 +1483,7 @@ BOOL wDrawScrollBar(WND *w, U16 flags)
     if(pos<0)
     	pos=0;
 
-    dSize	= ((w->style&sbHORIZONTAL)?cwidth:cheight);
+    dSize	= (float)((w->style&sbHORIZONTAL)?cwidth:cheight);
     dPosSize= ((dSize-size)<wmxMINSCROLLTAB)?wmxMINSCROLLTAB:dSize-size;
     dPos	= pos/(size/(dSize-dPosSize));
 
@@ -1491,9 +1491,9 @@ BOOL wDrawScrollBar(WND *w, U16 flags)
     wSetPort(&w->clRect);
 
 	if(w->style&sbHORIZONTAL)
-    	gDrawButtonFrame(dPos,0,dPos+dPosSize,cheight,f);
+    	gDrawButtonFrame((int)dPos,0,(int)(dPos+dPosSize),cheight,f);
     else
-    	gDrawButtonFrame(0,dPos,cwidth,dPos+dPosSize,f);
+    	gDrawButtonFrame(0,(int)dPos,cwidth,(int)(dPos+dPosSize),f);
 
     wSetPort(&oldPort);
 
@@ -1606,13 +1606,12 @@ BOOL wDrawKeyboard(WND *w, U16 flags)
 /******************************************************************************/
 void KeyboadSelectKey(WND *w, int xd, int yd)
 {
-	int i,rowlen;
+	int rowlen;
     const char **s;
 
     int row = w->ext.keyboard.row;
     int col = w->ext.keyboard.col;
     int state = w->ext.keyboard.state;
-    int selkey;
 
 	if((row+=yd)>=6) row = 0;
     else if(row<0) row = 5;

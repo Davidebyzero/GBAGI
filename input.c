@@ -55,7 +55,6 @@ void DoDelayNPoll()
 /*****************************************************************************/
 void Delay(int amt)
 {
-	int delay;
 #ifdef _WINDOWS    
 	if(amt==-1)
 		amt = (DelayTimes[vars[vDELAY]<4?vars[vDELAY]:4]);
@@ -65,6 +64,7 @@ void Delay(int amt)
     	PollInput();
     }
 #else
+	int delay;
 	if(amt==-1) {
      	delay = (DelayTimes[vars[vDELAY]<4?vars[vDELAY]:4])*10+1;
 		while(REG_TM1CNT_L <= delay){
@@ -126,7 +126,7 @@ void PollInput()
                 	controllers[c->num]=1;
 					break;
 				}
-        	vars[vKEYPRESSED] = key;
+        	vars[vKEYPRESSED] = (U8)key;
 		}
 	}
 }

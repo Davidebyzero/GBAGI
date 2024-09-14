@@ -80,7 +80,7 @@ void VLineDraw(void);
 void PicBufPlot(void);
 void PicBufFloodFill(U8 ypos, U8 xpos);
 void FillPush(void);
-BOOL FillCallback(U8 *b);
+void FillCallback(U8 *b);
 /*****************************************************************************/
 #define MAX_OVERLAYS 16
 extern U8 overlays[MAX_OVERLAYS],*pOverlay;
