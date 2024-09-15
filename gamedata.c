@@ -194,6 +194,9 @@ BOOL GameDataInit()
     }
 
 #ifdef _WINDOWS
+    if(QUIT_FLAG)
+        return FALSE;
+
     GameEnts->volData	= (U8*)(buf+((U32)GameEnts->volData-BASE80X));
     GameEnts->viewDir	= (U8**)(buf+((U32)GameEnts->viewDir-BASE80X));
     GameEnts->picDir	= (U8**)(buf+((U32)GameEnts->picDir-BASE80X));

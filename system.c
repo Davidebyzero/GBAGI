@@ -204,6 +204,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
       break;
       case WM_DESTROY:
          PostQuitMessage(0);
+         QUIT_FLAG = TRUE;
       break;
       case WM_KEYUP:
          kUp=wParam;

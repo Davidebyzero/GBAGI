@@ -27,6 +27,9 @@
 #include "picture.h"
 #include "screen.h"
 #include "text.h"
+#ifdef _WINDOWS
+#include <windows.h>
+#endif
 /*****************************************************************************/
 
 /*****************************************************************************/
@@ -36,7 +39,11 @@ void LoadPicBufSplash(void);
 
 char szerr[] = "- ERROR:  No AGI Game embedded in ROM! -";
 
+#ifdef _WINDOWS
+__stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+#else
 int main()
+#endif
 {
 	if(!SystemInit())
     	return 1;
@@ -65,6 +72,9 @@ int main()
     		return 3;
     	AGIMain();
     	FreeWinGUISystem();
+#ifdef _WINDOWS
+    	return 0;
+#endif
     }
 }
 /*****************************************************************************/

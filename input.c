@@ -191,8 +191,12 @@ int WaitForKey()
 BOOL WaitEnterEsc()
 {
 	int key;
-	while((key=CheckUserReply()) == -1)
+	while((key=CheckUserReply()) == -1) {
+#ifdef _WINDOWS
+		if(QUIT_FLAG) break;
+#endif
 		Delay(5);
+	}
 	return key;
 }
 /*****************************************************************************/

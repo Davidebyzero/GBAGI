@@ -268,6 +268,9 @@ int WinGUIDoit()
 	RedrawAllWindows();
 
     do {
+#ifdef _WINDOWS
+		if(QUIT_FLAG) break;
+#endif
 		if(GBACheckButtons()->state==BTN_IDLE)
 			continue;
 
