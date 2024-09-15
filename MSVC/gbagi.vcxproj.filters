@@ -1,73 +1,73 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="wingui.c">
+    <ClCompile Include="../wingui.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="agimain.c">
+    <ClCompile Include="../agimain.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cmdagi.c">
+    <ClCompile Include="../cmdagi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cmdtest.c">
+    <ClCompile Include="../cmdtest.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="commands.c">
+    <ClCompile Include="../commands.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="errmsg.c">
+    <ClCompile Include="../errmsg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gamedata.c">
+    <ClCompile Include="../gamedata.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="input.c">
+    <ClCompile Include="../input.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="interrupts.c">
+    <ClCompile Include="../interrupts.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="invobj.c">
+    <ClCompile Include="../invobj.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="keyboard.c">
+    <ClCompile Include="../keyboard.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="logic.c">
+    <ClCompile Include="../logic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.c">
+    <ClCompile Include="../main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="menu.c">
+    <ClCompile Include="../menu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parse.c">
+    <ClCompile Include="../parse.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="picture.c">
+    <ClCompile Include="../picture.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="saverestore.c">
+    <ClCompile Include="../saverestore.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="screen.c">
+    <ClCompile Include="../screen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="status.c">
+    <ClCompile Include="../status.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="system.c">
+    <ClCompile Include="../system.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="text.c">
+    <ClCompile Include="../text.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="variables.c">
+    <ClCompile Include="../variables.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="views.c">
+    <ClCompile Include="../views.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,76 +80,76 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="agimain.h">
+    <ClInclude Include="../agimain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="commands.h">
+    <ClInclude Include="../commands.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="errmsg.h">
+    <ClInclude Include="../errmsg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gamedata.h">
+    <ClInclude Include="../gamedata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gba.h">
+    <ClInclude Include="../gba.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gbagi.h">
+    <ClInclude Include="../gbagi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="input.h">
+    <ClInclude Include="../input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="invobj.h">
+    <ClInclude Include="../invobj.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="keyboard.h">
+    <ClInclude Include="../keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="keypad.h">
+    <ClInclude Include="../keypad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="logic.h">
+    <ClInclude Include="../logic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="menu.h">
+    <ClInclude Include="../menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="parse.h">
+    <ClInclude Include="../parse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="picture.h">
+    <ClInclude Include="../picture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="saverestore.h">
+    <ClInclude Include="../saverestore.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="screen.h">
+    <ClInclude Include="../screen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="screenmode.h">
+    <ClInclude Include="../screenmode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="status.h">
+    <ClInclude Include="../status.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="system.h">
+    <ClInclude Include="../system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="text.h">
+    <ClInclude Include="../text.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="types.h">
+    <ClInclude Include="../types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="variables.h">
+    <ClInclude Include="../variables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="views.h">
+    <ClInclude Include="../views.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wingui.h">
+    <ClInclude Include="../wingui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

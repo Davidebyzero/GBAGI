@@ -1,7 +1,7 @@
 *.o
 gbagi.elf
 gbagi.bin
-gbagi.gba
+*.gba
 object.bin
 
 
@@ -18,12 +18,11 @@ romgui/Debug
 romgui/Release
 
 
-*.opensdf
-*.sdf
-*.suo
-gbagi.vcxproj.user
-ipch
-Debug
-Release
-
+MSVC/*.opensdf
+MSVC/*.sdf
+MSVC/*.suo
+MSVC/gbagi.vcxproj.user
+MSVC/ipch
+MSVC/Debug
+MSVC/Release
 flog.txt

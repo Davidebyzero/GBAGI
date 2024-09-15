@@ -29,7 +29,7 @@
 char agiid[]="GBAGI 1.0 '''BRIPRO'''\0";
 
 #define IN_FILE "gbagi.bin"
-#define OUT_FILE "gbagi.gba"
+#define OUT_FILE "agigames.gba"
 /******************************************************************************/
   	// early version 2
 GVER v2early =

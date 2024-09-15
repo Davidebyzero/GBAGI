@@ -19,55 +19,55 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="agimain.c" />
-    <ClCompile Include="cmdagi.c" />
-    <ClCompile Include="cmdtest.c" />
-    <ClCompile Include="commands.c" />
-    <ClCompile Include="errmsg.c" />
-    <ClCompile Include="gamedata.c" />
-    <ClCompile Include="input.c" />
-    <ClCompile Include="interrupts.c" />
-    <ClCompile Include="invobj.c" />
-    <ClCompile Include="keyboard.c" />
-    <ClCompile Include="logic.c" />
-    <ClCompile Include="main.c" />
-    <ClCompile Include="menu.c" />
-    <ClCompile Include="parse.c" />
-    <ClCompile Include="picture.c" />
-    <ClCompile Include="saverestore.c" />
-    <ClCompile Include="screen.c" />
-    <ClCompile Include="status.c" />
-    <ClCompile Include="system.c" />
-    <ClCompile Include="text.c" />
-    <ClCompile Include="variables.c" />
-    <ClCompile Include="views.c" />
-    <ClCompile Include="wingui.c" />
+    <ClCompile Include="../agimain.c" />
+    <ClCompile Include="../cmdagi.c" />
+    <ClCompile Include="../cmdtest.c" />
+    <ClCompile Include="../commands.c" />
+    <ClCompile Include="../errmsg.c" />
+    <ClCompile Include="../gamedata.c" />
+    <ClCompile Include="../input.c" />
+    <ClCompile Include="../interrupts.c" />
+    <ClCompile Include="../invobj.c" />
+    <ClCompile Include="../keyboard.c" />
+    <ClCompile Include="../logic.c" />
+    <ClCompile Include="../main.c" />
+    <ClCompile Include="../menu.c" />
+    <ClCompile Include="../parse.c" />
+    <ClCompile Include="../picture.c" />
+    <ClCompile Include="../saverestore.c" />
+    <ClCompile Include="../screen.c" />
+    <ClCompile Include="../status.c" />
+    <ClCompile Include="../system.c" />
+    <ClCompile Include="../text.c" />
+    <ClCompile Include="../variables.c" />
+    <ClCompile Include="../views.c" />
+    <ClCompile Include="../wingui.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="agimain.h" />
-    <ClInclude Include="commands.h" />
-    <ClInclude Include="errmsg.h" />
-    <ClInclude Include="gamedata.h" />
-    <ClInclude Include="gba.h" />
-    <ClInclude Include="gbagi.h" />
-    <ClInclude Include="input.h" />
-    <ClInclude Include="invobj.h" />
-    <ClInclude Include="keyboard.h" />
-    <ClInclude Include="keypad.h" />
-    <ClInclude Include="logic.h" />
-    <ClInclude Include="menu.h" />
-    <ClInclude Include="parse.h" />
-    <ClInclude Include="picture.h" />
-    <ClInclude Include="saverestore.h" />
-    <ClInclude Include="screen.h" />
-    <ClInclude Include="screenmode.h" />
-    <ClInclude Include="status.h" />
-    <ClInclude Include="system.h" />
-    <ClInclude Include="text.h" />
-    <ClInclude Include="types.h" />
-    <ClInclude Include="variables.h" />
-    <ClInclude Include="views.h" />
-    <ClInclude Include="wingui.h" />
+    <ClInclude Include="../agimain.h" />
+    <ClInclude Include="../commands.h" />
+    <ClInclude Include="../errmsg.h" />
+    <ClInclude Include="../gamedata.h" />
+    <ClInclude Include="../gba.h" />
+    <ClInclude Include="../gbagi.h" />
+    <ClInclude Include="../input.h" />
+    <ClInclude Include="../invobj.h" />
+    <ClInclude Include="../keyboard.h" />
+    <ClInclude Include="../keypad.h" />
+    <ClInclude Include="../logic.h" />
+    <ClInclude Include="../menu.h" />
+    <ClInclude Include="../parse.h" />
+    <ClInclude Include="../picture.h" />
+    <ClInclude Include="../saverestore.h" />
+    <ClInclude Include="../screen.h" />
+    <ClInclude Include="../screenmode.h" />
+    <ClInclude Include="../status.h" />
+    <ClInclude Include="../system.h" />
+    <ClInclude Include="../text.h" />
+    <ClInclude Include="../types.h" />
+    <ClInclude Include="../variables.h" />
+    <ClInclude Include="../views.h" />
+    <ClInclude Include="../wingui.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C4E80E1E-A2CB-46A5-B5EE-4D66A7856842}</ProjectGuid>
@@ -153,7 +153,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -188,7 +188,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
