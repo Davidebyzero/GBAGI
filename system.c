@@ -498,7 +498,6 @@ void SystemUpdate()
 BTNSTATE *ParseButtons(U16 buttons)
 {
     const KEYMAP *km;
-    int i;
 
     if(btnstate.state==BTN_INJECTED) {
 		btnstate.state	= BTN_PRESS;
@@ -510,7 +509,6 @@ BTNSTATE *ParseButtons(U16 buttons)
 	btnstate.state=BTN_IDLE;
 
 	km = buttonKeymap;
-    i = 0;
     if(prevKeys == buttons) {
     	while(km->key) {
     		if((buttons&km->buttons)==km->buttons) {
@@ -520,7 +518,6 @@ BTNSTATE *ParseButtons(U16 buttons)
             	break;
             }
             km++;
-            i++;
         }
     } else {
         btnstate.state	= BTN_RELEASE;
