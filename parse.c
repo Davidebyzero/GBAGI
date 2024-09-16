@@ -195,6 +195,7 @@ char *ParseInput(char *sStart)
     }
 	if(wordCount)
     	SetFlag(fPLAYERCOMMAND);
+	inpos = wordCount; // this overrides the value of "inpos" already established by wnInputProc()
    	return wordStrings[0];
 }
 /*****************************************************************************/
