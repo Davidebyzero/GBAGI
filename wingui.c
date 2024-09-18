@@ -1741,11 +1741,7 @@ BOOL wmButtonPress(WND *w, U16 wParam, void *pParam, U16 flags)
      					WndMessage(w, wmKEYBOARD_INPUT, w->ext.keyboard.selkey, 0, 0);
                     break;
             }
-#ifdef _WINDOWS
-    		//Delay(0);
-#else
     		Delay(20);
-#endif
             break;
     	case wnSCROLLBAR:
 			w->state|=wtBTNDOWN;
