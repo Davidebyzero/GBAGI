@@ -212,6 +212,9 @@ void MenuInput()
 	PARSING_MENU = TRUE;
     while(PARSING_MENU) {
     	ev = WaitForEvent();
+#ifdef _WINDOWS
+    	if(ev == NULL) break; // happens if QUIT_FLAG is true
+#endif
         if(ev->type == EV_ASCII) {
         	switch(ev->data) {
         		case KEY_ESC:

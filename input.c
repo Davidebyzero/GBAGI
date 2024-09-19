@@ -203,7 +203,11 @@ BOOL WaitEnterEsc()
 EVENT *WaitForEvent()
 {
 	EVENT *event;
-	while(!(BOOL)(event = ReadEvent()))
+	while(!(BOOL)(event = ReadEvent())
+#ifdef _WINDOWS
+                                       && !QUIT_FLAG
+#endif
+                                                    )
 		Delay(5);
 	return event;
 }
