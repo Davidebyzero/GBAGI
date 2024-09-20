@@ -39,6 +39,7 @@
 #endif
 _RECT port;
 BOOL SHOW_VERSION;
+S16 Y_ADJUST_CL = 4;
 /*****************************************************************************/
 const int scrCoords[160][3] = {
 	{  0,  0,  0},{  0,  0,  0},{  0,  0,  0},{  0,  0,  0},{  3,  4,  1},{  3,  4,  1},{  3,  4,  1},{  3,  4,  1},
@@ -139,6 +140,13 @@ void ShakeScreen(int count)
         }
     }      
 	RedrawScreen();
+}
+/*****************************************************************************/
+void RedrawScreenAll()
+{
+    if(!STATUS_VISIBLE)
+        ClearLine(statusRow, clBLACK);
+    RedrawScreen();
 }
 /*****************************************************************************/
 void RedrawScreen()
@@ -336,16 +344,19 @@ void RenderUpdate(int x1, int y1, int x2, int y2)
 	U16 *s;
 	int w,h,maxY, yd,ye;
 
+	if(Y_ADJUST_CL>8 && y2>=PIC_MAXY)
+		RectFill(0,SCREEN_HEIGHT+8-Y_ADJUST_CL,SCREEN_WIDTH,SCREEN_HEIGHT,0);
+
 	if((x1>=PIC_WIDTH)||x2<0)
 		return;
 	if(x1<0) x1=0;
 
 	if(STATUS_VISIBLE) {
-		maxY = PIC_MAXY-16;
+		maxY = PIC_MAXY-Y_ADJUST_CL-8;
         yd = Y_ADJUST_CL+8;
         ye=8;
 	} else {
-		maxY = PIC_MAXY-8;
+		maxY = PIC_MAXY-Y_ADJUST_CL;
         yd = Y_ADJUST_CL;    
         ye=0;
 	}

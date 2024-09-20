@@ -206,8 +206,8 @@ void UpdateObjsStep()
 				if((v->y-v->height) < -1) {
 					v->y	= v->height - 1;
 					border	= bdTOP;
-				} else if(v->y > PIC_MAXY) {
-					v->y	= PIC_MAXY;
+				} else if(v->y > PRI_MAXY) {
+					v->y	= PRI_MAXY;
 					border	= bdBOTTOM;
 				} else if( (!(v->flags&oINGOREHORIZON)) && (horizon>=v->y) ) {
 					v->y	= horizon + 1;
@@ -996,7 +996,7 @@ void AddObjPicPri(VOBJ *v)
 // calculates the priority for view objects
 int CalcPriY(int pri)
 {
-	int priY = PIC_MAXY;
+	int priY = PRI_MAXY;
 
 	if(PRI_FIXED)
 		return((pri-5)*12 + 48);
@@ -1028,7 +1028,7 @@ void ShowObj(int num)
     objView.x 			=
     objView.prevX 		= (PIC_MAXX-objView.width)>>1;
     objView.y 			=
-    objView.prevY 		= (PIC_MAXY-10);
+    objView.prevY 		= (PRI_MAXY-10);
     objView.priority	= 15;
     objView.flags		|= oFIXEDPRIORITY;
     objView.num			= 255;

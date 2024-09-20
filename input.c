@@ -26,6 +26,7 @@
 #include "text.h"
 #include "wingui.h"
 #include "keyboard.h"
+#include "screen.h" // for Y_ADJUST_CL and RedrawScreenAll()
 #ifdef _WINDOWS
 #include <windows.h>
 #endif
@@ -119,7 +120,15 @@ void PollInput()
                 		ExecuteKeyboardDialog();
                         break;
                 	case KEY_SELECT:
+#if 0
                     	key = '\t'; // inventory
+#else
+                        {{}} if (Y_ADJUST_CL == -8) Y_ADJUST_CL =  4;
+                        else if (Y_ADJUST_CL <=  4) Y_ADJUST_CL = 32;
+                        else                        Y_ADJUST_CL = -8;
+                        RedrawScreenAll();
+                        key = '\0';
+#endif
                     	break;
                 	case KEY_TABREV:
                     	key = KEY_F3<<8; // repeat word

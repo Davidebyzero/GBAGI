@@ -385,7 +385,7 @@ void DrawMenuBar()
 void ClearMenuItems()
 {
     if(menuRect.right) {
-    	RenderUpdate(0,0/*menuRect.top*/,PIC_MAXX,menuRect.bottom+menuRect.top);
+    	RenderUpdate(0,Y_ADJUST_CL-4/*menuRect.top*/,PIC_MAXX,menuRect.bottom+menuRect.top+Y_ADJUST_CL-4);
         menuRect.right=0;
     }
 }

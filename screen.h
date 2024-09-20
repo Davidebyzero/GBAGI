@@ -22,7 +22,8 @@
 #define _SCREEN_H
 /*****************************************************************************/
 //#define Y_ADJUST_ST			12//8//16
-#define Y_ADJUST_CL 		4//4//0//8
+//#define Y_ADJUST_CL 		32//-8//4//4//0//8
+extern S16 Y_ADJUST_CL;
 
 #define SCREEN_WIDTH		240
 #define SCREEN_HEIGHT		160
@@ -32,15 +33,17 @@
 
 #define PIC_WIDTH			160
 #define PIC_HEIGHT			168
-#define PIC_MAXX			159
-#define PIC_MAXY			167
-#define PIC_SIZE			26880
+#define PIC_MAXX			(PIC_WIDTH-1)
+#define PIC_MAXY			(PIC_HEIGHT-1)
+#define PIC_SIZE			(PIC_WIDTH*PIC_HEIGHT)
 
 #define PLAY_WIDTH			160
 #define PLAY_SIZE           32000
 
 #define PRI_WIDTH			80
-#define PRI_SIZE           	13440
+#define PRI_HEIGHT			PIC_HEIGHT
+#define PRI_MAXY  			(PRI_HEIGHT-1)
+#define PRI_SIZE           	(PRI_WIDTH*PRI_HEIGHT)
 
 #define GBA_MAXROW			19
 #define GBA_MAXCOL			39
@@ -64,6 +67,7 @@ extern BOOL SHOW_VERSION;
 /*****************************************************************************/
 void ShakeScreen(int count);
 void RotatePicBuf(void);
+void RedrawScreenAll(void);
 void RedrawScreen(void);
 void UpdateGfx(void);
 void DrawPlayArea(void);

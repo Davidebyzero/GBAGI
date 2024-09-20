@@ -2149,9 +2149,9 @@ void cSetPriBase()
 
 	PRI_FIXED = FALSE;
 
-	for(y=0; y<PIC_HEIGHT; y++) {
+	for(y=0; y<PRI_HEIGHT; y++) {
 		if((db = y-code[0]) >= 0) {
-			if((priTable[y] = (db*10)/(PIC_HEIGHT-code[0])+5) > 15)
+			if((priTable[y] = (db*10)/(PRI_HEIGHT-code[0])+5) > 15)
 				priTable[y] = 15;
 		} else
 			priTable[y] = 4;
