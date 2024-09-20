@@ -1,8 +1,8 @@
 GBAGI: The Game Boy Advance Adventure Game Interpreter
 By Brian Provinciano
-Revision 2.00
-October 3rd, 2004
-http://www.bripro.com
+Revision 2.20
+September 19th, 2024
+https://github.com/Davidebyzero/GBAGI
 ===============================================================================
 Sierra's original animated adventure games on the Nintendo Game Boy Advance!
 
@@ -47,7 +47,7 @@ L: Repeat previous text input ("F3")
 B: Brings up game menu ("ESC")
 Start: Brings up virtual keyboard
 R: Repeat previous key pressed on virtual keyboard
-Select: Inventory ("TAB")
+Select: Cycle through three vertical scrolling positions
 
 START+SELECT+A+B: Exit to Game Select Screen
 
