@@ -339,6 +339,11 @@ void DrawString(char *s,BOOL FIX)
         	textRow++;
             if(!--l||*++s=='\0') break;
         }
+        if(textCol<TXT_WIDTH && textRow<TXT_HEIGHT) {
+            U8 *p = &textBuf[textRow*TXT_WIDTH*2 + textCol*2];
+            p[0] = *s;
+            p[1] = textColour;
+        }
     	DrawChar(*s++,FIX);
         l--;
     }

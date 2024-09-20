@@ -387,12 +387,12 @@ void cOverlayPic()
 void cShowPriScreen()
 {
 	RotatePicBuf();
-	RenderUpdate(0,0,PIC_MAXX,PIC_MAXY);
+	RenderUpdate(0,0,PIC_MAXX,PIC_MAXY,TRUE);
 
 	WaitEnterEsc();
 
 	RotatePicBuf();
-	RenderUpdate(0,0,PIC_MAXX,PIC_MAXY);
+	RenderUpdate(0,0,PIC_MAXX,PIC_MAXY,TRUE);
 }
 /******************************************************************************/
 //load.view(VIEWNUM);
@@ -1392,7 +1392,7 @@ void cTextScreen()
 void cGraphics()
 {
 	TEXT_MODE	= FALSE;
-	RedrawScreen();
+	RedrawScreen(TRUE);
 #ifdef _WINDOWS
     SystemUpdate();
 #endif
@@ -2098,7 +2098,7 @@ void cDivV()
 void cCloseWindow()
 {
     WINDOW_OPEN = FALSE;
-    RenderUpdate(0,0,PIC_MAXX,PIC_MAXY);
+    RenderUpdate(0,0,PIC_MAXX,PIC_MAXY,TRUE);
 }
 /******************************************************************************/
 //	The set.simple() command sets the save.game mode to automatic by giving a

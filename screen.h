@@ -45,8 +45,11 @@ extern S16 Y_ADJUST_CL;
 #define PRI_MAXY  			(PRI_HEIGHT-1)
 #define PRI_SIZE           	(PRI_WIDTH*PRI_HEIGHT)
 
-#define GBA_MAXROW			19
-#define GBA_MAXCOL			39
+#define TXT_WIDTH           40
+#define TXT_HEIGHT          25
+
+#define GBA_MAXROW			(SCREEN_HEIGHT/8-1)
+#define GBA_MAXCOL			(TXT_WIDTH-1)
 #define GBA_MAXY			151
 #define GBASCR_SIZEOF		(19200)
 
@@ -56,10 +59,12 @@ extern S16 Y_ADJUST_CL;
 #ifdef _WINDOWS
 	extern U8 screenBuf[SCREEN_SIZE];   
 	extern U8 pictureBuf[PIC_SIZE];
+	extern U8 textBuf[TXT_WIDTH*TXT_HEIGHT*2];
 #else
 	//extern U8 *pictureBuf;		// the active vis/pri buffer (160x168x(4bit+4bit))--1 byte = (pri/vis)
    	extern U16 *vidPtr;   
 	extern U8 pictureBuf[PIC_SIZE] _EWRAM_;
+	extern U8 textBuf[TXT_WIDTH*TXT_HEIGHT*2] _EWRAM_;
 #endif
 
 extern _RECT port;
@@ -68,7 +73,9 @@ extern BOOL SHOW_VERSION;
 void ShakeScreen(int count);
 void RotatePicBuf(void);
 void RedrawScreenAll(void);
-void RedrawScreen(void);
+void RedrawScreen(BOOL clear);
+void ClearTextBuf();
+void EraseBottomText();
 void UpdateGfx(void);
 void DrawPlayArea(void);
 void ShowPic(void);
@@ -84,7 +91,7 @@ void ViewPlotPix(U16 x, U16 y, U8 cr);
 void PicPlotPix(U8 x, U8 y, U8 c);
 void ClearLine(int row, U8 c);
 void ClearTextRect(int x1, int y1, int x2, int y2, U8 c);
-void RenderUpdate(int x1, int y1, int x2, int y2);
+void RenderUpdate(int x1, int y1, int x2, int y2, BOOL clear);
 void ClearScreen(U8 c);
 void TransBox(int x1, int y1, int x2, int y2);
 void ShadowBox(int x1, int y1, int x2, int y2);

@@ -99,6 +99,7 @@ void DrawPic(U8 num)
 	PIC_VISIBLE = FALSE;
 
 //cShowPriScreen();
+    EraseBottomText();
 }
 
 /*****************************************************************************/
@@ -498,7 +499,7 @@ int j;
 for(j=0;j<160*168;j++)
 	fputc(pictureBuf[j]&0xF0,f);
 fclose(f);
-RenderUpdate(0,0,PIC_MAXX,PIC_MAXY);
+RenderUpdate(0,0,PIC_MAXX,PIC_MAXY,TRUE);
 WaitEnterEsc();   */
 
     do

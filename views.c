@@ -602,7 +602,7 @@ void UpdateObjCel(VOBJ *v)
 	if(height-y1 > 0)
 		height = y1+1;
 
-	RenderUpdate(x1, y1-height+1, x1+width+1, y1+1);
+	RenderUpdate(x1, y1-height+1, x1+width+1, y1+1, TRUE);
 }
 /*****************************************************************************/
 void UpdateObjLoop(VOBJ *v)

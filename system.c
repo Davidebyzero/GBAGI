@@ -463,7 +463,7 @@ void gfxGUIExit()
     else
         vidPtr = ((U16*)0x6000000);
 #endif
-	RedrawScreen();
+	RedrawScreen(TEXT_MODE);
 #ifdef _WINDOWS
 	SystemUpdate();
 #endif

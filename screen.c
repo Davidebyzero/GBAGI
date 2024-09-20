@@ -33,9 +33,11 @@
 	U8 screenBuf[SCREEN_SIZE];
 	#define vidPtr ((U16*)screenBuf)  
 	U8 pictureBuf[PIC_SIZE];
+	U8 textBuf[TXT_WIDTH*TXT_HEIGHT*2];
 #else
 	U16 *vidPtr;
 	U8 pictureBuf[PIC_SIZE] _EWRAM_;
+	U8 textBuf[TXT_WIDTH*TXT_HEIGHT*2] _EWRAM_;
 #endif
 _RECT port;
 BOOL SHOW_VERSION;
@@ -139,20 +141,60 @@ void ShakeScreen(int count)
             }
         }
     }      
-	RedrawScreen();
+	RedrawScreen(TRUE);
 }
 /*****************************************************************************/
 void RedrawScreenAll()
 {
     if(!STATUS_VISIBLE)
         ClearLine(statusRow, clBLACK);
-    RedrawScreen();
+    RedrawScreen(FALSE);
 }
 /*****************************************************************************/
-void RedrawScreen()
+void RedrawScreen(BOOL clear)
 {
-	RenderUpdate(0,0,PIC_MAXX,PIC_MAXY);
+	RenderUpdate(0,0,PIC_MAXX,PIC_MAXY,clear);
 	WriteStatusLine();
+	if(Y_ADJUST_CL>8)
+		RectFill(0,SCREEN_HEIGHT+8-Y_ADJUST_CL,SCREEN_WIDTH,SCREEN_HEIGHT,0);
+    if(clear)
+        ClearTextBuf();
+    else {
+        U8 textRowOld = textRow;
+        U8 textColOld = textCol;
+        U8 textColourOld = textColour;
+        U8 *p = textBuf;
+        textRow = 0;
+        textCol = 0;
+        for(;;) {
+            extern int CalcTextY(int row,BOOL FIX);
+            if(p[0]) {
+                textColour = p[1];
+	            AbChar(p[0],
+    	            (textCol*CHAR_WIDTH),
+                    CalcTextY(textRow,TRUE),
+                    (p[1]&0xF),(p[1]>>4)
+                );
+            }
+            p += 2;
+            if(++textCol>=TXT_WIDTH) {
+                textCol = 0;
+                if(++textRow>=TXT_HEIGHT)
+                    break;
+            }
+        }
+    }
+}
+/*****************************************************************************/
+void ClearTextBuf()
+{
+    memset(textBuf,0,sizeof(textBuf));
+}
+/*****************************************************************************/
+void EraseBottomText()
+{
+	if(!TEXT_MODE && Y_ADJUST_CL>8)
+		RectFill(0,SCREEN_HEIGHT+8-Y_ADJUST_CL,SCREEN_WIDTH,SCREEN_HEIGHT,0);
 }
 /*****************************************************************************/
 void UpdateGfx()
@@ -297,7 +339,7 @@ void PicPlotPix(U8 x, U8 y, U8 c)
 void ShowPic()
 {
 	if(PIC_VISIBLE)
-    	RenderUpdate(0,0,PIC_MAXX,PIC_MAXY);
+    	RenderUpdate(0,0,PIC_MAXX,PIC_MAXY,TRUE);
     if(SHOW_VERSION) {
 		DrawStringAbs(11,132,"GBAGI v"BUILD_VERSION"",0xEF);
 		DrawStringAbs(9,141,"("BUILD_DATE")",0xEF);
@@ -337,15 +379,36 @@ void DrawScreenBlock(U8 *p,U16 *s,int w,int h)
     }
 }
 /*****************************************************************************/
-void RenderUpdate(int x1, int y1, int x2, int y2)
+void ClearTextInside(int x1, int y1, int x2, int y2)
+{
+    size_t len;
+    U8 *p;
+    x1 =  x1   /(PIC_WIDTH/TXT_WIDTH);
+    y1 =  y1   / CHAR_HEIGHT;
+    x2 = (x2-1)/(PIC_WIDTH/TXT_WIDTH)+2;
+    y2 = (y2-1)/ CHAR_HEIGHT         +2;
+    if (x2<x1)
+        x2=x1;
+    if (y2<y1)
+        y2=y1;
+    len = (x2-x1)*2;
+    p = &textBuf[y1*TXT_WIDTH*2 + x1*2];
+    for(;;) {
+        memset(p,0,len);
+        if(++y1 >= y2)
+            break;
+        p += TXT_WIDTH*2;
+    }
+}
+void RenderUpdate(int x1, int y1, int x2, int y2, BOOL clear)
 {
 
 	U8 *p;
 	U16 *s;
 	int w,h,maxY, yd,ye;
 
-	if(Y_ADJUST_CL>8 && y2>=PIC_MAXY)
-		RectFill(0,SCREEN_HEIGHT+8-Y_ADJUST_CL,SCREEN_WIDTH,SCREEN_HEIGHT,0);
+    if(clear)
+        ClearTextInside(x1,y1,x2,y2);
 
 	if((x1>=PIC_WIDTH)||x2<0)
 		return;
@@ -391,11 +454,52 @@ void ClearLine(int row, U8 c)
     }
 }
 /*****************************************************************************/
+void ClampTextX(int *x)
+{
+    if (*x<0)
+        *x=0;
+    else
+    if (*x>TXT_WIDTH-1)
+        *x=TXT_WIDTH-1;
+}
+void ClampTextY(int *y)
+{
+    if (*y<0)
+        *y=0;
+    else
+    if (*y>TXT_HEIGHT-1)
+        *y=TXT_HEIGHT-1;
+}
+/*****************************************************************************/
 void ClearTextRect(int x1, int y1, int x2, int y2, U8 c)
 {
 	int size,w;
 	U16 wC;
     U16 *p;
+    ClampTextX(&x1); ClampTextY(&y1);
+    ClampTextX(&x2); ClampTextY(&y2);
+    if(x2>=x1 && y2>=y1) {
+        int y = y1;
+        int len = x2-x1+1;
+        U16 *p = (U16*)&textBuf[y*TXT_WIDTH*2 + x1*2];
+        if(c==0) {
+            for(;;) {
+                memset(p,0,len*2);
+                if(++y > y2)
+                    break;
+                p += TXT_WIDTH;
+            }
+        } else {
+            wC = ' ' + (c << (4+8));
+            for(;;) {
+                for(w=0; w<len; w++)
+                    p[w] = wC;
+                if(++y > y2)
+                    break;
+                p += TXT_WIDTH;
+            }
+        }
+    }
     y1 = ((y1-1)*CHAR_HEIGHT)-Y_ADJUST_CL;
     y2 = ((y2)*CHAR_HEIGHT)-Y_ADJUST_CL;
     if(y2<0||y1>=SCREEN_HEIGHT-Y_ADJUST_CL) return;

@@ -123,10 +123,12 @@ void PollInput()
 #if 0
                     	key = '\t'; // inventory
 #else
-                        {{}} if (Y_ADJUST_CL == -8) Y_ADJUST_CL =  4;
-                        else if (Y_ADJUST_CL <=  4) Y_ADJUST_CL = 32;
-                        else                        Y_ADJUST_CL = -8;
-                        RedrawScreenAll();
+                        if(!TEXT_MODE) {
+                            {{}} if (Y_ADJUST_CL == -8) Y_ADJUST_CL =  4;
+                            else if (Y_ADJUST_CL <=  4) Y_ADJUST_CL = 32;
+                            else                        Y_ADJUST_CL = -8;
+                            RedrawScreenAll();
+                        }
                         key = '\0';
 #endif
                     	break;

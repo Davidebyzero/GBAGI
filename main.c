@@ -53,6 +53,8 @@ int main()
     for(;;) {
     	InitWinGUISystem(0);
 
+        ClearTextBuf();
+        EraseBottomText();
         LoadPicBufSplash();
 
         PIC_VISIBLE=TRUE;
