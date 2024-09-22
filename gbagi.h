@@ -21,8 +21,8 @@
 #ifndef _GBAGI_H
 #define _GBAGI_H
 /*****************************************************************************/
-#define BUILD_DATE "2024/09/19"
-#define BUILD_VERSION	"2.20"
+#define BUILD_DATE "2024/09/22"
+#define BUILD_VERSION	"2.21"
 /*****************************************************************************/
 #include <stdio.h>
 #include <string.h>

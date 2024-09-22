@@ -502,11 +502,11 @@ void ClearTextRect(int x1, int y1, int x2, int y2, U8 c)
     }
     y1 = ((y1-1)*CHAR_HEIGHT)-Y_ADJUST_CL;
     y2 = ((y2)*CHAR_HEIGHT)-Y_ADJUST_CL;
-    if(y2<0||y1>=SCREEN_HEIGHT-Y_ADJUST_CL) return;
+    if(y2<0||y1>=SCREEN_HEIGHT) return;
     if(y1<0)
     	y1=0;
-    if(y2>SCREEN_HEIGHT-Y_ADJUST_CL+8)
-    	y2=SCREEN_HEIGHT-Y_ADJUST_CL+8;
+    if(y2>SCREEN_HEIGHT)
+    	y2=SCREEN_HEIGHT;
 
 	size = ((x2+1-x1)*CHAR_WIDTH)>>1;
 
