@@ -482,22 +482,13 @@ void ClearTextRect(int x1, int y1, int x2, int y2, U8 c)
         int y = y1;
         int len = x2-x1+1;
         U16 *p = (U16*)&textBuf[y*TXT_WIDTH*2 + x1*2];
-        if(c==0) {
-            for(;;) {
-                memset(p,0,len*2);
-                if(++y > y2)
-                    break;
-                p += TXT_WIDTH;
-            }
-        } else {
-            wC = ' ' + (c << (4+8));
-            for(;;) {
-                for(w=0; w<len; w++)
-                    p[w] = wC;
-                if(++y > y2)
-                    break;
-                p += TXT_WIDTH;
-            }
+        wC = ' ' + (c << (4+8));
+        for(;;) {
+            for(w=0; w<len; w++)
+                p[w] = wC;
+            if(++y > y2)
+                break;
+            p += TXT_WIDTH;
         }
     }
     y1 = ((y1-1)*CHAR_HEIGHT)-Y_ADJUST_CL;
