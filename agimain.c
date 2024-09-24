@@ -144,11 +144,7 @@ BOOL AGIInit(BOOL RESTART)
     if(!RESTART)
     	ClearControlKeys();
 
-	vars[vCOMPUTER]		= 0; // PC
-	vars[vMONTIOR]	= 3; // EGA
-	vars[vSOUNDTYPE]		= 1; // PC
-	vars[vMAXINPUT]		= MAX_STRINGS_LEN;
-	vars[vMEMORY]		= 10;
+    AGIInitVars();
 
 	SetFlag(fNEWROOM);
 
@@ -166,6 +162,15 @@ BOOL AGIInit(BOOL RESTART)
 	SetFlag(fSOUND);
 
     return TRUE;
+}
+/*****************************************************************************/
+void AGIInitVars()
+{
+	vars[vCOMPUTER]		= 0; // PC
+	vars[vMONTIOR]	= 3; // EGA
+	vars[vSOUNDTYPE]		= 1; // PC
+	vars[vMAXINPUT]		= MAX_STRINGS_LEN;
+	vars[vMEMORY]		= 10;
 }
 /*****************************************************************************/
 void AGIShutDown()

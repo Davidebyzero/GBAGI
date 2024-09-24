@@ -23,6 +23,7 @@
 /*****************************************************************************/
 
 BOOL AGIInit(BOOL RESTART);
+void AGIInitVars();
 void AGIShutDown(void);
 void AGIMain(void);
 

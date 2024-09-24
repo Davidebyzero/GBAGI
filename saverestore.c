@@ -407,6 +407,8 @@ BOOL RestoreGame()
 
     CLOSE_SAVE_FILE();
 
+    AGIInitVars(); // restore these after being overwritten by FREAD(vars)
+
 	for(v=ViewObjs; v<&ViewObjs[MAX_VOBJ]; v++)
     	SetObjView(v,v->view);
 
