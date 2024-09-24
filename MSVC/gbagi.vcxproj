@@ -42,6 +42,8 @@
     <ClCompile Include="../variables.c" />
     <ClCompile Include="../views.c" />
     <ClCompile Include="../wingui.c" />
+    <ClCompile Include="../extra/splashdata.c" />
+    <ClCompile Include="../extra/splashlogodata.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../agimain.h" />
@@ -68,6 +70,7 @@
     <ClInclude Include="../variables.h" />
     <ClInclude Include="../views.h" />
     <ClInclude Include="../wingui.h" />
+    <ClInclude Include="../extra/splash.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C4E80E1E-A2CB-46A5-B5EE-4D66A7856842}</ProjectGuid>

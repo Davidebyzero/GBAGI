@@ -70,6 +70,12 @@
     <ClCompile Include="../views.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="../extra/splashdata.c">
+      <Filter>Source Files\Splash</Filter>
+    </ClCompile>
+    <ClCompile Include="../extra/splashlogodata.c">
+      <Filter>Source Files\Splash</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -77,6 +83,12 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{2239d4c5-e19e-4fb2-89f1-47667502c39b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Splash">
+      <UniqueIdentifier>{41c825e7-ca0f-49dc-8b14-9cbc0ec62d20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Splash">
+      <UniqueIdentifier>{0a8c1039-e81d-42f3-beb3-2ee0f9ad74ec}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +163,9 @@
     </ClInclude>
     <ClInclude Include="../wingui.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../extra/splash.h">
+      <Filter>Header Files\Splash</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

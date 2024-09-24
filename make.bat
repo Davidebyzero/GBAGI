@@ -6,6 +6,8 @@ del gbagi.bin
 
 as -mthumb-interwork    -o crt0.o crt0.s
 
+gcc -c -O3 -mthumb -mthumb-interwork    -o extra/splashdata.o extra/splashdata.c
+gcc -c -O3 -mthumb -mthumb-interwork    -o extra/splashlogodata.o extra/splashlogodata.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o main.o main.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o agimain.o agimain.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o gamedata.o gamedata.c
@@ -31,6 +33,6 @@ gcc -c -O3 -mthumb -mthumb-interwork    -o saverestore.o saverestore.c
 gcc -c -O3 -mthumb -mthumb-interwork    -o interrupts.o interrupts.c
 
 
-gcc -nostartfiles -Wl,-Tlnkscript  -mthumb -mthumb-interwork  -o gbagi.elf crt0.o main.o interrupts.o agimain.o gamedata.o input.o keyboard.o invobj.o logic.o picture.o screen.o status.o variables.o views.o system.o commands.o cmdagi.o cmdtest.o errmsg.o text.o menu.o parse.o saverestore.o wingui.o
+gcc -nostartfiles -Wl,-Tlnkscript  -mthumb -mthumb-interwork  -o gbagi.elf crt0.o extra/splashdata.o extra/splashlogodata.o main.o interrupts.o agimain.o gamedata.o input.o keyboard.o invobj.o logic.o picture.o screen.o status.o variables.o views.o system.o commands.o cmdagi.o cmdtest.o errmsg.o text.o menu.o parse.o saverestore.o wingui.o
 objcopy -O binary gbagi.elf gbagi.bin
 gbarom\aginject

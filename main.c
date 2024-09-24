@@ -33,8 +33,7 @@
 /*****************************************************************************/
 
 /*****************************************************************************/
-#include "extra\splashdata.c"
-#include "extra\splashlogodata.c"
+#include "extra/splash.h"
 void LoadPicBufSplash(void);    
 
 char szerr[] = "- ERROR:  No AGI Game embedded in ROM! -";
