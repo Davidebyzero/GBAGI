@@ -5,5 +5,5 @@
 extern U8 splashData[];
 
 #define SPLASHLOGO_WIDTH  98
-#define SPLASHLOGO_HEIGHT 63
+#define SPLASHLOGO_HEIGHT 34 //63
 extern U8 splashLogoData[];
