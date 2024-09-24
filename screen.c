@@ -183,6 +183,9 @@ void RedrawScreen(BOOL clear)
                     break;
             }
         }
+        textRow = textRowOld;
+        textCol = textColOld;
+        textColour = textColourOld;
     }
 }
 /*****************************************************************************/
