@@ -107,7 +107,7 @@ void LoadPicBufSplash()
          		pictureBuf[i++] = (x^y)&1?0x45:0x4E;
             }
         }  */
-   	int w=54,h=60;
+   	int w=SPLASH_WIDTH,h=SPLASH_HEIGHT;
     int x,y;
     U8 *ptrbase = pictureBuf+(10*PIC_WIDTH)+(2);
     U8 *bmp = splashData;
@@ -132,8 +132,8 @@ void LoadPicBufSplash()
             pb+=2;
         }
     }
-   	w=98;
-    h=63;
+   	w=SPLASHLOGO_WIDTH;
+    h=SPLASHLOGO_HEIGHT;
     ptrbase = pictureBuf+(15*PIC_WIDTH)+(59);
     bmp = splashLogoData;
     for(y=0;y<h;y++) {
