@@ -390,10 +390,8 @@ void ClearTextInside(int x1, int y1, int x2, int y2)
     y1 =  y1   / CHAR_HEIGHT;
     x2 = (x2-1)/(PIC_WIDTH/TXT_WIDTH)+2;
     y2 = (y2-1)/ CHAR_HEIGHT         +2;
-    if (x2<x1)
-        x2=x1;
-    if (y2<y1)
-        y2=y1;
+    if (x2<=x1 || y2<=y1)
+        return;
     len = (x2-x1)*2;
     p = &textBuf[y1*TXT_WIDTH*2 + x1*2];
     for(;;) {
