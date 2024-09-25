@@ -1607,7 +1607,7 @@ BOOL wDrawKeyboard(WND *w, U16 flags)
 	return TRUE;
 }
 /******************************************************************************/
-void KeyboadSelectKey(WND *w, int xd, int yd)
+void KeyboardSelectKey(WND *w, int xd, int yd)
 {
 	int rowlen;
     const char **s;
@@ -1710,16 +1710,16 @@ BOOL wmButtonPress(WND *w, U16 wParam, void *pParam, U16 flags)
 			w->state|=wtBTNDOWN;
          	switch(wParam) {
             	case KEY_UP:
-                   	KeyboadSelectKey(w,0,-1);
+                   	KeyboardSelectKey(w,0,-1);
                     break;
             	case KEY_DOWN:
-                   	KeyboadSelectKey(w,0,+1);
+                   	KeyboardSelectKey(w,0,+1);
                     break;
             	case KEY_LEFT:
-                   	KeyboadSelectKey(w,-1,0);
+                   	KeyboardSelectKey(w,-1,0);
                     break;
             	case KEY_RIGHT:
-                   	KeyboadSelectKey(w,+1,0);
+                   	KeyboardSelectKey(w,+1,0);
                     break;
                 case KEY_ENTER:
     				if(w->ext.keyboard.selkey==KEY_SHIFT) {

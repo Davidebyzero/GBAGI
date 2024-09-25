@@ -301,7 +301,7 @@ void WndDispose(WND *w);
 void ListBoxClear(WND *w);
 void EditScrollChar(WND *w,int dir);
 void EditScrollCol(WND *w,int dir, BOOL del);
-void KeyboadSelectKey(WND *w, int xd, int yd);
+void KeyboardSelectKey(WND *w, int xd, int yd);
 
 void RedrawAllWindows(void);
 void wHideWindow(WND *w);
