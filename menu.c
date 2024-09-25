@@ -259,7 +259,9 @@ void MenuInput()
 									"        select letter in edit box\n"
 									"Left/Right:\n"
 									"        Select next/previous set\n" 
-									"        of words in list box"
+									"        of words in list box\n"
+									"Start:  Shortcut for pressing OK\n"
+									"        in \"Enter Input\" dialog"
 								);
                             	break;
                         }

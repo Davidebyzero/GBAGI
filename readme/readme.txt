@@ -58,6 +58,7 @@ R: Select next control
 A: Press button
 Up/Down: Select item in listbox, select letter in edit box
 Left/Right: Select next/previous set of words in list box
+Start: Shortcut for pressing OK in "Enter Input" dialog
 
 
 
