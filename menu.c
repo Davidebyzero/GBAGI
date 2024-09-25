@@ -242,7 +242,8 @@ void MenuInput()
 									"Start:  Brings up virtual keyboard\n"
 									"R:      Repeat previous key pressed\n"
 									"        on virtual keyboard\n"
-									"Select: Inventory (\"TAB\")\n"
+									"Select: Cycle through three vertical\n"
+									"        scrolling positions\n"
 									"START+SELECT+A+B:\n"
 									"        Exit to Game Select Screen"
 								);
