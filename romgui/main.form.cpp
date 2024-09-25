@@ -149,7 +149,7 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     ofnOpenInp.lpstrFile = new TCHAR[260];
     ofnOpenInp.nMaxFile = 260;
     _tcscpy(ofnOpenInp.lpstrFile, _T(""));
-    ofnOpenInp.lpstrFilter = _T("GBAGI.BIN\0gbagi.bin\0");
+    ofnOpenInp.lpstrFilter = _T("GBAGI*.BIN\0gbagi*.bin\0");
     ofnOpenInp.nFilterIndex = 0;
     ofnOpenInp.lpstrTitle = _T("");
     ofnOpenInp.lpstrDefExt = _T("");
