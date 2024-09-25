@@ -1,7 +1,7 @@
 GBAGI: The Game Boy Advance Adventure Game Interpreter
 By Brian Provinciano
-Revision 2.21
-September 22nd, 2024
+Revision 2.30
+September 24th, 2024
 https://github.com/Davidebyzero/GBAGI
 ===============================================================================
 Sierra's original animated adventure games on the Nintendo Game Boy Advance!
