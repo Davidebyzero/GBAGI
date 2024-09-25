@@ -41,7 +41,11 @@
 #endif
 _RECT port;
 BOOL SHOW_VERSION;
+#ifndef FAKE_HERCULES
 S16 Y_ADJUST_CL = 4;
+#else
+S16 Y_ADJUST_CL = 0;
+#endif
 /*****************************************************************************/
 const int scrCoords[160][3] = {
 	{  0,  0,  0},{  0,  0,  0},{  0,  0,  0},{  0,  0,  0},{  3,  4,  1},{  3,  4,  1},{  3,  4,  1},{  3,  4,  1},
@@ -156,7 +160,7 @@ void RedrawScreen(BOOL clear)
 	RenderUpdate(0,0,PIC_MAXX,PIC_MAXY,clear);
 	WriteStatusLine();
 	if(Y_ADJUST_CL>8)
-		RectFill(0,SCREEN_HEIGHT+8-Y_ADJUST_CL,SCREEN_WIDTH,SCREEN_HEIGHT,0);
+		RectFill(0,SCREEN_HEIGHT+CHAR_HEIGHT-Y_ADJUST_CL,SCREEN_WIDTH,SCREEN_HEIGHT,0);
     if(clear)
         ClearTextBuf();
     else {
@@ -416,9 +420,9 @@ void RenderUpdate(int x1, int y1, int x2, int y2, BOOL clear)
 	if(x1<0) x1=0;
 
 	if(STATUS_VISIBLE) {
-		maxY = PIC_MAXY-Y_ADJUST_CL-8;
-        yd = Y_ADJUST_CL+8;
-        ye=8;
+		maxY = PIC_MAXY-Y_ADJUST_CL-CHAR_HEIGHT;
+        yd = Y_ADJUST_CL+CHAR_HEIGHT;
+        ye=CHAR_HEIGHT;
 	} else {
 		maxY = PIC_MAXY-Y_ADJUST_CL;
         yd = Y_ADJUST_CL;    

@@ -21,6 +21,8 @@
 #ifndef _SCREEN_H
 #define _SCREEN_H
 /*****************************************************************************/
+//#define FAKE_HERCULES  // if defined, tell AGI logic that monitor type is MONO, so that it will draw all text within picture limits
+
 //#define Y_ADJUST_ST			12//8//16
 //#define Y_ADJUST_CL 		32//-8//4//4//0//8
 extern S16 Y_ADJUST_CL;
@@ -48,7 +50,7 @@ extern S16 Y_ADJUST_CL;
 #define TXT_WIDTH           40
 #define TXT_HEIGHT          25
 
-#define GBA_MAXROW			(SCREEN_HEIGHT/8-1)
+#define GBA_MAXROW			(SCREEN_HEIGHT/CHAR_HEIGHT-1)
 #define GBA_MAXCOL			(TXT_WIDTH-1)
 #define GBA_MAXY			151
 #define GBASCR_SIZEOF		(19200)

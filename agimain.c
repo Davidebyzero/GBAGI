@@ -167,7 +167,11 @@ BOOL AGIInit(BOOL RESTART)
 void AGIInitVars()
 {
 	vars[vCOMPUTER]		= 0; // PC
+#ifdef FAKE_HERCULES
+	vars[vMONTIOR]	= 2; // MONO (Hercules monochrome)
+#else
 	vars[vMONTIOR]	= 3; // EGA
+#endif
 	vars[vSOUNDTYPE]		= 1; // PC
 	vars[vMAXINPUT]		= MAX_STRINGS_LEN;
 	vars[vMEMORY]		= 10;

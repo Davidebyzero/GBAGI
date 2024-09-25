@@ -20,9 +20,14 @@
 /*****************************************************************************/
 #ifndef _TEXT_H
 #define _TEXT_H
+#include "screen.h" // for FAKE_HERCULES
 /*****************************************************************************/
 #define CHAR_WIDTH		6
+#ifdef FAKE_HERCULES
+#define CHAR_HEIGHT		7
+#else
 #define CHAR_HEIGHT		8
+#endif
 
 #define MAX_MSG_SIZE	1000 // (40*25)
 #define MAX_MSG_WIDTH	30

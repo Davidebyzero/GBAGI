@@ -854,7 +854,7 @@ void ListBoxSelect(WND *w,int index)
 void ListBoxSelItem(WND *w,int diff)
 {
 	LISTITEM *liNew;
-    int lidex,todex,itemheight=(GETCLIENTHEIGHT(w)-4)/CHAR_HEIGHT;
+    int lidex,todex,itemheight=(GETCLIENTHEIGHT(w)-CHAR_HEIGHT/2)/CHAR_HEIGHT;
 	if(!w->ext.listbox.itemCount||!w->ext.listbox.itemActive||!w->ext.listbox.itemFirst||!w->ext.listbox.itemLast)
     	return;
     lidex=LIFindIndex(w,w->ext.listbox.itemActive)+diff;
@@ -1418,7 +1418,7 @@ BOOL wDrawListBox(WND *w, U16 flags)
     if(bottomindex>=w->ext.listbox.itemCount)
     	bottomindex=w->ext.listbox.itemCount-1;
 
-    if((actindex-topindex)*8>(GETCLIENTHEIGHT(w)-8)) {
+    if((actindex-topindex)*CHAR_HEIGHT>(GETCLIENTHEIGHT(w)-CHAR_HEIGHT)) {
      	topindex++;
     }
 

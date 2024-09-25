@@ -124,9 +124,14 @@ void PollInput()
                     	key = '\t'; // inventory
 #else
                         if(!TEXT_MODE) {
-                            {{}} if (Y_ADJUST_CL == -8) Y_ADJUST_CL =  4;
-                            else if (Y_ADJUST_CL <=  4) Y_ADJUST_CL = 32;
-                            else                        Y_ADJUST_CL = -8;
+#   ifndef FAKE_HERCULES
+                            {{}} if (Y_ADJUST_CL == -CHAR_HEIGHT) Y_ADJUST_CL = 4;
+                            else if (Y_ADJUST_CL <=            4) Y_ADJUST_CL = 32;
+#   else
+                            {{}} if (Y_ADJUST_CL == -CHAR_HEIGHT) Y_ADJUST_CL = 0;
+                            else if (Y_ADJUST_CL <=            4) Y_ADJUST_CL = 8;
+#endif
+                            else                                  Y_ADJUST_CL = -CHAR_HEIGHT;
                             RedrawScreenAll();
                         }
                         key = '\0';
