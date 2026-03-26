@@ -34,6 +34,7 @@
 #include "wingui.h"
 #include "parse.h"
 #include "gamedata.h"
+#include "lsl1hack.h"
 #include "saverestore.h"
 /*****************************************************************************/
 char sztmp[256];
@@ -1479,7 +1480,15 @@ void cSetString()
 //	sDest.
 void cGetString()
 {
-	ExecuteGetStringDialog(FALSE,code[0],GetMessage(curLog,code[1]),code[4]+1);
+	char *msg = GetMessage(curLog,code[1]);
+	int maxLen = code[4]+1;
+	if(code[0] < MAX_STRINGS &&
+	   !LSL1CheckWineOrderAutofill(msg, strings[code[0]], maxLen)) {
+		ExecuteGetStringDialog(FALSE,code[0],msg,maxLen);
+		LSL1NormalizePhoneNumberInput(msg, strings[code[0]]);
+	} else if(code[0] < MAX_STRINGS) {
+		LSL1NormalizePhoneNumberInput(msg, strings[code[0]]);
+	}
 	code += 5;
 }
 /******************************************************************************/
@@ -2230,3 +2239,8 @@ void cAdjEgoMoveToXY()
     code=code;
 }
 /******************************************************************************/
+
+
+
+
+

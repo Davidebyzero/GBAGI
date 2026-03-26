@@ -24,9 +24,11 @@
 #include "gamedata.h"
 #include "system.h"
 #include "screen.h"
+#include "lsl1hack.h"
 #include "text.h"
 #include "commands.h"
 #include "screen.h"
+#include "lsl1hack.h"
 /*****************************************************************************/
 #define MAX_INPUT_LEN	40
 char szInput[MAX_INPUT_LEN+1], szInputClean[MAX_INPUT_LEN+1], szString[MAX_INPUT_LEN+1];
@@ -373,18 +375,20 @@ void ExecuteGetStringDialog(BOOL _GET_INT, U8 _dest, char *msg, int maxLen)
      	if(maxLen >= MAX_STRINGS_LEN)
         	maxLen = MAX_STRINGS_LEN;
      	edGSEdit.style &= ~esDIGITONLY;
+		strings[dest][0] = '\0';
     }
-    AddWindow(&wnGetString);
-    AddWindow(&edGSEdit);
-    AddWindow(&txGSMessage);
+    memset(szString,0,sizeof(szString));
+    memset(textField,0,sizeof(textField));
+    edGSEdit.caption = szString;
 
 	wnGetString.caption = GET_INT?"Enter a Number":"Enter a String";
     maxWidth = 38;
     szMsg = WordWrap(msg);
+    maxLen = LSL1AdjustGetStringMaxLen(msg, maxLen);
 
     edGSEdit.ext.edit.maxLen = maxLen;
-    edGSEdit.ext.edit.col=0;
-    szInput[0]='\0';
+    edGSEdit.ext.edit.col = 0;
+    szInput[0] = '\0';
 
     if(maxLen>maxWidth)
     	maxLen = maxWidth;
@@ -400,9 +404,13 @@ void ExecuteGetStringDialog(BOOL _GET_INT, U8 _dest, char *msg, int maxLen)
     CalcWndRect(&txGSMessage);
 	edGSEdit.width		= (maxLen+1)*CHAR_WIDTH;
 	edGSEdit.y			= txGSMessage.rect.bottom+4;
-    szString[0]			= '\0';
+    memset(szString,0,sizeof(szString));
     edGSEdit.caption	= szString;
     CalcWndRect(&edGSEdit);
+
+    AddWindow(&wnGetString);
+    AddWindow(&edGSEdit);
+    AddWindow(&txGSMessage);
 
 	WinGUIDoit();
 
@@ -428,4 +436,7 @@ S16 wnGetStringProc(WND *w, U16 msg, U16 wParam, U32 lParam)
 	return TRUE;
 }
 /*****************************************************************************/
+
+
+
 
