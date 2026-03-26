@@ -1,5 +1,4 @@
-
-![mockup](https://github.com/user-attachments/assets/f9aad551-ca78-4544-9007-e307e296c578)
+![mockup](https://github.com/user-attachments/assets/4aa2ce8b-7da4-47d4-844d-2bf692cea799)
 
 
 
