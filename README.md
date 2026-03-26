@@ -1,3 +1,6 @@
+
+<img width="1536" height="1024" alt="mockup" src="https://github.com/user-attachments/assets/f94873ff-9594-413a-9b14-7a86fe24c34f" />
+
 This repo fixes a game-breaking issue in Leisure Suit Larry 1 on GBAGI where the Quikimart phone sequence didn’t work correctly on GBA.
 
 🧩 The Issue
