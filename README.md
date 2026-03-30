@@ -64,6 +64,7 @@ General solution for parser-heavy scenes
 
 ![gameboy box_template__lsl](https://github.com/user-attachments/assets/cf4ce4dd-cdfe-47b2-a1ed-200eddaadba1)
 
+![Gameboy_Advance_Label_LSL](https://github.com/user-attachments/assets/14061f63-3cf8-447d-a678-f880487cc555)
 
 
 
