@@ -57,7 +57,6 @@ Improved virtual keyboard input
 General solution for parser-heavy scenes
 
 ![1000043481](https://github.com/user-attachments/assets/7e19964d-0024-4059-8525-a03e4b72793d)
-![1000043435](https://github.com/user-attachments/assets/da8a3ab6-f16c-466f-8dba-8003cb852b2c)
 ![1000043438](https://github.com/user-attachments/assets/abe88bf2-57c9-41fe-b15e-2a4c59b3b72d)
 <img width="2340" height="1080" alt="1000043505" src="https://github.com/user-attachments/assets/37081562-1a75-4b1c-a584-3b8b30e5fc39" />
 
