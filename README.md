@@ -62,6 +62,7 @@ General solution for parser-heavy scenes
 Watch GBAGI in action:
 https://youtu.be/MRohIiQh68I?si=ul9iWzklJaf0n1uS
 
+![gameboy box_template__lsl](https://github.com/user-attachments/assets/cf4ce4dd-cdfe-47b2-a1ed-200eddaadba1)
 
 
 
