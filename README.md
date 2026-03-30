@@ -61,9 +61,6 @@ General solution for parser-heavy scenes
 <img width="2340" height="1080" alt="1000043505" src="https://github.com/user-attachments/assets/37081562-1a75-4b1c-a584-3b8b30e5fc39" />
 
 
-![gameboy box_template__lsl](https://github.com/user-attachments/assets/cf4ce4dd-cdfe-47b2-a1ed-200eddaadba1)
-
-![Gameboy_Advance_Label_LSL](https://github.com/user-attachments/assets/14061f63-3cf8-447d-a678-f880487cc555)
 
 
 
