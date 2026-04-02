@@ -64,14 +64,14 @@ U8 *code;
 /******************************************************************************/
 const char *solidWords[] = {
 	"look","marry", "take", "button", "phone", "hallway", "drinks", "hole", "cigarette",
-	"yes", "no", "wall", "area", "wallet", "ground", "stairs", "window", "open", "move", "climb", "talk",
+	"yes", "no", "wall", "area", "wallet", "earth", "ground", "stairs", "window", "open", "move", "climb", "talk",
 	"garbage", "ledge", "under", "over", "drawer", "carpet", "out", "key", "give",
-	"lie down", "touch", "empty", "find", "behind", "door", "clothes", "lock", "break",
-	"listen", "table", "shelf", "book", "thank you", "box", "jump", "man", "woman",
+	"lie down", "rub", "touch", "empty", "find", "behind", "door", "clothes", "lock", "break",
+	"listen", "table", "shelf", "book", "page", "thank you", "box", "jump", "gnome", "dwarf", "neptune", "man", "grandma", "mermaid", "woman",
 	"start", "ignite", "fire", "meter", "lips", "basket", "wine", "food", "steal", "knife",
 	"cut", "sink", "sit down", "hit", "knock on", "cover", "bottle", "television", "put on",
 	"ashtray", "bill", "pass", "ladder", "capsule", "negotiate", "flower", "elevator",
-	"paper", "ken sent me", "feel", "bartender", "sleep", "pills", "water", "rope",
+	"paper", "ken sent me", "feel", "bartender", "sleep", "pills", "powder", "rope", "stake", "shower", "radio", "extender", "laura", "water",
 	"ring", "blow up", "release", "booze", "remote control", "whiskey", "bathroom",  "mat",
 	"notes", "wash", "candy", "doll", "magazine", "old", "building", "get up", "change",
 	"channel", "jukebox", "wipe", "attatch", "clothes line", "decrease", "increase",
@@ -79,18 +79,18 @@ const char *solidWords[] = {
 	"plants", "boo", "music", "junk food", "gamble", "lever", "split", "rules",
 	"swim suit", "moose", "undress", "dress", "artwork", "fan", "yourself", "fire hydrant",
 	"enjoy", "disc jockey", "roof", "weapon", "onto", "person", "watch", "waiter", "spit",
-	"shout", "dive", "under water", "bucket", "leg", "bubbles", "credit card", "pause",
+	"shout", "swim", "dive", "under water", "bucket", "leg", "bubbles", "credit card", "pause",
 	"suit", "cooler", "information", "cheer", "stop", "inventory", "crack", "crap", "leak",
 	"screw", "fart", "boobs", "ass", "dong", "up yours", "business card", "work",
 	"computer console", "transporter", "screen", "fuel pump", "close", "catch", "rock",
-	"push", "position", "forest", "help", "swim", "climb", "ground", "plants", "smell", "stand up",
-    "knife", "torch", "soup", "catch", "opening", "bag", "get in", "tree", "key", "light",
+	"push", "position", "forest", "help", "climb", "ground", "plants", "smell", "stand up",
+    "knife", "torch", "soup", "catch", "opening", "bag", "get in", "tree", "walnut", "key", "sun", "light",
     "knight", "pump", "eat", "silence", "name", "bird", "feed", "diamond", "throw", "drop",
-    "cast", "fence", "stove", "fly", "move", "woman", "remove", "river", "guitar", "initialize",
-    "hat", "chair", "keyhole", "duck", "suite", "body", ""
+    "cast", "fence", "stove", "fly", "move", "woman", "remove", "waterfall", "river", "guitar", "initialize",
+    "hat", "chair", "keyhole", "duck", "cloud", "suite", "body", ""
 };
 
-#define SG_TOTAL 8
+#define SG_TOTAL 19
 #define SG_WORDMAX 20
 
 const char *solidGroups[SG_TOTAL][SG_WORDMAX] = {
@@ -101,8 +101,44 @@ const char *solidGroups[SG_TOTAL][SG_WORDMAX] = {
 	{"bureau","chest","dresser", ""},
 	{"purchase", "pay", ""},
 	{"car", "taxi", ""},
+	{"girl", "woman", ""},
+	{"press", "move", ""},
+	{"earth", "ground", ""},
+	{"sun", "light", ""},
+	{"cloud", "sky", ""},
+	{"rub", "touch", ""},
+	{"book", "bookcase", "book shelf", ""},
+	{"dwarf", "man", ""},
+	{"neptune", "man", ""},
+	{"grandma", "woman", ""},
+	{"mermaid", "woman", ""},
 	{""}
 };
+/******************************************************************************/
+static BOOL IsPoliceQuest(void)
+{
+	return gi && gi->title && strcmp(gi->title, "Police Quest") == 0;
+}
+/******************************************************************************/
+int CountGameSpecificAliases()
+{
+	if(IsPoliceQuest())
+		return 6;
+	return 0;
+}
+/******************************************************************************/
+void DoGameSpecificAliases()
+{
+	if(IsPoliceQuest()) {
+		AddWord(268, "extender");
+		AddWord(107, "ticket");
+		AddWord(107, "tickets");
+		AddWord(142, "handcuffs");
+		AddWord(142, "cuffs");
+		AddWord(19, "park");
+		AddWord(99, "me");
+	}
+}
 /******************************************************************************/
 TCHAR strbuf[4096];
 #include <windows.h>
@@ -694,14 +730,16 @@ BOOL ProcessWords()
         *wPtr++=0;
             	wc++;
     }
+    wc += CountGameSpecificAliases();
     wordsSize = wPtr-wordData;
 	mFree(tokData);
 
     if(!wc) return TRUE;
 	wordset = (WORDSET*)calloc(sizeof(WORDSET),wc);
- 	pwords = wordset;
+	pwords = wordset;
 	DoSolidGroups();
     DoSolidWords();
+    DoGameSpecificAliases();
     DoRemainingWords();
     //if(pwords!=wordset)
     	AlphaSortWords();
@@ -1187,9 +1225,9 @@ VERLIST *FindAGIVersion(TCHAR *filename)
 		}
 	} else if(major == 3) {
 		if(minor <= 0x2086) {
-			return &verlist[3];
-		} else {
 			return &verlist[4];
+		} else {
+			return &verlist[5];
 		}
 	}
     return NULL;

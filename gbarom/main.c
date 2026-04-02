@@ -43,6 +43,10 @@ GVER v2common =
 GVER v2amiga =
     {ENCRYPT_OBJ|AMIGA,
     	0x02, 0x0917};
+  	// common version 2 single-dir
+GVER v2commonSingle =
+    {SINGLE_DIR|PACKED_DIRS|ENCRYPT_OBJ,
+    	0x02, 0x0917};
   	// early version 3
 GVER v3early =
     {SINGLE_DIR|PACKED_DIRS|ENCRYPT_OBJ,
@@ -69,7 +73,7 @@ GAMEINFO games[] = {
 	{&v2common, "",		"Space Quest 1", 				"D:\\agigames\\Space Quest 1 (AGI)\\"},
 	{&v2common, "",		"Space Quest 2", 				"D:\\agigames\\Space Quest 2\\"},    
 	{&v3common,	"GR",	"Gold Rush!",					"D:\\agigames\\Goldrush\\"},
-	{&v2common,	"",		"The Black Cauldron", 			"D:\\agigames\\The Black Cauldron\\"},
+	{&v2commonSingle,	"BC",		"The Black Cauldron", 			"D:\\agigames\\The Black Cauldron\\"},
 	{&v2early,	"",   	"Donald Duck's Playground", 	"D:\\agigames\\Donald Duck's Playground\\"},
 	{&v2common,	"",   	"Mixed Up Mother Goose", 		"D:\\agigames\\Mixed Up Mother Goose\\"},
 	{&v3common,	"DM", 	"Demo Pack #4", 				"D:\\agigames\\demopac4\\"},

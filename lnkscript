@@ -7,6 +7,8 @@ __text_start = DEFINED (__gba_multiboot) ? 0x2000000 : 0x8000000;
 __eheap_end       = 0x2040000;
 __iwram_start     = 0x3000000;
 __iheap_end       = 0x3008000 - 0x400;
+__memmap_ewram_end = __eheap_end;
+__memmap_iwram_end = 0x3008000;
 __sp_usr          = 0x3008000 - 0x100;
 __sp_irq          = 0x3008000 - 0x60;
 __intr_vector_buf = 0x3008000 - 4;
@@ -160,11 +162,22 @@ SECTIONS
 
   __rom_end = ADDR(.text) + SIZEOF(.text) + SIZEOF(.rodata) + SIZEOF(.ctors) + SIZEOF(.dtors) + SIZEOF(.eh_frame) + SIZEOF(.gcc_except_table) + SIZEOF(.iwram) + SIZEOF(.data) + SIZEOF(.ewram) ;
 
+  __load_start_appended = __rom_end;
+  __appended_start = .;
+  .appended : AT (__load_start_appended)
+  {
+    *(.appended .appended.*)
+    . = ALIGN(4);
+  }
+  __appended_end = .;
+  __load_stop_appended = __load_start_appended + SIZEOF(.appended);
+
   __eheap_start = . ;
 
   _end = DEFINED (__gba_iwram_heap) ? __iheap_start : .; /* v1.3 */
   __end__ = _end ;
   PROVIDE (end = _end);
+  __heap_limit = DEFINED(__gba_iwram_heap) ? __memmap_iwram_end - 0x100 : __memmap_ewram_end;
 
   .stab 0 : { *(.stab) }
   .stabstr 0 : { *(.stabstr) }

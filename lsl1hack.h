@@ -12,5 +12,6 @@ BOOL LSL1CheckWineOrderAutofill(char *prompt, char *dest, int maxLen);
 int LSL1AdjustGetStringMaxLen(char *prompt, int maxLen);
 void LSL1NormalizePhoneNumberInput(char *prompt, char *dest);
 void LSL1NormalizePhoneNumberDigits(char *dest);
+char *LSL1OverridePhoneMessage(char *msg);
 
 #endif

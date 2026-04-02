@@ -37,6 +37,9 @@
     <ClCompile Include="../logic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="../lsl1hack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="../main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -125,6 +128,9 @@
     <ClInclude Include="../logic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="../lsl1hack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="../menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -169,3 +175,4 @@
     </ClInclude>
   </ItemGroup>
 </Project>
+

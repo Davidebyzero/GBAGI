@@ -24,6 +24,7 @@
 #include "lsl1hack.h"
 /*****************************************************************************/
 #define LSL1_QUIKIMART_ROOM 10
+static BOOL lsl1NeedSpecialPhoneMessage;
 
 static char LowerChar(char c)
 {
@@ -86,6 +87,18 @@ static BOOL IsLSL1WineDeliveryPrompt(char *prompt)
 		ContainsNoCase(prompt, "where do you want it delivered") ||
 		(ContainsNoCase(prompt, "deliver") && ContainsNoCase(prompt, "where")) ||
 		(ContainsNoCase(prompt, "deliver") && ContainsNoCase(prompt, "send"))
+	);
+}
+
+static BOOL IsLSL1PhoneNumberPrompt(char *prompt)
+{
+	if(!prompt)
+		return FALSE;
+
+	return (
+		ContainsNoCase(prompt, "enter number") ||
+		ContainsNoCase(prompt, "please enter number") ||
+		ContainsNoCase(prompt, "dial")
 	);
 }
 
@@ -168,6 +181,29 @@ void LSL1NormalizePhoneNumberDigits(char *dest)
 
 void LSL1NormalizePhoneNumberInput(char *prompt, char *dest)
 {
-	(void)prompt;
+	lsl1NeedSpecialPhoneMessage = FALSE;
+
+	if(!IsLSL1Game() || vars[vROOMNUM] != LSL1_QUIKIMART_ROOM) {
+		(void)prompt;
+		LSL1NormalizePhoneNumberDigits(dest);
+		return;
+	}
+
 	LSL1NormalizePhoneNumberDigits(dest);
+
+	if(IsLSL1PhoneNumberPrompt(prompt) && strcmp(dest, "5551987") == 0)
+		lsl1NeedSpecialPhoneMessage = TRUE;
 }
+
+char *LSL1OverridePhoneMessage(char *msg)
+{
+	if(lsl1NeedSpecialPhoneMessage &&
+	   msg &&
+	   ContainsNoCase(msg, "reached a number") &&
+	   ContainsNoCase(msg, "dial again")) {
+		lsl1NeedSpecialPhoneMessage = FALSE;
+        return "Are you guys still playing this in 2026?!!";
+	}
+	return msg;
+}
+

@@ -29,6 +29,8 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
+static const int kMaxInjectGames = 255;
+
 //---------------------------------------------------------------------------
 __fastcall TFormMain::TFormMain(TComponent* Owner)
 	: TForm(Owner)
@@ -89,7 +91,7 @@ void __fastcall TFormMain::FormResize(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TFormMain::btnAddClick(TObject *Sender)
 {
-	if(listbox->Items->Count >= 16) {
+	if(listbox->Items->Count >= kMaxInjectGames) {
      	ShowMessage(_T("Maximum games added to game list"));
         return;
     }

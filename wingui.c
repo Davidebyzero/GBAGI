@@ -978,31 +978,45 @@ void EditScrollChar(WND *w,int dir)
 void EditScrollCol(WND *w,int dir, BOOL del)
 {
 	int col=w->ext.edit.col;
-    if(col&&del)
-     	w->caption[col]		= '\0';
-    if(!del && ((w->style&esDIGITONLY)&&(w->caption[col]<'0'||w->caption[col]>'9'))) {
-     	w->caption[col]		= '0';
+    int len;
+    if(del) {
+        len = strlen(w->caption);
+        if(col < len)
+            memmove(&w->caption[col], &w->caption[col+1], len-col);
+        if(col > 0)
+            col--;
+
+        w->ext.edit.col = col;
+        wDrawWnd(w,wdFULL);
+        WndMessage(w, wmEDIT_CHANGE, 0, 0, 0);
+
+#ifdef _WINDOWS
+	Delay(40);
+#else
+	Delay(20);
+#endif
+        return;
+    }
+    if((w->style&esDIGITONLY)&&(w->caption[col]<'0'||w->caption[col]>'9')) {
+	w->caption[col]		= '0';
         w->caption[col+1]	= '\0';
     }
     col+=dir;
     if(col<0) col=0;
     else if(col>=w->ext.edit.maxLen)
-    	col = w->ext.edit.maxLen-1;
+	col = w->ext.edit.maxLen-1;
     if(!w->caption[col]) {
-      	w->caption[col]		= (w->style&esDIGITONLY)?'0':' ';
+	w->caption[col]		= (w->style&esDIGITONLY)?'0':' ';
         w->caption[col+1]	= '\0';
     }
 
     w->ext.edit.col = col;
     wDrawWnd(w,wdFULL);
 
-	if(del)
-    	WndMessage(w, wmEDIT_CHANGE, 0, 0, 0);
-
 #ifdef _WINDOWS
-    	Delay(40);
+	Delay(40);
 #else
-    	Delay(20);
+	Delay(20);
 #endif
 }
 /******************************************************************************/
