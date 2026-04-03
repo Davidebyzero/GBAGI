@@ -423,6 +423,7 @@ S16 wnGetStringProc(WND *w, U16 msg, U16 wParam, U32 lParam)
 	switch(msg) {
     	case wmBUTTON_CLICK:
         	if(wParam==KEY_START||wParam==KEY_A) {
+                LSL1TrackPhoneEasterEggInput(szString);
                 if(GET_INT) {
                    	val = StrIsInt(szString)?StrToInt(szString):0;
                     vars[dest] = (val>255)?0:val;

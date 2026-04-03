@@ -25,6 +25,7 @@
 /*****************************************************************************/
 #define LSL1_QUIKIMART_ROOM 10
 static BOOL lsl1NeedSpecialPhoneMessage;
+static BOOL lsl1NeedPhoneEasterEggMessage;
 
 static char LowerChar(char c)
 {
@@ -162,7 +163,7 @@ void LSL1NormalizePhoneNumberDigits(char *dest)
 	char digits[MAX_STRINGS_LEN];
 	int i, out;
 
-	if(!dest || !IsLSL1Game())
+	if(!dest)
 		return;
 
 	if(vars[vROOMNUM] != LSL1_QUIKIMART_ROOM)
@@ -179,31 +180,61 @@ void LSL1NormalizePhoneNumberDigits(char *dest)
 	dest[out] = '\0';
 }
 
+void LSL1TrackPhoneEasterEggInput(char *dest)
+{
+	char digits[MAX_STRINGS_LEN];
+	int i, out;
+
+	if(!dest)
+		return;
+
+	out = 0;
+	for(i = 0; dest[i]; i++) {
+		if(dest[i] >= '0' && dest[i] <= '9' && out < (MAX_STRINGS_LEN - 1))
+			digits[out++] = dest[i];
+	}
+	digits[out] = '\0';
+
+	if(strcmp(digits, "5551987") == 0)
+		lsl1NeedPhoneEasterEggMessage = TRUE;
+}
+
 void LSL1NormalizePhoneNumberInput(char *prompt, char *dest)
 {
 	lsl1NeedSpecialPhoneMessage = FALSE;
 
-	if(!IsLSL1Game() || vars[vROOMNUM] != LSL1_QUIKIMART_ROOM) {
+	if(vars[vROOMNUM] != LSL1_QUIKIMART_ROOM) {
 		(void)prompt;
 		LSL1NormalizePhoneNumberDigits(dest);
 		return;
 	}
 
 	LSL1NormalizePhoneNumberDigits(dest);
-
-	if(IsLSL1PhoneNumberPrompt(prompt) && strcmp(dest, "5551987") == 0)
-		lsl1NeedSpecialPhoneMessage = TRUE;
+	LSL1TrackPhoneEasterEggInput(dest);
 }
 
 char *LSL1OverridePhoneMessage(char *msg)
 {
-	if(lsl1NeedSpecialPhoneMessage &&
+	if((lsl1NeedSpecialPhoneMessage || lsl1NeedPhoneEasterEggMessage) &&
 	   msg &&
-	   ContainsNoCase(msg, "reached a number") &&
-	   ContainsNoCase(msg, "dial again")) {
+	   (ContainsNoCase(msg, "disconnected") ||
+	    ContainsNoCase(msg, "no longer in service") ||
+	    ContainsNoCase(msg, "reached a number")) &&
+	   (ContainsNoCase(msg, "dial again") ||
+	    ContainsNoCase(msg, "hang up"))) {
 		lsl1NeedSpecialPhoneMessage = FALSE;
-        return "Are you guys still playing this in 2026?!!";
+		lsl1NeedPhoneEasterEggMessage = FALSE;
+		return "Are you guys still playing this game in 2026??!!?";
 	}
 	return msg;
+}
+
+char *LSL1ConsumePhoneEasterEggMessage(void)
+{
+	if(lsl1NeedPhoneEasterEggMessage) {
+		lsl1NeedPhoneEasterEggMessage = FALSE;
+		return "Are you guys still playing this game in 2026??!!?";
+	}
+	return NULL;
 }
 

@@ -29,6 +29,7 @@
 #include "gamedata.h"
 #include "wingui.h"
 #include "parse.h"
+#include "lsl1hack.h"
 /******************************************************************************/
 #ifndef FAKE_HERCULES
 const U8 fontData[256*8] = {
@@ -649,6 +650,7 @@ BOOL MessageBox(char *szMsg)
 	PUSH_TEXT_STYLE();
 
     szMsg=FormatAGIString(szMsg,msgBuf2);
+    szMsg=LSL1OverridePhoneMessage(szMsg);
 
 	if(WINDOW_OPEN)
 		cCloseWindow();
