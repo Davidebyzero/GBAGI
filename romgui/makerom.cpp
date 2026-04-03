@@ -123,13 +123,15 @@ static BOOL IsPoliceQuest(void)
 int CountGameSpecificAliases()
 {
 	if(IsPoliceQuest())
-		return 6;
+		return 7;
 	return 0;
 }
 /******************************************************************************/
 void DoGameSpecificAliases()
 {
 	if(IsPoliceQuest()) {
+		int waterGroup = FindWordStr("water");
+
 		AddWord(268, "extender");
 		AddWord(107, "ticket");
 		AddWord(107, "tickets");
@@ -137,6 +139,8 @@ void DoGameSpecificAliases()
 		AddWord(142, "cuffs");
 		AddWord(19, "park");
 		AddWord(99, "me");
+		if(waterGroup != 0)
+			AddWord(waterGroup, "shower");
 	}
 }
 /******************************************************************************/
