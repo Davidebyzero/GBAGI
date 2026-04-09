@@ -123,6 +123,7 @@ void ExecuteIF(void);
 BOOL OutputGame(void);
 BOOL ProcessGame(GAMEINFO *gmInfo);
 void FreeGame(void);
+BOOL FixOutputRomForHardware(const char *filename, const char *titleText);
 /******************************************************************************/
 #endif
 /******************************************************************************/

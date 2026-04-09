@@ -324,6 +324,10 @@ static bool CliPackGameList(
 
     fclose(fout);
     fout = NULL;
+    if(!FixOutputRomForHardware(outromName, NULL))
+    {
+        CliPrint(L"Warning: built ROM, but hardware-header fixing failed.\n");
+    }
     return true;
 }
 

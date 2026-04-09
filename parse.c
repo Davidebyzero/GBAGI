@@ -157,6 +157,54 @@ char *favWords[TOTAL_FAV] = {
 
 char *spaceChars=" ,?!();:[]{}`-\"";
 /*****************************************************************************/
+static BOOL IsHiddenDebugWord(const char *word)
+{
+	if(TestFlag(fDEBUG))
+		return FALSE;
+	return !strcmp(word, "tp")
+		|| !strcmp(word, "sp")
+		|| !strcmp(word, "var")
+		|| !strcmp(word, "xy")
+		|| !strcmp(word, "sv")
+		|| !strcmp(word, "sf")
+		|| !strcmp(word, "h")
+		|| !strcmp(word, "hn")
+		|| !strcmp(word, "sn")
+		|| !strcmp(word, "cm");
+}
+/*****************************************************************************/
+static BOOL IsWordHiddenInPicker(U8 *entry)
+{
+    long offset;
+
+    if(!entry || !wordFlags || !wordData)
+        return FALSE;
+
+    offset = (long)(entry - (U8*)wordData);
+    if(offset < 0)
+        return FALSE;
+
+    return (wordFlags[offset] & 0x01) ? TRUE : FALSE;
+}
+/*****************************************************************************/
+static int GetWordPickerVisibility(U8 *entry)
+{
+    long offset;
+
+    if(!entry || !wordFlags || !wordData)
+        return -1;
+
+    offset = (long)(entry - (U8*)wordData);
+    if(offset < 0)
+        return -1;
+
+    if(wordFlags[offset] & 0x04)
+        return 1;
+    if(wordFlags[offset] & 0x02)
+        return 0;
+    return -1;
+}
+/*****************************************************************************/
 char *StripInput(char *sStart)
 {
 	char *s=sStart,*so=szInputClean;
@@ -265,7 +313,7 @@ void FillListBox(int mode)
     U8 *p;
     int g,a;
 
-	bnMore.caption = (mode)?"‰ Less":"More ˆ";
+	bnMore.caption = (mode)?"< Less":"More >";
 
 	WndStopUpdate(&lbWords);
 	WndStopUpdate(&lbSelWords);
@@ -277,12 +325,32 @@ void FillListBox(int mode)
         	if(!p) continue;
         	while(*p) {
         		g = bGetW(p+1);
-        	    if((((xflg[(g&0x1FFF)>>2]>>(((g&0x1FFF)&3)<<1))&1 ))||(mode&&( ((xflg[(g&0x1FFF)>>2]>>(((g&0x1FFF)&3)<<1))&3 )/*==2*/))) {
-        	    		if((g&0x8000))
+                {
+                    int pickerVisibility = GetWordPickerVisibility(p);
+                    int roomBits = (xflg[(g&0x1FFF)>>2] >> (((g&0x1FFF)&3)<<1)) & 3;
+                    BOOL showWord = FALSE;
+                    if(pickerVisibility == 0)
+                        showWord = TRUE;
+                    else if(pickerVisibility == 1)
+                        showWord = mode ? TRUE : FALSE;
+                    else if(roomBits & 1)
+                        showWord = TRUE;
+                    else if(mode && roomBits)
+                        showWord = TRUE;
+        	if(showWord) {
+                    if(IsHiddenDebugWord((char*)(p+3))) {
+                        p+=*p;
+                        continue;
+                    }
+                    if(IsWordHiddenInPicker(p)) {
+                        p+=*p;
+                        continue;
+                    }
+	    	    		if((g&0x8000))
                     		ListBoxAdd(&lbSelWords,(char*)(p+3));
                     	else
         	    			ListBoxAdd(&lbWords,(char*)(p+3));
-                }
+                } }
          	   p+=*p;
         	}
         }
@@ -437,6 +505,7 @@ S16 wnGetStringProc(WND *w, U16 msg, U16 wParam, U32 lParam)
 	return TRUE;
 }
 /*****************************************************************************/
+
 
 
 

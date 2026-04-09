@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GBAGI Vocabulary Analyzer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Press+Start+2P&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#0a0a1a;--panel:#12122a;--border:#2a2a4a;--accent:#e94560;--cyan:#55ffff;--green:#55ff55;--yellow:#ffff55;--white:#e0e0e0;--dim:#c2c8e6;--ok:#55ff55;--warn:#ffff55;--crit:#ff5555}
+  body{background:var(--bg);color:var(--white);font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.5;min-height:100vh}
+  header{background:linear-gradient(180deg,#1a1a3e 0%,#0a0a1a 100%);border-bottom:3px solid var(--accent);padding:20px 30px;display:flex;align-items:center;gap:20px}
+  header h1{font-family:'Press Start 2P',monospace;font-size:16px;color:var(--cyan);text-shadow:0 0 10px rgba(85,255,255,0.3)}
+  header .subtitle{color:var(--dim);font-size:11px}
+  .accent-bar{position:fixed;left:0;top:0;width:5px;height:100vh;background:var(--accent);z-index:100}
+  main{max-width:1200px;margin:0 auto;padding:20px 30px 60px}
+  .drop-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  .drop-zone{border:2px dashed var(--border);border-radius:8px;padding:30px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--panel);position:relative}
+  .drop-zone:hover,.drop-zone.dragover{border-color:var(--cyan);background:rgba(85,255,255,0.05)}
+  .drop-zone.loaded{border-color:var(--green);border-style:solid}
+  .drop-zone .icon{font-size:28px;margin-bottom:8px}
+  .drop-zone .label{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--cyan);margin-bottom:6px}
+  .drop-zone .desc{color:var(--dim);font-size:11px}
+  .drop-zone .filename{color:var(--green);font-size:12px;margin-top:8px;font-weight:600}
+  .drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .btn-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+  button{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;padding:10px 24px;border:none;border-radius:4px;cursor:pointer;transition:all .15s}
+  button:disabled{opacity:0.3;cursor:not-allowed}
+  .btn-primary{background:var(--accent);color:white}
+  .btn-primary:hover:not(:disabled){background:#ff5a75;box-shadow:0 0 15px rgba(233,69,96,0.4)}
+  .btn-secondary{background:var(--border);color:var(--white)}
+  .btn-secondary:hover:not(:disabled){background:#3a3a5a}
+  .btn-cheat{background:#1a6e3a;color:white}
+  .btn-cheat:hover:not(:disabled){background:#2a8e4a;box-shadow:0 0 15px rgba(85,255,85,0.3)}
+  .btn-walk{background:#8a4a0a;color:white}
+  .btn-walk:hover:not(:disabled){background:#aa5e14;box-shadow:0 0 15px rgba(255,170,85,0.25)}
+  .results{display:none}.results.visible{display:block}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+  .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:16px;text-align:center}
+  .stat-card .value{font-family:'Press Start 2P',monospace;font-size:18px;color:var(--cyan);margin-bottom:4px}
+  .stat-card .lbl{color:var(--dim);font-size:11px}
+  .stat-card.ok .value{color:var(--ok)}.stat-card.warn .value{color:var(--warn)}.stat-card.crit .value{color:var(--crit)}
+  .section-header{background:var(--accent);color:white;padding:10px 16px;font-weight:700;font-size:14px;margin:24px 0 0;border-radius:4px 4px 0 0}
+  .section-header.green{background:#2a6e2a}.section-header.yellow{background:#8a6e0a}.section-header.blue{background:#1a4a8a}.section-header.orange{background:#8a4a0a}
+  .result-table{width:100%;border-collapse:collapse;font-size:12px}
+  .result-table th{background:#1a1a3e;color:var(--yellow);text-align:left;padding:8px 12px;font-weight:600;border:1px solid var(--border);position:sticky;top:0;z-index:1;cursor:pointer;user-select:none;white-space:nowrap}
+  .result-table th:hover{background:#2a2a5e;color:var(--cyan)}
+  .result-table th .sort-arrow{display:inline-block;margin-left:4px;font-size:9px;color:var(--dim);transition:all .15s}
+  .result-table th.sorted-asc .sort-arrow{color:var(--cyan);transform:rotate(0deg)}
+  .result-table th.sorted-desc .sort-arrow{color:var(--cyan);transform:rotate(180deg)}
+  .result-table td{padding:6px 12px;border:1px solid var(--border);vertical-align:top}
+  .result-table tr:nth-child(even){background:rgba(255,255,255,0.02)}
+  .result-table tr:hover{background:rgba(85,255,255,0.05)}
+  .tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600}
+  .tag-ok{background:rgba(85,255,85,0.2);color:var(--ok)}.tag-warn{background:rgba(255,255,85,0.2);color:var(--warn)}.tag-crit{background:rgba(255,85,85,0.2);color:var(--crit)}
+  .tag-verb{background:rgba(85,255,255,0.15);color:var(--cyan)}.tag-noun{background:rgba(255,255,255,0.1);color:var(--dim)}
+  .word-cyan{color:var(--cyan);font-weight:600}.word-green{color:var(--green)}.word-yellow{color:var(--yellow)}.word-red{color:var(--crit)}.word-dim{color:#d8ddf6}
+  .clickable-word{cursor:pointer;text-decoration:underline;text-decoration-style:dotted}
+  .clickable-word:hover{filter:brightness(1.2)}
+  .group-row-highlight td{background:rgba(85,255,255,0.12)!important}
+  .table-wrap{max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:0 0 4px 4px;margin-bottom:16px}
+  .table-wrap::-webkit-scrollbar{width:8px}.table-wrap::-webkit-scrollbar-track{background:var(--bg)}.table-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .filter-bar{display:flex;gap:12px;align-items:center;margin:12px 0;flex-wrap:wrap}
+  .filter-bar input[type="text"]{font-family:'IBM Plex Mono',monospace;background:var(--panel);border:1px solid var(--border);color:var(--white);padding:6px 12px;border-radius:4px;font-size:12px;width:200px}
+  .filter-bar input:focus{outline:none;border-color:var(--cyan)}
+  .filter-bar label{color:var(--dim);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px}
+  .rom-only-note{background:rgba(85,255,255,0.08);border:1px solid rgba(85,255,255,0.2);border-radius:6px;padding:12px 16px;margin-bottom:16px;color:var(--cyan);font-size:12px}
+  .cheat-card{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:16px;margin-bottom:12px}
+  .cheat-card h3{color:var(--cyan);margin-bottom:8px;font-family:'Press Start 2P',monospace;font-size:10px}
+  .cheat-row{display:flex;gap:8px;margin:3px 0;align-items:baseline}
+  .cheat-action{color:var(--dim);width:140px;flex-shrink:0;font-size:11px}
+  .cheat-word{color:var(--cyan);font-weight:600}
+  .cheat-aka{color:var(--dim);font-size:10px;font-style:italic}
+  .issue-card{background:rgba(255,85,85,0.06);border:1px solid rgba(255,85,85,0.2);border-radius:6px;padding:12px 16px;margin-bottom:8px}
+  .issue-card.warning{background:rgba(255,255,85,0.06);border-color:rgba(255,255,85,0.2)}
+  .issue-title{color:var(--crit);font-weight:700;font-size:12px;margin-bottom:4px}
+  .issue-card.warning .issue-title{color:var(--warn)}
+  .issue-desc{color:var(--white);font-size:11px}
+.group-original{color:#d8ddf6}
+.group-survivor{color:var(--green);font-weight:600}
+.word-stack{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.word-stack-line{display:block}
+.group-empty{color:var(--crit);font-style:italic}
+  .walk-panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:20px}
+  .walk-panel h2{color:var(--cyan);margin-bottom:10px;font-family:'Press Start 2P',monospace;font-size:12px}
+  .walk-panel p{color:var(--dim);font-size:11px;margin-bottom:10px}
+  .walk-tools{display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .walk-file{position:relative;display:inline-block}
+  .walk-file input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .walk-text{width:100%;min-height:180px;resize:vertical;font-family:'IBM Plex Mono',monospace;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:12px;border-radius:6px;font-size:12px;line-height:1.5}
+  .walk-text:focus{outline:none;border-color:var(--cyan)}
+  .walk-preview{width:100%;min-height:360px;font-family:'IBM Plex Mono',monospace;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:12px;border-radius:6px;font-size:12px;line-height:1.5;white-space:pre-wrap;overflow:auto}
+  .safe-line{margin:0 0 4px 0}
+  .safe-word{color:var(--white)}
+  .safe-word.exact{color:var(--cyan)}
+  .safe-word.missing{color:var(--crit)}
+  .safe-select{font-family:'IBM Plex Mono',monospace;background:transparent;color:var(--yellow);border:none;border-bottom:1px solid var(--yellow);padding:0 2px;margin:0;appearance:auto}
+  .safe-select:focus{outline:none;border-bottom-color:var(--cyan);color:var(--cyan)}
+.plan-chip{display:inline-flex;align-items:center;gap:4px;margin:0}
+.plan-word{display:inline-block;padding:2px 6px;border:1px solid var(--border);border-radius:4px;color:#d8ddf6;cursor:pointer;background:rgba(255,255,255,0.03)}
+.plan-word:hover{border-color:var(--cyan);color:var(--white)}
+.plan-word.selected{border-color:var(--yellow);color:var(--yellow);background:rgba(255,255,85,0.08)}
+.plan-mode{display:inline-block;padding:2px 5px;border:1px solid var(--border);border-radius:4px;color:var(--cyan);cursor:pointer;background:rgba(85,255,255,0.06);font-size:10px;min-width:28px;text-align:center}
+.plan-mode:hover{border-color:var(--yellow);color:var(--yellow)}
+.plan-col{display:inline-block;padding:2px 5px;border:1px solid var(--border);border-radius:4px;color:var(--green);cursor:pointer;background:rgba(85,255,85,0.06);font-size:10px;min-width:28px;text-align:center}
+.plan-col:hover{border-color:var(--yellow);color:var(--yellow)}
+.plan-hide{display:inline-block;padding:2px 5px;border:1px solid var(--border);border-radius:4px;color:var(--accent);cursor:pointer;background:rgba(233,69,96,0.08);font-size:10px;min-width:28px;text-align:center}
+.plan-hide:hover{border-color:var(--yellow);color:var(--yellow)}
+  .plan-editor{width:100%;min-height:320px;resize:vertical;font-family:'IBM Plex Mono',monospace;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:12px;border-radius:6px;font-size:12px;line-height:1.5}
+  .plan-editor:focus{outline:none;border-color:var(--cyan)}
+  .walk-meta{color:var(--green);font-size:11px}
+  .status-exact{color:var(--ok);font-weight:700}
+  .status-syn{color:var(--warn);font-weight:700}
+  .status-miss{color:var(--crit);font-weight:700}
+  .tab-bar{display:flex;gap:0;margin-bottom:0}
+  .tab{padding:10px 20px;background:var(--panel);border:1px solid var(--border);border-bottom:none;cursor:pointer;color:var(--dim);font-weight:600;font-size:12px;border-radius:6px 6px 0 0;transition:all .15s}
+  .tab:hover{color:var(--white)}.tab.active{background:var(--bg);color:var(--cyan);border-color:var(--cyan);border-bottom:1px solid var(--bg)}
+  .tab-content{display:none;border:1px solid var(--border);border-radius:0 6px 6px 6px;padding:16px;background:var(--bg)}
+  .tab-content.active{display:block}
+  footer{text-align:center;color:var(--dim);font-size:10px;padding:20px;border-top:1px solid var(--border)}
+  @media print{
+    body{background:#fff!important;color:#000!important;font-size:10px}
+    .accent-bar,header,.drop-row,.btn-row,.filter-bar,footer,.tab-bar{display:none!important}
+    .tab-content{display:block!important;border:none!important;padding:0!important}
+    .results{display:block!important}
+    .stat-card{border:1px solid #ccc!important;background:#f9f9f9!important}
+    .stat-card .value{color:#000!important}
+    .section-header{background:#333!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .result-table th{background:#ddd!important;color:#000!important;-webkit-print-color-adjust:exact}
+    .result-table td{border-color:#ccc!important}
+    .word-cyan,.word-green,.word-yellow{color:#000!important;font-weight:700}
+    .tag{border:1px solid #999}
+    .cheat-word{color:#000!important}.cheat-action{color:#555!important}
+    .sort-arrow{display:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="accent-bar"></div>
+<header><div><h1>GBAGI Vocab Analyzer</h1><div class="subtitle">Compare AGI WORDS.TOK with GBAGI .gba ROM vocabulary — runs offline</div></div></header>
+<main>
+  <div class="drop-row">
+    <div class="drop-zone" id="dropGba"><div class="icon">🎮</div><div class="label">GBA ROM</div><div class="desc">Drop .gba file here or click to browse</div><div class="filename" id="gbaName"></div><input type="file" accept=".gba" id="gbaInput"></div>
+    <div class="drop-zone" id="dropTok"><div class="icon">📄</div><div class="label">WORDS.TOK</div><div class="desc">Drop WORDS.TOK here (optional — enables comparison)</div><div class="filename" id="tokName"></div><input type="file" id="tokInput"></div>
+  </div>
+  <div class="walk-panel">
+    <h2>Walkthrough Check</h2>
+    <p>Paste a walkthrough with commands like <code>OPEN LOCKER</code>, or load a text file. The analyzer will extract command phrases and words, then compare them against the ROM and WORDS.TOK.</p>
+    <div class="walk-tools">
+      <label class="btn-secondary walk-file">Load Walkthrough TXT<input type="file" id="walkInput" accept=".txt,.md,.log,text/plain"></label>
+      <button class="btn-secondary" id="btnKeepCaps" type="button" disabled>Keep Capitalized</button>
+      <span class="walk-meta" id="walkName"></span>
+    </div>
+    <textarea id="walkText" class="walk-text" placeholder="Paste a walkthrough here..."></textarea>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btnAnalyze" disabled>Analyze Vocabulary</button>
+    <button class="btn-walk" id="btnWalk" disabled>Analyze Walkthrough</button>
+    <button class="btn-cheat" id="btnCheat" disabled>Generate Cheat Sheet</button>
+    <button class="btn-secondary" id="btnExportWalk" disabled>Preview GBAGI Walkthrough</button>
+    <button class="btn-secondary" id="btnDownloadWalk" disabled>Download GBAGI Walkthrough</button>
+    <button class="btn-secondary" id="btnUpdateInjector" disabled>Update Injector</button>
+    <button class="btn-secondary" id="btnDownloadPreset" disabled>Download vocab_preset.tsv</button>
+    <button class="btn-secondary" id="btnDownloadChanges" disabled>Download Changes</button>
+    <button class="btn-secondary" id="btnPrint" disabled>Print Cheat Sheet</button>
+    <button class="btn-secondary" id="btnClear">Clear All</button>
+  </div>
+  <div class="results" id="results"></div>
+</main>
+<footer>GBAGI Vocabulary Analyzer v3 — Offline browser tool for GBAGI ROM analysis</footer>
+
+<script>
+let gbaData=null,tokData=null,lastRom=null,lastTok=null,gbaFileName='',walkFileName='',lastRewrittenWalk='',lastSafeModel=null,survivalPlan={},pickerPlan={},columnPlan={},hidePlan={},changeLog=[],changeSeq=0,safeChoiceMap={},syncEnabled=false,syncPathDisplay='',syncSuggestedName='gbagi_vocab_sync.tsv';
+
+function setupDrop(zId,iId,nId,cb){
+  const z=document.getElementById(zId),i=document.getElementById(iId),n=document.getElementById(nId);
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('dragover')});
+  z.addEventListener('dragleave',()=>z.classList.remove('dragover'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('dragover');if(e.dataTransfer.files.length)ldF(e.dataTransfer.files[0],z,n,cb)});
+  i.addEventListener('change',e=>{if(e.target.files.length)ldF(e.target.files[0],z,n,cb)});
+}
+function ldF(f,z,n,cb){const r=new FileReader();r.onload=e=>{cb(new Uint8Array(e.target.result),f.name);n.textContent=`✓ ${f.name} (${(f.size/1024).toFixed(1)} KB)`;z.classList.add('loaded');updB()};r.readAsArrayBuffer(f)}
+setupDrop('dropGba','gbaInput','gbaName',(d,n)=>{gbaData=d;gbaFileName=n});
+setupDrop('dropTok','tokInput','tokName',(d,n)=>{tokData=d});
+function markLoadedDrop(zoneId,nameId,fileName,sizeBytes){
+  const z=document.getElementById(zoneId),n=document.getElementById(nameId);
+  if(!z||!n)return;
+  n.textContent=`âœ“ ${fileName} (${(sizeBytes/1024).toFixed(1)} KB)`;
+  z.classList.add('loaded');
+}
+function u8FromBase64(base64){
+  const clean=String(base64||'').replace(/\s+/g,'');
+  const bin=atob(clean),out=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);
+  return out;
+}
+function tryApplyBootstrapPayload(){
+  let raw='';
+  try{raw=sessionStorage.getItem('gbagiAnalyzerBootstrap')||'';}catch(_e){}
+  if(!raw)return;
+  try{sessionStorage.removeItem('gbagiAnalyzerBootstrap');}catch(_e){}
+  try{
+    const boot=JSON.parse(raw);
+    if(boot.gbaBase64){
+      gbaData=u8FromBase64(boot.gbaBase64);
+      gbaFileName=boot.gbaName||'ROM.gba';
+      markLoadedDrop('dropGba','gbaName',gbaFileName,gbaData.length);
+    }
+    if(boot.tokBase64){
+      tokData=u8FromBase64(boot.tokBase64);
+      markLoadedDrop('dropTok','tokName',boot.tokName||'WORDS.TOK',tokData.length);
+    }
+    if(boot.romModel){
+      lastRom=boot.romModel;
+      if(!gbaFileName) gbaFileName=boot.gbaName||'Injector Snapshot';
+      if(!document.getElementById('gbaName').textContent){
+        document.getElementById('gbaName').textContent=`✓ ${gbaFileName} (live injector snapshot)`;
+        document.getElementById('dropGba').classList.add('loaded');
+      }
+    }
+    syncEnabled=!!boot.syncEnabled;
+    syncPathDisplay=boot.syncPath||'';
+    if(boot.syncSuggestedName) syncSuggestedName=boot.syncSuggestedName;
+    updB();
+    if(boot.autoAnalyze&&(gbaData||lastRom)){
+      setTimeout(()=>document.getElementById('btnAnalyze').click(),0);
+    }
+  }catch(_e){}
+}
+document.getElementById('walkInput').addEventListener('change',e=>{
+  if(!e.target.files.length)return;
+  const f=e.target.files[0],r=new FileReader();
+  r.onload=ev=>{
+    document.getElementById('walkText').value=String(ev.target.result||'');
+    walkFileName=f.name;
+    lastRewrittenWalk='';
+    document.getElementById('walkName').textContent=`âœ“ ${f.name}`;
+    updB();
+  };
+  r.readAsText(f);
+});
+document.getElementById('walkText').addEventListener('input',()=>{ lastRewrittenWalk=''; updB(); });
+document.getElementById('btnKeepCaps').addEventListener('click',()=>{
+  const cleaned=cleanupWalkthroughKeepCapitalized(document.getElementById('walkText').value);
+  document.getElementById('walkText').value=cleaned;
+  lastRewrittenWalk='';
+  updB();
+});
+function updB(){
+  const h=!!(gbaData||lastRom), hasWalk=!!document.getElementById('walkText').value.trim();
+  document.getElementById('btnAnalyze').disabled=!h;
+  document.getElementById('btnWalk').disabled=!(h&&hasWalk);
+  document.getElementById('btnExportWalk').disabled=!(h&&hasWalk);
+  document.getElementById('btnDownloadWalk').disabled=!lastRewrittenWalk;
+  document.getElementById('btnUpdateInjector').disabled=!(syncEnabled&&!!tokData&&!!(gbaData||lastRom));
+  document.getElementById('btnCheat').disabled=!h;
+  document.getElementById('btnDownloadPreset').disabled=!(h&&!!tokData);
+  document.getElementById('btnDownloadChanges').disabled=!(h&&!!tokData);
+  document.getElementById('btnKeepCaps').disabled=!hasWalk;
+}
+
+function ensureAnalyzerData(){
+  if(!lastRom && gbaData) lastRom=findRomVocab(gbaData);
+  if(!lastTok && tokData) lastTok=parseWordsTok(tokData);
+  return !!lastRom;
+}
+document.getElementById('btnClear').addEventListener('click',()=>{
+  gbaData=tokData=lastRom=lastTok=lastSafeModel=null;gbaFileName='';walkFileName='';lastRewrittenWalk='';survivalPlan={};pickerPlan={};columnPlan={};hidePlan={};changeLog=[];changeSeq=0;safeChoiceMap={};
+  ['gbaName','tokName','walkName'].forEach(id=>document.getElementById(id).textContent='');
+  document.getElementById('walkText').value='';
+  document.getElementById('walkInput').value='';
+  document.querySelectorAll('.drop-zone').forEach(z=>z.classList.remove('loaded'));
+  const r=document.getElementById('results');r.innerHTML='';r.classList.remove('visible');
+  ['btnDownloadChanges','btnPrint','btnExportWalk','btnDownloadWalk','btnDownloadPreset','btnUpdateInjector'].forEach(id=>document.getElementById(id).disabled=true);updB()
+});
+
+// ── Sortable Tables ───────────────────────────────────
+tryApplyBootstrapPayload();
+function makeSortable(tableId) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  const headers = table.querySelectorAll('th');
+  headers.forEach((th, colIdx) => {
+    // Add sort arrow
+    if (!th.querySelector('.sort-arrow')) {
+      th.innerHTML += ' <span class="sort-arrow">▲</span>';
+    }
+    th.addEventListener('click', () => {
+      const tbody = table.querySelector('tbody') || table;
+      const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.querySelector('th'));
+      const isAsc = th.classList.contains('sorted-asc');
+      // Clear all sort states
+      headers.forEach(h => { h.classList.remove('sorted-asc', 'sorted-desc'); });
+      th.classList.add(isAsc ? 'sorted-desc' : 'sorted-asc');
+      const dir = isAsc ? -1 : 1;
+
+      rows.sort((a, b) => {
+        const aCell = a.cells[colIdx];
+        const bCell = b.cells[colIdx];
+        if (!aCell || !bCell) return 0;
+        // Try numeric sort first (for group numbers)
+        const aText = aCell.textContent.trim().replace(/^G/, '');
+        const bText = bCell.textContent.trim().replace(/^G/, '');
+        const aNum = parseFloat(aText);
+        const bNum = parseFloat(bText);
+        if (!isNaN(aNum) && !isNaN(bNum)) return (aNum - bNum) * dir;
+        return aText.localeCompare(bText) * dir;
+      });
+      rows.forEach(r => tbody.appendChild(r));
+    });
+  });
+}
+
+// ── Parsers ───────────────────────────────────────────
+function readU16BE(d,o){return(d[o]<<8)|d[o+1]}
+function parseWordsTok(data){
+  const words={},groups={},offsets=[];
+  for(let i=0;i<26;i++)offsets.push(readU16BE(data,i*2));
+  for(let li=0;li<26;li++){
+    let off=offsets[li];if(!off)continue;let pos=off,prev="",next=null;
+    for(let ni=li+1;ni<26;ni++)if(offsets[ni]){next=offsets[ni];break}
+    while(pos<data.length){
+      const keep=data[pos++];if(pos>=data.length)break;let nc=[];
+      while(pos<data.length){const c=data[pos++],d2=c^0x7F;if(c&0x80){nc.push(String.fromCharCode(d2&0x7F));break}else nc.push(String.fromCharCode(d2))}
+      if(pos+1>=data.length)break;
+      const w=prev.substring(0,keep)+nc.join(''),g=readU16BE(data,pos);pos+=2;
+      words[w]=g;if(!groups[g])groups[g]=[];groups[g].push(w);prev=w;
+      if(next&&pos>=next)break
+    }
+  }
+  return{words,groups}
+}
+function findRomVocab(data){
+  const sig="GBAGI 1.0 '''BRIPRO'''";let sigPos=-1;
+  for(let i=0;i<data.length-sig.length;i++){let m=true;for(let j=0;j<sig.length;j++)if(data[i+j]!==sig.charCodeAt(j)){m=false;break}if(m){sigPos=i;break}}
+  let bestPos=0,bestCount=0;const ss=Math.max(0x10000,sigPos||0);
+  for(let test=ss;test<data.length-100;test++){
+    let pos=test,count=0;
+    while(pos<data.length&&count<3000){const rl=data[pos];if(rl===0){pos++;continue}if(rl<5||rl>40)break;if(pos+rl>data.length)break;if(data[pos+rl-1]!==0)break;let v=true;for(let k=pos+3;k<pos+rl-1;k++)if(data[k]<32||data[k]>=127){v=false;break}if(!v)break;count++;pos+=rl}
+    if(count>bestCount){bestCount=count;bestPos=test;if(count>400)break}
+  }
+  const words={},groups={};let pos=bestPos;
+  while(pos<data.length){
+    const rl=data[pos];if(rl===0){pos++;continue}if(rl<5||rl>40)break;if(pos+rl>data.length)break;if(data[pos+rl-1]!==0)break;let v=true;for(let k=pos+3;k<pos+rl-1;k++)if(data[k]<32||data[k]>=127){v=false;break}if(!v)break;
+    const entryOffset=pos-bestPos;
+    const gl=data[pos+1],gh=data[pos+2],grp=((gh&0x7F)<<8)|gl,isV=!!(gh&0x80);
+    let w='';for(let k=pos+3;k<pos+rl-1;k++)w+=String.fromCharCode(data[k]);
+    words[w]={group:grp,verb:isV,column:isV?0:1,entryOffset,pickerVisibility:-1,hidden:false};
+    if(!groups[grp])groups[grp]=[];
+    groups[grp].push({word:w,verb:isV,column:isV?0:1,entryOffset,pickerVisibility:-1,hidden:false});
+    pos+=rl
+  }
+  const align4=v=>((v+3)&~3);
+  const wordsTablePos=align4(pos);
+  const wordFlagsPos=align4(wordsTablePos + (26*4));
+  if(wordFlagsPos<data.length){
+    for(const [word,info] of Object.entries(words)){
+      const flagPos=wordFlagsPos + info.entryOffset;
+      if(flagPos>=0 && flagPos<data.length){
+        const flags=data[flagPos];
+        info.pickerVisibility=(flags&0x04)?1:((flags&0x02)?0:-1);
+        info.hidden=!!(flags&0x01);
+      }
+    }
+    for(const groupEntries of Object.values(groups)){
+      groupEntries.forEach(entry=>{
+        const src=words[entry.word];
+        if(src){
+          entry.pickerVisibility=src.pickerVisibility;
+          entry.hidden=src.hidden;
+        }
+      });
+    }
+  }
+  return{words,groups,offset:bestPos,count:Object.keys(words).length,sigPos,wordDataEnd:pos,wordsTablePos,wordFlagsPos}
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+function renderGroupWord(word, group, cls='word-cyan'){
+  return `<span class="${cls} clickable-word" data-group-link="${group}" data-word-link="${escHtml(word)}">${escHtml(word)}</span>`
+}
+
+function renderWordStack(words, renderer, emptyHtml){
+  if(!words || !words.length) return emptyHtml||'';
+  return `<div class="word-stack">${words.map(word=>`<div class="word-stack-line">${renderer(word)}</div>`).join('')}</div>`;
+}
+
+function normalizeWalkWord(word){
+  return String(word||'').toLowerCase()
+    .replace(/^[^a-z0-9]+|[^a-z0-9]+$/g,'')
+    .replace(/\s+/g,' ')
+    .trim()
+}
+
+function extractWalkthroughData(text){
+  const raw=String(text||'');
+  const phrases=[], seenPhrase=new Set(), words=[], seenWord=new Set();
+  const lines=raw.split(/\r?\n/);
+  const headingLike=/^(walkthrough|start|end|first patrol|second briefing|between quests|getting magic beans|the chest|the magic mirror|the shield|start of game)$/i;
+
+  for(const line of lines){
+    const trimmed=line.trim();
+    if(!trimmed) continue;
+
+    let phrase=normalizeWalkWord(trimmed);
+    if(!phrase || !/[a-z]/.test(phrase)) continue;
+    if(headingLike.test(phrase)) continue;
+    if(phrase.length < 2) continue;
+
+    if(!seenPhrase.has(phrase)){
+      seenPhrase.add(phrase);
+      phrases.push(phrase);
+    }
+
+    for(const part of phrase.split(/\s+/)){
+      const w=normalizeWalkWord(part);
+      if(!w || w.length < 2 || seenWord.has(w)) continue;
+      seenWord.add(w);
+      words.push(w);
+    }
+  }
+
+  if(!phrases.length){
+    const phraseMatches=raw.match(/[A-Za-z0-9][A-Za-z0-9'/-]*(?: [A-Za-z0-9][A-Za-z0-9'/-]*)*/g) || [];
+    for(const m of phraseMatches){
+      const phrase=normalizeWalkWord(m);
+      if(!phrase || !/[a-z]/.test(phrase) || seenPhrase.has(phrase) || phrase.length < 2) continue;
+      seenPhrase.add(phrase);
+      phrases.push(phrase);
+      for(const part of phrase.split(/\s+/)){
+        const w=normalizeWalkWord(part);
+        if(!w || w.length < 2 || seenWord.has(w)) continue;
+        seenWord.add(w);
+        words.push(w);
+      }
+    }
+  }
+  return {phrases, words};
+}
+
+function classifyWalkItem(item, rom, tok){
+  if(rom.words[item]) {
+    const group=rom.words[item].group;
+    return {item,status:'Exact',statusClass:'status-exact',group,survivors:[item],kind:'exact'};
+  }
+  if(tok && tok.words[item]) {
+    const group=tok.words[item];
+    const survivors=getEffectiveSurvivorsForGroup(group, rom, tok);
+    if(survivors.length) {
+      return {item,status:'Synonym',statusClass:'status-syn',group,survivors,kind:'synonym'};
+    }
+    return {item,status:'Unavailable',statusClass:'status-miss',group,survivors:[],kind:'missing-group'};
+  }
+  return {item,status:'Unavailable',statusClass:'status-miss',group:null,survivors:[],kind:'not-in-tok'};
+}
+
+function classifyWalkPhrase(phrase, rom, tok){
+  const parts=String(phrase||'').split(/\s+/).map(normalizeWalkWord).filter(Boolean);
+  const tokenResults=parts.map(part=>classifyWalkItem(part,rom,tok));
+  const missing=tokenResults.filter(r=>r.kind==='missing-group'||r.kind==='not-in-tok');
+  const synonym=tokenResults.filter(r=>r.kind==='synonym');
+  const rewritten=tokenResults.map(r=>r.survivors && r.survivors.length ? r.survivors[0] : r.item).join(' ').trim();
+  const groups=tokenResults.filter(r=>r.group!=null).map(r=>`G${r.group}`);
+
+  if(!parts.length)
+    return {item:phrase,status:'Unavailable',statusClass:'status-miss',groupLabel:'-',survivors:[],kind:'not-in-tok'};
+  if(!missing.length && !synonym.length)
+    return {item:phrase,status:'Exact',statusClass:'status-exact',groupLabel:groups.join(', '),survivors:[rewritten],kind:'exact'};
+  if(!missing.length)
+    return {item:phrase,status:'Synonym',statusClass:'status-syn',groupLabel:groups.join(', '),survivors:[rewritten],kind:'synonym'};
+  return {item:phrase,status:'Unavailable',statusClass:'status-miss',groupLabel:groups.length?groups.join(', '):'-',survivors:rewritten?[rewritten]:[],kind:'not-in-tok'};
+}
+
+function buildWalkthroughAnalysis(rom,tok,text){
+  const {phrases,words}=extractWalkthroughData(text);
+  const phraseResults=phrases.map(p=>classifyWalkPhrase(p,rom,tok));
+  const wordResults=words.map(w=>classifyWalkItem(w,rom,tok));
+  const safeModel=buildWalkthroughSafeModel(text,rom,tok);
+  const rewrittenText=safeModel.map(line=>{
+    if(line.type==='blank') return '';
+    return (line.leading||'') + (line.bullet||'') + (line.tokens||[]).map(token=>token.chosen||token.text||'').join(' ').trim();
+  }).join('\n');
+  let html='';
+  html+='<div class="summary-grid">';
+  html+=`<div class="stat-card"><div class="value">${phrases.length}</div><div class="lbl">Command Phrases</div></div>`;
+  html+=`<div class="stat-card"><div class="value">${words.length}</div><div class="lbl">Command Words</div></div>`;
+  html+=`<div class="stat-card ok"><div class="value">${wordResults.filter(r=>r.kind==='exact').length}</div><div class="lbl">Exact Words</div></div>`;
+  html+=`<div class="stat-card warn"><div class="value">${wordResults.filter(r=>r.kind==='synonym').length}</div><div class="lbl">Synonym Words</div></div>`;
+  html+=`<div class="stat-card crit"><div class="value">${wordResults.filter(r=>r.kind==='missing-group'||r.kind==='not-in-tok').length}</div><div class="lbl">Unavailable Words</div></div>`;
+  html+='</div>';
+
+  html+='<div class="tab-bar"><div class="tab active" data-tab="tabWalkWords">Walkthrough Words</div><div class="tab" data-tab="tabWalkPhrases">Command Phrases</div><div class="tab" data-tab="tabWalkSafe">GBAGI Safe</div></div>';
+
+  html+='<div class="tab-content active" id="tabWalkWords">';
+  html+='<div class="filter-bar"><input type="text" id="filterWalkWords" placeholder="Filter walkthrough words..."></div>';
+  html+='<div class="table-wrap"><table class="result-table" id="walkWordsTable"><tr><th>Word <span class="sort-arrow">â–²</span></th><th>Status <span class="sort-arrow">â–²</span></th><th>Group <span class="sort-arrow">â–²</span></th><th>Available / Use Instead <span class="sort-arrow">â–²</span></th></tr>';
+  for(const r of wordResults){
+    html+=`<tr data-word="${escHtml(r.item)}" data-status="${r.status.toLowerCase()}">`;
+    html+=`<td>${r.group!=null?renderGroupWord(r.item,r.group,r.kind==='exact'?'word-cyan':r.kind==='synonym'?'word-yellow':'word-red'):`<span class="${r.statusClass}">${escHtml(r.item)}</span>`}</td>`;
+    html+=`<td><span class="${r.statusClass}">${r.status}</span></td>`;
+    html+=`<td>${r.group!=null?`G${r.group}`:'â€”'}</td>`;
+    html+=`<td>${r.survivors.length?r.survivors.map(w=>renderGroupWord(w,r.group,r.kind==='exact'?'word-cyan':'word-green')).join(', '):'<span class="group-empty">No available word</span>'}</td>`;
+    html+='</tr>';
+  }
+  html+='</table></div></div>';
+
+  html+='<div class="tab-content" id="tabWalkPhrases">';
+  html+='<div class="filter-bar"><input type="text" id="filterWalkPhrases" placeholder="Filter command phrases..."></div>';
+  html+='<div class="table-wrap"><table class="result-table" id="walkPhrasesTable"><tr><th>Phrase <span class="sort-arrow">â–²</span></th><th>Status <span class="sort-arrow">â–²</span></th><th>Group <span class="sort-arrow">â–²</span></th><th>Available / Use Instead <span class="sort-arrow">â–²</span></th></tr>';
+  for(const r of phraseResults){
+    html+=`<tr data-word="${escHtml(r.item)}" data-status="${r.status.toLowerCase()}">`;
+    html+=`<td>${r.group!=null?renderGroupWord(r.item,r.group,r.kind==='exact'?'word-cyan':r.kind==='synonym'?'word-yellow':'word-red'):`<span class="${r.statusClass}">${escHtml(r.item)}</span>`}</td>`;
+    html+=`<td><span class="${r.statusClass}">${r.status}</span></td>`;
+    html+=`<td>${r.group!=null?`G${r.group}`:'â€”'}</td>`;
+    html+=`<td>${r.survivors.length?r.survivors.map(w=>renderGroupWord(w,r.group,r.kind==='exact'?'word-cyan':'word-green')).join(', '):'<span class="group-empty">No exact phrase or synonym group</span>'}</td>`;
+    html+='</tr>';
+  }
+  html+='</table></div></div>';
+
+  html+='<div class="tab-content" id="tabWalkSafe">';
+  html+='<div class="rom-only-note">Review the rewritten walkthrough here before downloading it. Underlined words are synonym substitutions. If a group has multiple surviving synonyms, choose the one you want before downloading.</div>';
+  html+=`<div id="walkPreviewRich" class="walk-preview">${renderWalkthroughSafePreview(safeModel)}</div>`;
+  html+='</div>';
+
+  return {html, phraseResults, wordResults, rewrittenText, safeModel};
+}
+
+function firstSurvivorFor(item, rom, tok){
+  if(rom.words[item]) return item;
+  if(tok && tok.words[item]){
+    const survivors=getEffectiveSurvivorsForGroup(tok.words[item], rom, tok);
+    if(survivors.length) return survivors[0];
+  }
+  return null;
+}
+
+function getEffectiveSurvivorsForGroup(group, rom, tok){
+  if(survivalPlan[group] && survivalPlan[group].size){
+    return [...survivalPlan[group]].sort((a,b)=>a.localeCompare(b));
+  }
+  return (rom.groups[group]||[]).map(e=>e.word);
+}
+
+function getActualSurvivorsForGroup(group, rom){
+  return ((rom && rom.groups[group])||[]).map(e=>e.word).sort((a,b)=>a.localeCompare(b));
+}
+
+function isSameWordSet(a, b){
+  if(a.size!==b.size) return false;
+  for(const word of a){
+    if(!b.has(word)) return false;
+  }
+  return true;
+}
+
+function getSurvivorOptionsFor(item, rom, tok){
+  if(rom.words[item]){
+    const group=rom.words[item].group;
+    const survivors=getEffectiveSurvivorsForGroup(group, rom, tok);
+    if(survivors.length>1){
+      return {
+        type:'synonym',
+        group,
+        options:[...new Set(survivors)],
+        chosen:survivors.includes(item)?item:survivors[0],
+        original:item
+      };
+    }
+    return {type:'exact',group,options:[item],chosen:item,original:item};
+  }
+  if(tok && tok.words[item]){
+    const group=tok.words[item];
+    const survivors=getEffectiveSurvivorsForGroup(group, rom, tok);
+    if(survivors.length){
+      return {type:'synonym',group,options:[...new Set(survivors)],chosen:survivors[0],original:item};
+    }
+    return {type:'missing',group,options:[],chosen:item,original:item};
+  }
+  return {type:'missing',group:null,options:[],chosen:item,original:item};
+}
+
+function safeChoiceKey(lineIndex, tokenIndex, original, group){
+  return [lineIndex, tokenIndex, original||'', group==null?'':group].join('|');
+}
+
+const WALK_STOP_WORDS=new Set([
+  'a','an','the','to','of','for','from','with','into','onto','on','in','inside','into',
+  'at','by','off','out','up','down','over','under','through','around','again',
+  'him','her','them','his','hers','their','your','you','me'
+]);
+function cleanupWalkthroughKeepCapitalized(text){
+  const lines=String(text||'').split(/\r?\n/);
+  const out=[], seen=new Set();
+  for(const line of lines){
+    const matches=line.match(/\b[A-Z][A-Z0-9']*(?:\s+[A-Z][A-Z0-9']*)*\b/g) || [];
+    for(const match of matches){
+      const phrase=match.replace(/\s+/g,' ').trim();
+      if(!phrase || phrase.length < 2) continue;
+      if(!seen.has(phrase)){
+        seen.add(phrase);
+        out.push(phrase);
+      }
+    }
+  }
+  return out.join('\n');
+}
+
+function rewriteWalkthroughLine(line, rom, tok){
+  const original=String(line||'');
+  const trimmed=original.trim();
+  if(!trimmed) return original;
+
+  const leading=(original.match(/^\s*/) || [''])[0];
+  const bullet=(trimmed.match(/^([-*]|\d+\.)\s+/) || [null])[0];
+  const content=bullet ? trimmed.slice(bullet.length) : trimmed;
+
+  const phrase=normalizeWalkWord(content);
+  if(!phrase) return original;
+
+  const exactOrPhrase=firstSurvivorFor(phrase, rom, tok);
+  if(exactOrPhrase){
+    return leading + (bullet || '') + exactOrPhrase;
+  }
+
+  const words=phrase
+    .split(/\s+/)
+    .filter(w=>w && !WALK_STOP_WORDS.has(w))
+    .map(w=>firstSurvivorFor(w, rom, tok) || w);
+
+  if(!words.length) return original;
+  return leading + (bullet || '') + words.join(' ');
+}
+
+function rewriteWalkthroughText(text, rom, tok){
+  return String(text||'').split(/\r?\n/).map(line=>rewriteWalkthroughLine(line, rom, tok)).join('\n');
+}
+
+function buildWalkthroughSafeModel(text, rom, tok){
+  const lines=String(text||'').split(/\r?\n/);
+  return lines.map((line,lineIndex)=>{
+    const original=String(line||'');
+    const trimmed=original.trim();
+    if(!trimmed){
+      return {type:'blank',lineIndex,original,tokens:[]};
+    }
+
+    const leading=(original.match(/^\s*/) || [''])[0];
+    const bullet=(trimmed.match(/^([-*]|\d+\.)\s+/) || [null])[0];
+    const content=bullet ? trimmed.slice(bullet.length) : trimmed;
+    const phrase=normalizeWalkWord(content);
+    if(!phrase){
+      return {type:'raw',lineIndex,original,leading,bullet:bullet||'',tokens:[{type:'text',text:content}]};
+    }
+
+    const exactPhrase=firstSurvivorFor(phrase, rom, tok);
+    if(exactPhrase){
+      return {
+        type:'phrase',
+        lineIndex,
+        original,
+        leading,
+        bullet:bullet||'',
+      tokens:[(()=>{
+        const group=(rom.words[exactPhrase]||{}).group ?? (tok&&tok.words[phrase]!=null?tok.words[phrase]:null);
+        const key=safeChoiceKey(lineIndex,0,phrase,group);
+        const chosen=(safeChoiceMap[key]===exactPhrase)?safeChoiceMap[key]:exactPhrase;
+        return {
+          type:rom.words[exactPhrase]?'exact':'synonym',
+          text:exactPhrase,
+          original:phrase,
+          group,
+          options:[exactPhrase],
+          chosen
+        };
+      })()]
+      };
+    }
+
+    const parts=phrase.split(/\s+/).filter(Boolean);
+    const filtered=parts.filter(w=>!WALK_STOP_WORDS.has(w));
+    if(!filtered.length){
+      return {type:'raw',lineIndex,original,leading,bullet:bullet||'',tokens:[{type:'text',text:content}]};
+    }
+
+    return {
+      type:'words',
+      lineIndex,
+      original,
+      leading,
+      bullet:bullet||'',
+      tokens:filtered.map((word,tokenIndex)=>{
+        const info=getSurvivorOptionsFor(word, rom, tok);
+        const key=safeChoiceKey(lineIndex,tokenIndex,word,info.group);
+        const chosen=(info.options||[]).includes(safeChoiceMap[key]) ? safeChoiceMap[key] : info.chosen;
+        return {
+          type:info.type,
+          text:chosen,
+          original:word,
+          group:info.group,
+          options:info.options,
+          chosen
+        };
+      })
+    };
+  });
+}
+
+function renderSafeToken(token, lineIndex, tokenIndex){
+  if(token.type==='text') return escHtml(token.text);
+  if(token.type==='synonym'){
+    const title=`Replaced "${token.original}" with a surviving synonym from group ${token.group!=null?'G'+token.group:'?'}`;
+    if(token.options.length>1){
+      return `<select class="safe-select" data-safe-line="${lineIndex}" data-safe-token="${tokenIndex}" title="${escHtml(title)}">`+
+        token.options.map(opt=>`<option value="${escHtml(opt)}"${opt===token.chosen?' selected':''}>${escHtml(opt)}</option>`).join('')+
+      `</select>`;
+    }
+    return `<span class="safe-word word-yellow clickable-word" data-group-link="${token.group}" title="${escHtml(title)}"><u>${escHtml(token.chosen)}</u></span>`;
+  }
+  if(token.type==='missing'){
+    return `<span class="safe-word missing" title="No surviving synonym available">${escHtml(token.chosen)}</span>`;
+  }
+  return `<span class="safe-word exact">${escHtml(token.chosen)}</span>`;
+}
+
+function renderWalkthroughSafePreview(model){
+  return model.map(line=>{
+    if(line.type==='blank') return '<div class="safe-line">&nbsp;</div>';
+    const prefix=(line.leading||'') + (line.bullet||'');
+    const content=(line.tokens||[]).map((token,tokenIndex)=>renderSafeToken(token,line.lineIndex,tokenIndex)).join(' ');
+    return `<div class="safe-line">${escHtml(prefix)}${content}</div>`;
+  }).join('');
+}
+
+function collectSafePreviewText(){
+  if(!lastSafeModel) return lastRewrittenWalk||'';
+  const preview=document.getElementById('walkPreviewRich');
+  if(preview){
+    preview.querySelectorAll('select.safe-select').forEach(sel=>{
+      const lineIndex=Number(sel.dataset.safeLine), tokenIndex=Number(sel.dataset.safeToken);
+      if(Number.isInteger(lineIndex)&&Number.isInteger(tokenIndex)&&lastSafeModel[lineIndex]&&lastSafeModel[lineIndex].tokens[tokenIndex]){
+        lastSafeModel[lineIndex].tokens[tokenIndex].chosen=sel.value;
+        const token=lastSafeModel[lineIndex].tokens[tokenIndex];
+        safeChoiceMap[safeChoiceKey(lineIndex,tokenIndex,token.original,token.group)]=sel.value;
+      }
+    });
+  }
+  const lines=lastSafeModel.map(line=>{
+    if(line.type==='blank') return '';
+    const prefix=(line.leading||'') + (line.bullet||'');
+    const body=(line.tokens||[]).map(token=>token.chosen||token.text||'').join(' ').trim();
+    return prefix + body;
+  });
+  lastRewrittenWalk=lines.join('\n');
+  return lastRewrittenWalk;
+}
+
+function renderPlanWord(word, group){
+  const selected=!!(
+    lastRom && lastTok &&
+    getEffectiveSurvivorsForGroup(group,lastRom,lastTok).includes(word)
+  );
+  return `<span class="plan-chip"><span class="plan-word${selected?' selected':''}" data-plan-group="${group}" data-plan-word="${escHtml(word)}">${escHtml(word)}</span></span>`;
+}
+
+function pickerPlanKey(group, word){
+  return `${group}|${String(word).toLowerCase()}`;
+}
+
+function getPickerMode(group, word){
+  const key=pickerPlanKey(group,word);
+  return Object.prototype.hasOwnProperty.call(pickerPlan,key) ? pickerPlan[key] : -1;
+}
+
+function setPickerMode(group, word, mode){
+  const key=pickerPlanKey(group,word);
+  if(mode===-1) delete pickerPlan[key];
+  else pickerPlan[key]=mode;
+}
+
+function getBasePickerMode(group, word){
+  if(!lastRom || !lastRom.words || !lastRom.words[word]) return -1;
+  return (typeof lastRom.words[word].pickerVisibility==='number') ? lastRom.words[word].pickerVisibility : -1;
+}
+
+function getDisplayedPickerMode(group, word){
+  const override=getPickerMode(group,word);
+  return override!==-1 ? override : getBasePickerMode(group,word);
+}
+
+function cyclePickerMode(group, word){
+  const current=getDisplayedPickerMode(group,word);
+  const next=(current===-1)?0:((current===0)?1:-1);
+  setPickerMode(group,word,next);
+  changeLog.push({id:++changeSeq,group,word,action:(next===0)?'show normal':((next===1)?'show more':'show auto'),after:getEffectiveSurvivorsForGroup(group,lastRom,lastTok).slice().sort((a,b)=>a.localeCompare(b))});
+}
+
+function columnPlanKey(group, word){
+  return `${group}|${String(word).toLowerCase()}`;
+}
+
+function getColumnMode(group, word){
+  const key=columnPlanKey(group,word);
+  return Object.prototype.hasOwnProperty.call(columnPlan,key) ? columnPlan[key] : -1;
+}
+
+function setColumnMode(group, word, mode){
+  const key=columnPlanKey(group,word);
+  if(mode===-1) delete columnPlan[key];
+  else columnPlan[key]=mode;
+}
+
+function getBaseColumnMode(group, word){
+  if(!lastRom || !lastRom.words || !lastRom.words[word]) return -1;
+  return (typeof lastRom.words[word].column==='number') ? lastRom.words[word].column : -1;
+}
+
+function getDisplayedColumnMode(group, word){
+  const override=getColumnMode(group,word);
+  return override!==-1 ? override : getBaseColumnMode(group,word);
+}
+
+function cycleColumnMode(group, word){
+  const current=getDisplayedColumnMode(group,word);
+  const next=(current===-1)?0:((current===0)?1:-1);
+  setColumnMode(group,word,next);
+  changeLog.push({id:++changeSeq,group,word,action:(next===0)?'column left':((next===1)?'column right':'column auto'),after:getEffectiveSurvivorsForGroup(group,lastRom,lastTok).slice().sort((a,b)=>a.localeCompare(b))});
+}
+
+function hidePlanKey(group, word){
+  return `${group}|${String(word).toLowerCase()}`;
+}
+
+function getHiddenMode(group, word){
+  const key=hidePlanKey(group,word);
+  return Object.prototype.hasOwnProperty.call(hidePlan,key) ? hidePlan[key] : -1;
+}
+
+function setHiddenMode(group, word, mode){
+  const key=hidePlanKey(group,word);
+  if(mode===-1) delete hidePlan[key];
+  else hidePlan[key]=mode;
+}
+
+function getBaseHiddenMode(group, word){
+  if(!lastRom || !lastRom.words || !lastRom.words[word]) return 0;
+  return lastRom.words[word].hidden ? 1 : 0;
+}
+
+function getDisplayedHiddenMode(group, word){
+  const override=getHiddenMode(group,word);
+  return override!==-1 ? override : getBaseHiddenMode(group,word);
+}
+
+function toggleHiddenMode(group, word){
+  const current=getHiddenMode(group,word);
+  const next=(current===1)?-1:1;
+  setHiddenMode(group,word,next);
+  changeLog.push({id:++changeSeq,group,word,action:(next===1)?'hide word':'show game default',after:getEffectiveSurvivorsForGroup(group,lastRom,lastTok).slice().sort((a,b)=>a.localeCompare(b))});
+}
+
+function togglePlanWord(group, word){
+  if(!lastRom) return;
+  const baseline=new Set(getActualSurvivorsForGroup(group,lastRom));
+  if(!survivalPlan[group]) survivalPlan[group]=new Set(baseline);
+  let action='added';
+  if(survivalPlan[group].has(word)){
+    survivalPlan[group].delete(word);
+    action='removed';
+  } else {
+    survivalPlan[group].add(word);
+  }
+  if(isSameWordSet(survivalPlan[group], baseline)){
+    delete survivalPlan[group];
+  } else if(!survivalPlan[group].size){
+    delete survivalPlan[group];
+  }
+  const after=survivalPlan[group] ? [...survivalPlan[group]].sort((a,b)=>a.localeCompare(b)) : [];
+  changeLog.push({id:++changeSeq,group,word,action,after});
+}
+
+function renderChangesTab(){
+  if(!lastRom || !lastTok){
+    return '<div class="rom-only-note">Load a ROM and WORDS.TOK to inspect planned survivor changes.</div>';
+  }
+  const rows=[];
+  for(const group of Object.keys(lastTok.groups).map(Number).sort((a,b)=>a-b)){
+    if(group===0||group===9999) continue;
+    const actual=new Set(getActualSurvivorsForGroup(group,lastRom));
+    const planned=new Set(getEffectiveSurvivorsForGroup(group,lastRom,lastTok));
+    const added=[...planned].filter(word=>!actual.has(word)).sort((a,b)=>a.localeCompare(b));
+    const removed=[...actual].filter(word=>!planned.has(word)).sort((a,b)=>a.localeCompare(b));
+    for(const word of added){
+      rows.push({group,action:'added',word,after:[...planned].sort((a,b)=>a.localeCompare(b))});
+    }
+    for(const word of removed){
+      rows.push({group,action:'removed',word,after:[...planned].sort((a,b)=>a.localeCompare(b))});
+    }
+    for(const word of (lastTok.groups[group]||[]).slice().sort((a,b)=>a.localeCompare(b))){
+      const mode=getPickerMode(group,word);
+      if(mode===0) rows.push({group,action:'show normal',word,after:[...planned].sort((a,b)=>a.localeCompare(b))});
+      else if(mode===1) rows.push({group,action:'show more',word,after:[...planned].sort((a,b)=>a.localeCompare(b))});
+      const col=getColumnMode(group,word);
+      if(col===0) rows.push({group,action:'column left',word,after:[...planned].sort((a,b)=>a.localeCompare(b))});
+      else if(col===1) rows.push({group,action:'column right',word,after:[...planned].sort((a,b)=>a.localeCompare(b))});
+      const hidden=getHiddenMode(group,word);
+      if(hidden===1) rows.push({group,action:'hide',word,after:[...planned].sort((a,b)=>a.localeCompare(b))});
+    }
+  }
+  if(!rows.length){
+    return '<div class="rom-only-note">No changes tracked yet. Click words in the Plan Survivors column to build a survivor plan, click A/N/M for picker visibility, click A/L/R for column placement, and click V/H to hide a word from the picker.</div>';
+  }
+  let html='<div class="table-wrap"><table class="result-table" id="changesTable"><tr><th>#</th><th>Group</th><th>Change</th><th>Current Planned Survivors</th></tr>';
+  let rowId=rows.length;
+  for(const entry of rows){
+    html+=`<tr><td>${rowId--}</td><td>G${entry.group}</td><td>${escHtml(entry.action)} ${escHtml(entry.word)}</td><td>${entry.after.length?renderWordStack(entry.after,w=>renderPlanWord(w,entry.group),'<span class="group-empty">(none)</span>'):'<span class="group-empty">(none)</span>'}</td></tr>`;
+  }
+  html+='</table></div>';
+  return html;
+}
+
+function generateCodexPlanText(rom, tok){
+  const planGroups=Object.keys(survivalPlan).map(Number).sort((a,b)=>a-b);
+  const pickerKeys=Object.keys(pickerPlan).sort((a,b)=>a.localeCompare(b));
+  const columnKeys=Object.keys(columnPlan).sort((a,b)=>a.localeCompare(b));
+  const hideKeys=Object.keys(hidePlan).sort((a,b)=>a.localeCompare(b));
+  const safeWalk=(document.getElementById('walkPreviewRich') ? collectSafePreviewText() : (document.getElementById('walkText').value||'').trim());
+  let out='';
+  out+='Update GBAGI vocabulary retention rules using this survival plan.\n\n';
+  out+=`Workspace: H:\\CODEX\\GBAGI\n`;
+  out+=`ROM: ${gbaFileName||'(loaded .gba)'}\n`;
+  out+=`WORDS.TOK: ${tokData?'loaded':''}\n\n`;
+  out+='Relevant files:\n';
+  out+='- H:\\CODEX\\GBAGI\\GBAGI-master\\GBAGI-master\\romgui\\makerom.cpp\n';
+  out+='- H:\\CODEX\\GBAGI\\GBAGI-master\\GBAGI-master\\gbarom\\makerom.c\n';
+  out+='- H:\\CODEX\\GBAGI\\gbagi-bin-2.30\\gbinject.exe\n\n';
+  out+='Goal:\n';
+  out+='- Make the selected WORDS.TOK words survive in the final GBAGI ROM.\n';
+  out+='- Prefer additive retention so existing useful survivors stay available too.\n';
+  out+='- Use the listed group numbers as the source of truth.\n';
+  out+='- Rebuild and verify after patching.\n\n';
+  out+='Planned survival changes:\n';
+  if(planGroups.length){
+    for(const group of planGroups){
+      const chosen=[...survivalPlan[group]].sort((a,b)=>a.localeCompare(b));
+      const current=getActualSurvivorsForGroup(group,rom);
+      out+=`- G${group}: keep/add ${chosen.join(', ')}\n`;
+      out+=`  current survivors: ${current.length?current.join(', '):'(none)'}\n`;
+      out+=`  original group: ${(tok.groups[group]||[]).slice().sort().join(', ')}\n`;
+    }
+  }else{
+    out+='- No planned group edits selected yet.\n';
+  }
+  if(pickerKeys.length){
+    out+='\nPicker visibility overrides:\n';
+    for(const key of pickerKeys){
+      const parts=key.split('|');
+      const group=Number(parts[0]);
+      const word=parts.slice(1).join('|');
+      const mode=pickerPlan[key];
+      out+=`- G${group} ${word}: ${mode===0?'show normal':(mode===1?'show more':'show auto')}\n`;
+    }
+  }
+  if(columnKeys.length){
+    out+='\nColumn overrides:\n';
+    for(const key of columnKeys){
+      const parts=key.split('|');
+      const group=Number(parts[0]);
+      const word=parts.slice(1).join('|');
+      const col=columnPlan[key];
+      out+=`- G${group} ${word}: ${col===0?'column left':(col===1?'column right':'column auto')}\n`;
+    }
+  }
+  if(hideKeys.length){
+    out+='\nHide overrides:\n';
+    for(const key of hideKeys){
+      const parts=key.split('|');
+      const group=Number(parts[0]);
+      const word=parts.slice(1).join('|');
+      out+=`- G${group} ${word}: hide\n`;
+    }
+  }
+  if(safeWalk){
+    out+='\nCurrent GBAGI-safe walkthrough draft:\n';
+    out+=safeWalk+'\n';
+  }
+  return out;
+}
+
+function generateVocabPresetTsv(rom, tok){
+  const lines=['GBAGI_VOCAB_PRESET_V4'];
+  for(const group of Object.keys(tok.groups).map(Number).sort((a,b)=>a-b)){
+    if(group===0||group===9999) continue;
+    const actual=new Set(getActualSurvivorsForGroup(group,rom));
+    const planned=new Set(getEffectiveSurvivorsForGroup(group,rom,tok));
+    for(const word of (tok.groups[group]||[]).slice().sort((a,b)=>a.localeCompare(b))){
+      const keep=(planned.has(word) && !actual.has(word)) ? 1 : 0;
+      const remove=(!planned.has(word) && actual.has(word)) ? 1 : 0;
+      const show=getPickerMode(group,word);
+      const col=getColumnMode(group,word);
+      const hidden=getHiddenMode(group,word);
+      if(!keep && !remove && hidden===-1 && show===-1 && col===-1) continue;
+      lines.push([group,keep,remove,hidden===1?1:0,0,0,show,col,word].join('\t'));
+    }
+  }
+  return lines.join('\n')+'\n';
+}
+
+function rerenderWalkPreviewFromPlan(){
+  if(!lastSafeModel || !lastRom || !lastTok) return;
+  const walkText=document.getElementById('walkText').value;
+  lastSafeModel=buildWalkthroughSafeModel(walkText,lastRom,lastTok);
+  const preview=document.getElementById('walkPreviewRich');
+  if(preview){
+    preview.innerHTML=renderWalkthroughSafePreview(lastSafeModel);
+  }
+  lastRewrittenWalk=collectSafePreviewText();
+}
+
+function refreshChangesTab(){
+  const panel=document.getElementById('tabChanges');
+  if(panel){
+    panel.innerHTML=renderChangesTab();
+    makeSortable('changesTable');
+  }
+}
+
+function jumpToGroup(group){
+  if(!document.getElementById('groupsTable') && !document.getElementById('vocabTable') && lastRom){
+    document.getElementById('btnAnalyze').click();
+    setTimeout(()=>jumpToGroup(group),0);
+    return;
+  }
+  if(!document.getElementById('groupsTable') && document.getElementById('vocabTable')){
+    const vocabTab=document.querySelector('.tab[data-tab="tabVocab"]');
+    if(vocabTab){
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+      vocabTab.classList.add('active');
+      document.getElementById('tabVocab').classList.add('active');
+    }
+    const input=document.getElementById('filterVocab');
+    if(input) input.value=`g${group}`;
+    document.querySelectorAll('#vocabTable tr:not(:first-child)').forEach(r=>{
+      const show=(r.dataset.group||'')===String(group);
+      r.style.display=show?'':'none';
+      r.classList.remove('group-row-highlight');
+      if(show){
+        r.classList.add('group-row-highlight');
+        r.scrollIntoView({behavior:'smooth',block:'center'});
+      }
+    });
+    return;
+  }
+  const groupsTab=document.querySelector('.tab[data-tab="tabGroups"]');
+  if(groupsTab){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+    groupsTab.classList.add('active');
+    const panel=document.getElementById('tabGroups');
+    if(panel)panel.classList.add('active');
+  }
+
+  const input=document.getElementById('filterGroups');
+  if(input) input.value = `g${group}`;
+  document.querySelectorAll('#groupsTable tr:not(:first-child)').forEach(r=>{
+    const show=(r.dataset.group||'')===String(group);
+    r.style.display=show?'':'none';
+    r.classList.remove('group-row-highlight');
+    if(show){
+      r.classList.add('group-row-highlight');
+      r.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  });
+}
+
+document.addEventListener('click',e=>{
+  const link=e.target.closest('[data-group-link]');
+  if(!link)return;
+  const group=link.dataset.groupLink;
+  if(group)jumpToGroup(group);
+});
+
+// ── Action categories for cheat sheet ─────────────────
+const CATS=[
+  {cat:'Movement & Navigation',actions:[
+    {l:'Enter/go to',v:['enter','go','walk','board','ride'],n:[]},{l:'Exit/leave',v:['exit','leave','get out'],n:[]},
+    {l:'Climb',v:['climb','climb on','ascend'],n:[]},{l:'Jump',v:['jump','leap','hop'],n:[]},
+    {l:'Swim/dive',v:['swim','dive','wade','float'],n:[]},{l:'Run',v:['run','jog'],n:[]},
+    {l:'Stand up',v:['stand','get up','rise'],n:[]},{l:'Sit down',v:['sit','sit down'],n:[]}]},
+  {cat:'Interaction',actions:[
+    {l:'Look/examine',v:['look','examine','read','see','view','feel','show','inspect'],n:[]},
+    {l:'Look inside',v:['look in','look inside','look into','search'],n:[]},
+    {l:'Take/pick up',v:['take','get','grab','pick','pick up','acquire','catch','snatch'],n:[]},
+    {l:'Open',v:['open','lift','raise'],n:[]},{l:'Close',v:['close','shut'],n:[]},
+    {l:'Push/pull/turn',v:['move','push','pull','turn','press','shove','replace','slide'],n:[]},
+    {l:'Use',v:['use','with','using','try'],n:[]},
+    {l:'Give/put',v:['give','put','drop','place','offer','return','set','submit','show','present','add'],n:[]},
+    {l:'Throw',v:['throw','toss','fling'],n:[]},{l:'Break/smash',v:['break','smash','shatter','bust','destroy','rip'],n:[]},
+    {l:'Cut',v:['cut','slice','carve','chop'],n:[]},{l:'Knock',v:['knock','knock on','bang','rap','tap'],n:[]},
+    {l:'Lock',v:['lock','bolt','latch'],n:[]},{l:'Unlock',v:['unlock','unbolt','unlatch'],n:[]},
+    {l:'Tie/attach',v:['tie','attach','fasten','bind'],n:[]},{l:'Untie/release',v:['untie','release','unfasten','let go','free'],n:[]},
+    {l:'Remove/pour',v:['remove','pour','empty','take off','drain','spill'],n:[]},
+    {l:'Wear/put on',v:['wear','put on','don','dress','change'],n:[]},{l:'Undress',v:['undress','strip','nude','naked'],n:[]}]},
+  {cat:'Communication',actions:[
+    {l:'Talk/speak',v:['talk','speak','say','ask','call','converse','answer','tell','command','order'],n:[]},
+    {l:'Hello',v:['hello','hi','greet'],n:[]},{l:'Shout',v:['shout','yell','holler','scream','halt'],n:[]},
+    {l:'Sing/play',v:['sing','play','hum'],n:[]},{l:'Read/write',v:['read','write','print'],n:[]}]},
+  {cat:'Combat & Police',actions:[
+    {l:'Hit/attack',v:['hit','punch','kick','strike','beat','swing','fight'],n:[]},
+    {l:'Kill',v:['kill','murder','stab','slay'],n:[]},{l:'Shoot/fire',v:['shoot','fire','launch'],n:[]},
+    {l:'Draw weapon',v:['draw','aim'],n:[]},{l:'Holster',v:['holster'],n:[]},{l:'Load gun',v:['load'],n:[]},
+    {l:'Arrest/cuff',v:['arrest','apprehend','cuff','handcuff'],n:[]},{l:'Search/frisk',v:['search','find','frisk','locate'],n:[]}]},
+  {cat:'Personal',actions:[
+    {l:'Eat/drink',v:['eat','drink','taste','swallow','suck','lick','bite','chew'],n:[]},
+    {l:'Smell',v:['smell','sniff'],n:[]},{l:'Kiss/hug',v:['kiss','hug','embrace'],n:[]},
+    {l:'Pet/rub',v:['pet','pat','rub','stroke','caress','feel','fondle'],n:[]},
+    {l:'Sleep',v:['sleep','rest','nap'],n:[]},{l:'Wash/clean',v:['wash','clean','rinse','bathe','brush','scrub','sweep','wipe','dust'],n:[]},
+    {l:'Blow/inflate',v:['blow','blow up','inflate','toot'],n:[]},{l:'Dance',v:['dance','dancing'],n:[]}]},
+  {cat:'Items & Shopping',actions:[
+    {l:'Buy/purchase',v:['buy','purchase','order','pay','spend'],n:[]},{l:'Steal',v:['steal','rob','swipe'],n:[]},
+    {l:'Inventory',v:['inventory','inv','items','belongings','all','everything'],n:[]},
+    {l:'Save',v:['save'],n:[]},{l:'Restore',v:['restore'],n:[]},{l:'Quit/stop',v:['quit','stop','fold','done'],n:[]}]},
+  {cat:'NPCs',actions:[
+    {l:'Female NPC',v:[],n:['woman','girl','lady','her','she','blonde','wife','witch','hag','hooker','prostitute','barmaid','daughter']},
+    {l:'Male NPC',v:[],n:['man','him','he','guy','drunk','clerk','bartender','king','pirate','wizard','gnome','troll','ogre','boy','cop','guard','officer','sailor','suspect','criminal','jailer','judge','witness']},
+    {l:'Self',v:[],n:['me','myself','self','larry','alexander','bonds',"i'm"]}]}
+];
+
+// ── Build cheat sheet ─────────────────────────────────
+function buildCheat(rom,tok){
+  const rW=rom.words,rG=rom.groups,tW=tok?tok.words:null,tG=tok?tok.groups:null;
+  let html='',issues=[];
+  let tblId=0;
+
+  html+='<div class="section-header blue">COMMAND CHEAT SHEET</div><div style="padding:12px 0">';
+  for(const cat of CATS){
+    let ch='',has=false;
+    for(const a of cat.actions){
+      const sw=[...a.v,...a.n],inR=sw.filter(w=>rW[w]),rem=tW?sw.filter(w=>tW[w]&&!rW[w]):[];
+      if(!inR.length&&!rem.length)continue;
+      let rw=null,rg=null;
+      if(inR.length){rw=inR;rg=rW[inR[0]].group}
+      else if(rem.length&&tW){const g=tW[rem[0]];if(rG[g]){rw=rG[g].map(e=>e.word);rg=g}}
+      if(!rw||!rw.length){if(rem.length)issues.push({s:'critical',t:`"${a.l}" — no word available`,d:`Original: ${rem.join(', ')} — all removed.`});continue}
+      has=true;
+      const rs=rem.length?`<span class="cheat-aka"> (replaces: ${rem.slice(0,5).join(', ')}${rem.length>5?'...':''})</span>`:'';
+      ch+=`<div class="cheat-row"><span class="cheat-action">${a.l}</span><span class="cheat-word">${rw.join(' / ')}</span>${rs}</div>`;
+    }
+    if(has)html+=`<div class="cheat-card"><h3>${cat.cat}</h3>${ch}</div>`;
+  }
+  html+='</div>';
+
+  if(tW){
+    const CW=['get','take','open','close','push','pull','turn','look','read','give','put','stand','sit','walk','go','leave','buy','search','wear','remove','tie','untie','knock','gun','radio','shower','extender','license','key','keys','door','window','desk','table','man','woman','girl','money','ticket','newspaper','stool','seat','chair','bed'];
+    for(const cw of CW){
+      if(!tW[cw]||rW[cw])continue;const g=tW[cw];if(g===0||g===9999)continue;
+      if(rG[g]){const sv=rG[g].map(e=>e.word);if(!sv.some(s=>cw.includes(s)||s.includes(cw)))issues.push({s:'warning',t:`"${cw}" replaced by "${sv.join('/')}"`,d:`Use "${sv[0]}" instead (same group G${g}).`})}
+      else issues.push({s:'critical',t:`"${cw}" — completely missing`,d:`Word "${cw}" (G${g}) removed, no synonym survives.`})
+    }
+  }
+
+  if(issues.length){
+    html+='<div class="section-header orange">KNOWN ISSUES & UNINTUITIVE SYNONYMS</div><div style="padding:12px 0">';
+    issues.sort((a,b)=>a.s==='critical'?-1:b.s==='critical'?1:0);
+    for(const i of issues){const c=i.s==='critical'?'':'warning';html+=`<div class="issue-card ${c}"><div class="issue-title">${i.s==='critical'?'⛔':'⚠️'} ${i.t}</div><div class="issue-desc">${i.d}</div></div>`}
+    html+='</div>'
+  }
+
+  // Verbs table
+  const vTblId='verbTbl'+(tblId++);
+  html+='<div class="section-header green">ALL VERBS</div>';
+  html+=`<div class="table-wrap"><table class="result-table" id="${vTblId}"><tr>`;
+  html+='<th>GBAGI Word <span class="sort-arrow">▲</span></th><th>Group <span class="sort-arrow">▲</span></th>';
+  if(tok)html+='<th>Replaces <span class="sort-arrow">▲</span></th>';
+  html+='</tr>';
+  const verbs=Object.entries(rW).filter(([w,i])=>i.verb).sort((a,b)=>a[0].localeCompare(b[0]));
+  for(const[w,info]of verbs){
+    const orig=tok&&tG[info.group]?tG[info.group].filter(x=>!rW[x]):[];
+    html+=`<tr><td class="word-cyan">${w}</td><td>G${info.group}</td>`;
+    if(tok)html+=`<td class="word-dim">${orig.length?orig.sort().join(', '):'—'}</td>`;
+    html+='</tr>'
+  }
+  html+='</table></div>';
+
+  // Nouns table
+  const nTblId='nounTbl'+(tblId++);
+  html+='<div class="section-header green">ALL NOUNS</div>';
+  html+=`<div class="table-wrap"><table class="result-table" id="${nTblId}"><tr>`;
+  html+='<th>GBAGI Word <span class="sort-arrow">▲</span></th><th>Group <span class="sort-arrow">▲</span></th>';
+  if(tok)html+='<th>Replaces <span class="sort-arrow">▲</span></th>';
+  html+='</tr>';
+  const nouns=Object.entries(rW).filter(([w,i])=>!i.verb).sort((a,b)=>a[0].localeCompare(b[0]));
+  for(const[w,info]of nouns){
+    const orig=tok&&tG[info.group]?tG[info.group].filter(x=>!rW[x]):[];
+    html+=`<tr><td class="word-cyan">${w}</td><td>G${info.group}</td>`;
+    if(tok)html+=`<td class="word-dim">${orig.length?orig.sort().join(', '):'—'}</td>`;
+    html+='</tr>'
+  }
+  html+='</table></div>';
+
+  return{html,sortIds:[vTblId,nTblId]}
+}
+
+// ── Analyze ───────────────────────────────────────────
+document.getElementById('btnAnalyze').addEventListener('click',()=>{
+  if(!ensureAnalyzerData()) return;
+  const rom=lastRom,tok=lastTok;let html='';
+  const rw=Object.keys(rom.words).length,rg=Object.keys(rom.groups).length,tw=tok?Object.keys(tok.words).length:0;
+  html+='<div class="summary-grid">';
+  html+=`<div class="stat-card"><div class="value">${rw}</div><div class="lbl">ROM Words</div></div>`;
+  html+=`<div class="stat-card"><div class="value">${rg}</div><div class="lbl">ROM Groups</div></div>`;
+  if(tok){
+    html+=`<div class="stat-card"><div class="value">${tw}</div><div class="lbl">WORDS.TOK Words</div></div>`;
+    html+=`<div class="stat-card"><div class="value">${tw-rw}</div><div class="lbl">Words Removed</div></div>`;
+    let mg=0;for(const gn in tok.groups){if(gn==0||gn==9999)continue;if(!rom.groups[gn])mg++}
+    html+=`<div class="stat-card ${mg<=1?'ok':'crit'}"><div class="value">${mg}</div><div class="lbl">Missing Groups</div></div>`;
+    html+=`<div class="stat-card ${mg<=1?'ok':'crit'}"><div class="value" style="font-size:11px">${mg<=1?'COMPLETABLE':'⚠ '+mg+' MISSING'}</div><div class="lbl">Verdict</div></div>`;
+  }
+  html+='</div>';
+  if(!tok)html+='<div class="rom-only-note">Load a WORDS.TOK for full comparison analysis.</div>';
+
+  html+='<div class="tab-bar"><div class="tab active" data-tab="tabVocab">Full Vocabulary</div>';
+  if(tok)html+='<div class="tab" data-tab="tabGroups">Word Groups</div>';
+  if(tok)html+='<div class="tab" data-tab="tabChanges">Changes</div>';
+  html+='</div>';
+
+  // Tab: Vocab
+  html+='<div class="tab-content active" id="tabVocab">';
+  html+='<div class="filter-bar"><input type="text" id="filterVocab" placeholder="Filter words or groups..."></div>';
+  html+='<div class="table-wrap"><table class="result-table" id="vocabTable"><tr><th>Group <span class="sort-arrow">▲</span></th><th>Words <span class="sort-arrow">▲</span></th></tr>';
+  for(const gn of Object.keys(rom.groups).map(Number).sort((a,b)=>a-b)){
+    const entries=rom.groups[gn];
+    const wh=entries.map(e=>`${e.verb?'<span class="tag tag-verb">V</span>':'<span class="tag tag-noun">N</span>'} ${renderGroupWord(e.word,gn,'word-cyan')}`).join('&nbsp;&nbsp;');
+    html+=`<tr data-group="${gn}" data-words="${entries.map(e=>e.word).join(' ')}"><td>G${gn}</td><td>${wh}</td></tr>`;
+  }
+  html+='</table></div></div>';
+
+  if(tok){
+    html+='<div class="tab-content" id="tabGroups">';
+    html+='<div class="rom-only-note">Click words in the Plan column to mark which original WORDS.TOK words you want to preserve. Click A/N/M beside a word to cycle Show Auto, Show Normal, and Show More. Click A/L/R to cycle Column Auto, Column Left, and Column Right. Click V/H to toggle a hide override. The plan affects the walkthrough preview immediately and can now be downloaded as a real gbagi_vocab_preset.tsv for the injector.</div>';
+    html+='<div class="filter-bar"><input type="text" id="filterGroups" placeholder="Filter by group or word..."></div>';
+    html+='<div class="table-wrap"><table class="result-table" id="groupsTable"><tr><th>Group <span class="sort-arrow">â–²</span></th><th>Status <span class="sort-arrow">â–²</span></th><th>Original WORDS.TOK Group <span class="sort-arrow">â–²</span></th><th>Survives In ROM <span class="sort-arrow">â–²</span></th><th>Plan Survivors</th></tr>';
+    const groupRows=[];
+    for(const gn of Object.keys(tok.groups).map(Number).sort((a,b)=>a-b)){
+      if(gn===0||gn===9999)continue;
+      const orig=tok.groups[gn].slice().sort();
+      const actual=(rom.groups[gn]?rom.groups[gn].map(e=>e.word):[]).slice().sort((a,b)=>a.localeCompare(b));
+      const planned=getEffectiveSurvivorsForGroup(gn,rom,tok).slice().sort((a,b)=>a.localeCompare(b));
+      const status=actual.length?'Survives':'Missing';
+      groupRows.push({group:gn,status,orig,actual,planned});
+    }
+    for(const gr of groupRows){
+      html+=`<tr data-group="${gr.group}" data-words="${gr.orig.join(' ').toLowerCase()} ${gr.actual.join(' ').toLowerCase()} ${gr.planned.join(' ').toLowerCase()}" data-status="${gr.status.toLowerCase()}">`;
+      html+=`<td>G${gr.group}</td>`;
+      html+=`<td>${gr.actual.length?'<span class="tag tag-ok">Survives</span>':'<span class="tag tag-crit">Missing</span>'}</td>`;
+      html+=`<td class="group-original">${renderWordStack(gr.orig,w=>renderGroupWord(w,gr.group,'group-original'),'')}</td>`;
+      html+=`<td>${gr.actual.length?renderWordStack(gr.actual,w=>renderGroupWord(w,gr.group,'group-survivor'),'<span class="group-empty">No surviving words</span>'):'<span class="group-empty">No surviving words</span>'}</td>`;
+      html+=`<td>${renderWordStack(gr.orig,w=>renderPlanWord(w,gr.group),'')}</td>`;
+      html+='</tr>';
+    }
+    html+='</table></div></div>';
+    html+='<div class="tab-content" id="tabChanges">'+renderChangesTab()+'</div>';
+  }
+
+  const el=document.getElementById('results');el.innerHTML=html;el.classList.add('visible');
+  document.getElementById('btnDownloadChanges').disabled=false;
+
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active');
+  }));
+
+  document.querySelectorAll('[data-plan-group][data-plan-word]').forEach(elm=>elm.addEventListener('click',()=>{
+    togglePlanWord(Number(elm.dataset.planGroup), elm.dataset.planWord);
+    elm.classList.toggle('selected');
+    rerenderWalkPreviewFromPlan();
+    refreshChangesTab();
+  }));
+
+  document.querySelectorAll('[data-plan-mode-group][data-plan-mode-word]').forEach(elm=>elm.addEventListener('click',()=>{
+    cyclePickerMode(Number(elm.dataset.planModeGroup), elm.dataset.planModeWord);
+    const mode=getDisplayedPickerMode(Number(elm.dataset.planModeGroup), elm.dataset.planModeWord);
+    elm.textContent=(mode===0)?'N':((mode===1)?'M':'A');
+    elm.title=(mode===0)?'Show Normal':((mode===1)?'Show More':'Show Auto');
+    refreshChangesTab();
+  }));
+
+  document.querySelectorAll('[data-plan-col-group][data-plan-col-word]').forEach(elm=>elm.addEventListener('click',()=>{
+    cycleColumnMode(Number(elm.dataset.planColGroup), elm.dataset.planColWord);
+    const col=getDisplayedColumnMode(Number(elm.dataset.planColGroup), elm.dataset.planColWord);
+    elm.textContent=(col===0)?'L':((col===1)?'R':'A');
+    elm.title=(col===0)?'Column Left':((col===1)?'Column Right':'Column Auto');
+    refreshChangesTab();
+  }));
+
+  document.querySelectorAll('[data-plan-hide-group][data-plan-hide-word]').forEach(elm=>elm.addEventListener('click',()=>{
+    toggleHiddenMode(Number(elm.dataset.planHideGroup), elm.dataset.planHideWord);
+    const hidden=getDisplayedHiddenMode(Number(elm.dataset.planHideGroup), elm.dataset.planHideWord);
+    elm.textContent=hidden?'H':'V';
+    elm.title=hidden?'Hidden in picker':'Visible in picker';
+    refreshChangesTab();
+  }));
+
+
+  // Filters
+  const fv=document.getElementById('filterVocab');
+  if(fv)fv.addEventListener('input',()=>{const q=fv.value.toLowerCase();document.querySelectorAll('#vocabTable tr:not(:first-child)').forEach(r=>{r.style.display=(r.dataset.words||'').includes(q)||(r.dataset.group||'').includes(q)?'':'none'})});
+  const fg=document.getElementById('filterGroups');
+  if(fg)fg.addEventListener('input',()=>{const q=fg.value.toLowerCase();document.querySelectorAll('#groupsTable tr:not(:first-child)').forEach(r=>{r.style.display=((r.dataset.words||'').includes(q)||(r.dataset.group||'').includes(q)||(r.dataset.status||'').includes(q))?'':'none'})});
+
+  // Make all tables sortable
+  makeSortable('vocabTable');
+  makeSortable('groupsTable');
+  makeSortable('changesTable');
+});
+
+document.getElementById('btnWalk').addEventListener('click',()=>{
+  if(!ensureAnalyzerData()) return;
+  const walkText=document.getElementById('walkText').value;
+  const {html,rewrittenText,safeModel}=buildWalkthroughAnalysis(lastRom,lastTok,walkText);
+  lastSafeModel=safeModel;
+  lastRewrittenWalk=rewrittenText;
+  const el=document.getElementById('results');
+  el.innerHTML=html;
+  el.classList.add('visible');
+  document.getElementById('btnDownloadChanges').disabled=false;
+  lastRewrittenWalk=collectSafePreviewText();
+  document.getElementById('btnDownloadWalk').disabled=!lastRewrittenWalk;
+
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active');
+  }));
+
+  const fw=document.getElementById('filterWalkWords');
+  if(fw)fw.addEventListener('input',()=>{const q=fw.value.toLowerCase();document.querySelectorAll('#walkWordsTable tr:not(:first-child)').forEach(r=>{r.style.display=((r.dataset.word||'').includes(q)||(r.dataset.status||'').includes(q))?'':'none'})});
+  const fp=document.getElementById('filterWalkPhrases');
+  if(fp)fp.addEventListener('input',()=>{const q=fp.value.toLowerCase();document.querySelectorAll('#walkPhrasesTable tr:not(:first-child)').forEach(r=>{r.style.display=((r.dataset.word||'').includes(q)||(r.dataset.status||'').includes(q))?'':'none'})});
+  makeSortable('walkWordsTable');
+  makeSortable('walkPhrasesTable');
+});
+
+document.getElementById('btnExportWalk').addEventListener('click',()=>{
+  if(!ensureAnalyzerData()) return;
+  const walkText=document.getElementById('walkText').value;
+  const {html,rewrittenText,safeModel}=buildWalkthroughAnalysis(lastRom,lastTok,walkText);
+  lastSafeModel=safeModel;
+  lastRewrittenWalk=rewrittenText;
+  const el=document.getElementById('results');
+  el.innerHTML=html;
+  el.classList.add('visible');
+  document.getElementById('btnDownloadChanges').disabled=false;
+  lastRewrittenWalk=collectSafePreviewText();
+  document.getElementById('btnDownloadWalk').disabled=!lastRewrittenWalk;
+
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active');
+  }));
+  const fw=document.getElementById('filterWalkWords');
+  if(fw)fw.addEventListener('input',()=>{const q=fw.value.toLowerCase();document.querySelectorAll('#walkWordsTable tr:not(:first-child)').forEach(r=>{r.style.display=((r.dataset.word||'').includes(q)||(r.dataset.status||'').includes(q))?'':'none'})});
+  const fp=document.getElementById('filterWalkPhrases');
+  if(fp)fp.addEventListener('input',()=>{const q=fp.value.toLowerCase();document.querySelectorAll('#walkPhrasesTable tr:not(:first-child)').forEach(r=>{r.style.display=((r.dataset.word||'').includes(q)||(r.dataset.status||'').includes(q))?'':'none'})});
+  makeSortable('walkWordsTable');
+  makeSortable('walkPhrasesTable');
+
+  const safeTab=document.querySelector('.tab[data-tab="tabWalkSafe"]');
+  if(safeTab) safeTab.click();
+});
+
+document.getElementById('btnDownloadWalk').addEventListener('click',()=>{
+  lastRewrittenWalk=collectSafePreviewText();
+  if(!lastRewrittenWalk) return;
+  const blob=new Blob([lastRewrittenWalk],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const base=(walkFileName||gbaFileName||'walkthrough').replace(/\.[^.]+$/,'');
+  a.href=url;
+  a.download=base+'_gbagi_safe.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('btnDownloadPreset').addEventListener('click',()=>{
+  if(!ensureAnalyzerData()) return;
+  if(!lastRom || !lastTok) return;
+  const text=generateVocabPresetTsv(lastRom,lastTok);
+  const blob=new Blob([text],{type:'text/tab-separated-values'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='gbagi_vocab_preset.tsv';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('btnUpdateInjector').addEventListener('click', async ()=>{
+  if(!ensureAnalyzerData()) return;
+  if(!lastRom || !lastTok) return;
+  const text=generateVocabPresetTsv(lastRom,lastTok);
+  try{
+    if(window.showSaveFilePicker){
+      const handle=await window.showSaveFilePicker({
+        suggestedName: syncSuggestedName || 'gbagi_vocab_sync.tsv',
+        types:[{description:'TSV Files',accept:{'text/tab-separated-values':['.tsv'],'text/plain':['.tsv']}}]
+      });
+      const writable=await handle.createWritable();
+      await writable.write(text);
+      await writable.close();
+      alert(`Injector sync file written.\n\nReturn to the injector and use Vocabulary, Build ROM, or ROM Analyzer to import it.\n\nSuggested sync path:\n${syncPathDisplay||syncSuggestedName}`);
+      return;
+    }
+  }catch(err){
+    if(err && err.name==='AbortError') return;
+  }
+  const blob=new Blob([text],{type:'text/tab-separated-values'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=syncSuggestedName || 'gbagi_vocab_sync.tsv';
+  a.click();
+  URL.revokeObjectURL(url);
+  alert(`The sync preset was downloaded.\n\nSave or move it to:\n${syncPathDisplay||syncSuggestedName}\n\nThen return to the injector and use Vocabulary, Build ROM, or ROM Analyzer to import it.`);
+});
+
+// ── Cheat Sheet ───────────────────────────────────────
+document.getElementById('btnCheat').addEventListener('click',()=>{
+  if(!ensureAnalyzerData()) return;
+  const{html:ch,sortIds}=buildCheat(lastRom,lastTok);
+  const rw=Object.keys(lastRom.words).length;
+  const el=document.getElementById('results');
+  el.innerHTML=`<div class="summary-grid">
+    <div class="stat-card"><div class="value">${rw}</div><div class="lbl">ROM Words</div></div>
+    <div class="stat-card"><div class="value">${Object.keys(lastRom.groups).length}</div><div class="lbl">Groups</div></div>
+    <div class="stat-card"><div class="value">${Object.values(lastRom.words).filter(w=>w.verb).length}</div><div class="lbl">Verbs</div></div>
+    <div class="stat-card"><div class="value">${Object.values(lastRom.words).filter(w=>!w.verb).length}</div><div class="lbl">Nouns</div></div>
+  </div>`+ch;
+  el.classList.add('visible');
+  document.getElementById('btnPrint').disabled=false;
+  document.getElementById('btnDownloadChanges').disabled=false;
+  // Make verb/noun tables sortable
+  for(const id of sortIds) makeSortable(id);
+});
+
+// ── Print ─────────────────────────────────────────────
+document.getElementById('btnPrint').addEventListener('click',()=>window.print());
+
+// Download Changes
+function generateChangesText(rom,tok){
+  let t='='.repeat(70)+'\n';
+  t+=`GBAGI CHANGES - ${gbaFileName}\n`+'='.repeat(70)+'\n\n';
+  const hasAny = Object.keys(survivalPlan).length || Object.keys(pickerPlan).length || Object.keys(columnPlan).length || Object.keys(hidePlan).length;
+  if(!hasAny){
+    t+='No planned changes yet.\n';
+    return t;
+  }
+  const groups=new Set();
+  Object.keys(survivalPlan).forEach(k=>groups.add(Number(k)));
+  Object.keys(pickerPlan).forEach(k=>groups.add(Number(k.split('|')[0])));
+  Object.keys(columnPlan).forEach(k=>groups.add(Number(k.split('|')[0])));
+  Object.keys(hidePlan).forEach(k=>groups.add(Number(k.split('|')[0])));
+  for(const group of Array.from(groups).sort((a,b)=>a-b)){
+    t+=`G${group}\n`;
+    const actual=getActualSurvivorsForGroup(group,rom).slice().sort((a,b)=>a.localeCompare(b));
+    const planned=getEffectiveSurvivorsForGroup(group,rom,tok).slice().sort((a,b)=>a.localeCompare(b));
+    const removed=actual.filter(w=>!planned.includes(w));
+    const added=planned.filter(w=>!actual.includes(w));
+    if(added.length) t+=`  keep/add: ${added.join(', ')}\n`;
+    if(removed.length) t+=`  remove: ${removed.join(', ')}\n`;
+    const wordSet=new Set([...(tok && tok.groups[group] ? tok.groups[group] : []), ...actual, ...planned]);
+    const detailLines=[];
+    for(const word of Array.from(wordSet).sort((a,b)=>a.localeCompare(b))){
+      const key=`${group}|${word}`;
+      const parts=[];
+      if(Object.prototype.hasOwnProperty.call(pickerPlan,key)){
+        const mode=pickerPlan[key];
+        parts.push(mode===0?'show normal':(mode===1?'show more':'show auto'));
+      }
+      if(Object.prototype.hasOwnProperty.call(columnPlan,key)){
+        const col=columnPlan[key];
+        parts.push(col===0?'column left':(col===1?'column right':'column auto'));
+      }
+      if(Object.prototype.hasOwnProperty.call(hidePlan,key)){
+        parts.push(hidePlan[key] ? 'hide' : 'visible');
+      }
+      if(parts.length) detailLines.push(`  ${word}: ${parts.join(', ')}`);
+    }
+    if(detailLines.length) t+=detailLines.join('\n')+'\n';
+    t+='\n';
+  }
+  if(changeLog.length){
+    t+='Change log:\n';
+    for(const entry of changeLog){
+      t+=`  ${entry.id}. G${entry.group} ${entry.word}: ${entry.action}\n`;
+    }
+  }
+  return t;
+}
+
+document.getElementById('btnDownloadChanges').addEventListener('click',()=>{
+  if(!ensureAnalyzerData()) return;
+  if(!lastRom || !lastTok) return;
+  const t=generateChangesText(lastRom,lastTok);
+  const blob=new Blob([t],{type:'text/plain'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=gbaFileName.replace(/\.gba$/i,'')+'_changes.txt';a.click();URL.revokeObjectURL(url)
+});
+</script>
+</body>
+</html>

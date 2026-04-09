@@ -131,6 +131,9 @@ int main()
     }
 
 	fclose(fout);
+	if(!FixOutputRomForHardware(OUT_FILE, NULL)) {
+		ErrorMessage("Warning: ROM was built, but hardware-header fixing failed.");
+	}
 
 	return 0;
 }

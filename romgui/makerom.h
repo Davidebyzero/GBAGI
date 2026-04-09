@@ -69,12 +69,28 @@ typedef struct {
 	GVER ver;
 } VERLIST;
 
+typedef struct _VOCAB_PLAN_ENTRY VOCAB_PLAN_ENTRY;
+
 typedef struct {
 	VERLIST *version;
 	const char *vID;
 	const char *title;
 	const TCHAR *path;
+	VOCAB_PLAN_ENTRY *vocabPlan;
 } GAMEINFO;
+
+typedef struct _VOCAB_PLAN_ENTRY {
+	struct _VOCAB_PLAN_ENTRY *next;
+	int group;
+	char *word;
+	BOOL forceKeep;
+	BOOL forceRemove;
+	BOOL hidden;
+	BOOL addAlias;
+	BOOL replaceGroup;
+	int pickerVisibility; /* -1 auto, 0 normal, 1 more-only */
+	int columnOverride; /* -1 default, 0 left, 1 right */
+} VOCAB_PLAN_ENTRY;
                
 typedef struct {
 	U32 addr;
@@ -101,6 +117,7 @@ extern U8 objRoomsStart[256];
 
 extern U8 *words[26];
 extern U8 *vocabData, *wordData;
+extern WORDSET *wordset;
 
 extern FILE *fout;
 
@@ -136,6 +153,7 @@ void ExecuteIF(void);
 BOOL OutputGame(void);
 BOOL ProcessGame(GAMEINFO *gmInfo);
 void FreeGame(void);
+BOOL FixOutputRomForHardware(const TCHAR *filename, const TCHAR *titleText);
 int FindTotalWordsInGroup(int group);
 char **FindExtraWordInGroup(int group);
 

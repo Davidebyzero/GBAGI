@@ -209,6 +209,8 @@
     <ClCompile Include="vcl-shim\vcl-shim.cpp" />
     <ClCompile Include="vcl-shim\VclString.cpp" />
     <ClCompile Include="verdef.cpp" />
+    <ClCompile Include="vocabedit.cpp" />
+    <ClCompile Include="vocabedit.form.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="addgame.h" />
@@ -219,6 +221,7 @@
     <ClInclude Include="main.h" />
     <ClInclude Include="main.res.h" />
     <ClInclude Include="makerom.h" />
+    <ClInclude Include="vocabedit.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="vcl-shim\VclString.h" />
     <ClInclude Include="vcl-shim\ComboBox.h" />
@@ -232,6 +235,7 @@
     <ResourceCompile Include="addgame.rc" />
     <ResourceCompile Include="gbinjectb.rc" />
     <ResourceCompile Include="main.rc" />
+    <ResourceCompile Include="vocabedit.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

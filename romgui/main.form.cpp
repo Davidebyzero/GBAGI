@@ -14,34 +14,34 @@ void TFormMain::OnInitDialog(HWND hWnd) {
 
     this->Label1 = new TLabel(this);
     this->Label1->Attach(GetDlgItem(hWnd, IDC_LABEL1)); /* GBAGI Injection Utility */ this->Label1->GetSize(this->Label1X, this->Label1Y); this->Label1X -= width;
-    this->Label1->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->Label1->SetFont(-24, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label2 = new TLabel(this);
     this->Label2->Attach(GetDlgItem(hWnd, IDC_LABEL2)); /* By Brian Provinciano */ this->Label2->GetSize(this->Label2X, this->Label2Y); this->Label2X -= width;
-    this->Label2->SetFont(-13, FW_NORMAL, FALSE, FALSE, FALSE, "Verdana");
+    this->Label2->SetFont(-14, FW_NORMAL, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label3 = new TLabel(this);
     this->Label3->Attach(GetDlgItem(hWnd, IDC_LABEL3)); /* http://www.bripro.com */ this->Label3->GetSize(this->Label3X, this->Label3Y); this->Label3X -= width;
-    this->Label3->SetFont(-11, FW_NORMAL, FALSE, TRUE, FALSE, "Verdana");
+    this->Label3->SetFont(-13, FW_NORMAL, FALSE, TRUE, FALSE, "Segoe UI");
     this->Label3->Color = clBlue;
     this->Label3->hCursor = LoadCursor(NULL, IDC_HAND);
 
     this->Label4 = new TLabel(this);
     this->Label4->Attach(GetDlgItem(hWnd, IDC_LABEL4));
-    this->Label4->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->Label4->SetFont(-14, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label5 = new TLabel(this);
     this->Label5->Attach(GetDlgItem(hWnd, IDC_LABEL5));
-    this->Label5->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->Label5->SetFont(-14, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label6 = new TLabel(this);
     this->Label6->Attach(GetDlgItem(hWnd, IDC_LABEL6)); // ROM Input Filename
-    this->Label6->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->Label6->SetFont(-14, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label7 = new TLabel(this);
     this->Label7->Attach(GetDlgItem(hWnd, IDC_LABEL7)); /* Games To Inject */ this->Label7->GetSize(this->Label7X, this->Label7Y); this->Label7X -= width;
-    this->Label7->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
-    this->Label7->SetBgColor(11829830);
+    this->Label7->SetFont(-17, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+    this->Label7->SetBgColor(12040119);
     this->Label7->Color = clWhite;
 
     this->txStatus = new TLabel(this);
@@ -90,10 +90,16 @@ void TFormMain::OnInitDialog(HWND hWnd) {
 
     this->btnBuild = new TButton(this);
     this->btnBuild->Attach(GetDlgItem(hWnd, IDC_BTNBUILD)); this->btnBuild->GetPos(this->btnBuildX, this->btnBuildY); this->btnBuildX -= width; this->btnBuildY -= height;
-    this->btnBuild->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->btnBuild->SetFont(-17, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->btnRemove = new TButton(this);
     this->btnRemove->Attach(GetDlgItem(hWnd, IDC_BTNREMOVE)); this->btnRemove->GetPos(this->btnRemoveX, this->btnRemoveY); this->btnRemoveX -= width;
+
+    this->btnWords = new TButton(this);
+    this->btnWords->Attach(GetDlgItem(hWnd, IDC_BTNWORDS)); this->btnWords->GetPos(this->btnWordsX, this->btnWordsY); this->btnWordsX -= width;
+
+    this->btnWalkTest = new TButton(this);
+    this->btnWalkTest->Attach(GetDlgItem(hWnd, IDC_BTNWALKTEST)); this->btnWalkTest->GetPos(this->btnWalkTestX, this->btnWalkTestY); this->btnWalkTestX -= width; this->btnWalkTestY -= height;
 
     this->btnExit = new TButton(this);
     this->btnExit->Attach(GetDlgItem(hWnd, IDC_BTNEXIT)); this->btnExit->GetPos(this->btnExitX, this->btnExitY); this->btnExitX -= width; this->btnExitY -= height;
@@ -155,6 +161,21 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     ofnOpenInp.lpstrDefExt = _T("");
     ofnOpenInp.lpstrInitialDir = _T("");
     this->dlgOpenInp = new TOpenDialog(this, ofnOpenInp);
+
+    OPENFILENAME ofnOpenWalk;
+    ZeroMemory(&ofnOpenWalk, sizeof(OPENFILENAME)); // dlgOpenWalk
+    ofnOpenWalk.hwndOwner = hWnd;
+    ofnOpenWalk.lStructSize = sizeof(OPENFILENAME);
+    ofnOpenWalk.Flags = 0x0000 | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ENABLESIZING;
+    ofnOpenWalk.lpstrFile = new TCHAR[260];
+    ofnOpenWalk.nMaxFile = 260;
+    _tcscpy(ofnOpenWalk.lpstrFile, _T(""));
+    ofnOpenWalk.lpstrFilter = _T("Walkthrough Text (*.txt;*.md;*.log)\0*.txt;*.md;*.log\0All Files\0*.*\0");
+    ofnOpenWalk.nFilterIndex = 0;
+    ofnOpenWalk.lpstrTitle = _T("");
+    ofnOpenWalk.lpstrDefExt = _T("txt");
+    ofnOpenWalk.lpstrInitialDir = _T("");
+    this->dlgOpenWalk = new TOpenDialog(this, ofnOpenWalk);
 }
 
 void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
@@ -167,6 +188,16 @@ void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
 
     if (LOWORD(wParam) == IDC_BTNREMOVE && HIWORD(wParam) == BN_CLICKED) {
         this->btnRemoveClick(this);
+    }
+
+    if (LOWORD(wParam) == IDC_BTNWORDS && HIWORD(wParam) == BN_CLICKED) {
+        this->btnWordsClick(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_BTNWALKTEST && HIWORD(wParam) == BN_CLICKED) {
+        this->btnWalkTestClick(this);
+        this->UpdateControls();
     }
 
     if (LOWORD(wParam) == IDC_BTNEXIT && HIWORD(wParam) == BN_CLICKED) {
@@ -193,6 +224,10 @@ void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
         this->UpdateControls();
     }
 
+    if (LOWORD(wParam) == IDC_LISTBOX && HIWORD(wParam) == LBN_SELCHANGE) {
+        this->UpdateControls();
+    }
+
     if (LOWORD(wParam) == IDC_TBOUTPUT && HIWORD(wParam) == EN_CHANGE) {
         this->tbOutputChange(this);
         this->UpdateControls();
@@ -206,6 +241,7 @@ void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
 BOOL TFormMain::OnSize(UINT width, UINT height) {
     this->btnExit ->Move(width + this->btnExitX , height + this->btnExitY );
     this->btnBuild->Move(width + this->btnBuildX, height + this->btnBuildY);
+    this->btnWalkTest->Move(width + this->btnWalkTestX, height + this->btnWalkTestY);
     this->Panel11 ->Move(width + this->Panel11X , height + this->Panel11Y );
     this->listbox ->Size(width + this->listboxX , height + this->listboxY );
 
@@ -220,6 +256,7 @@ BOOL TFormMain::OnSize(UINT width, UINT height) {
 
     this->btnAdd   ->Move(width + this->btnAddX   , this->btnAddY          );
     this->btnRemove->Move(width + this->btnRemoveX, this->btnRemoveY       );
+    this->btnWords ->Move(width + this->btnWordsX , this->btnWordsY        );
     this->Label7   ->Size(width + this->Label7X   , this->Label7Y          );
 
     this->tbOutput->Size(width + this->tbOutputX, this->tbOutputY);

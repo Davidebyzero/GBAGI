@@ -29,6 +29,7 @@
 #include "decompress.h"
 #include "commands.h"
 #include "verdef.h"
+#include "vocabedit.h"
 //---------------------------------------------------------------------------
 class TAddGameObj
 {
@@ -63,6 +64,8 @@ __published:	// IDE-managed Components
 	TPanel *Panel10;
 	TButton *btnAdd; int btnAddX; int btnAddY;
 	TButton *btnRemove; int btnRemoveX; int btnRemoveY;
+	TButton *btnWords; int btnWordsX; int btnWordsY;
+	TButton *btnWalkTest; int btnWalkTestX; int btnWalkTestY;
 	TPanel *Panel12;
 	TButton *btnBrowseInp; int btnBrowseInpX; int btnBrowseInpY;
 	TPanel *Panel13;
@@ -76,6 +79,7 @@ __published:	// IDE-managed Components
 	TButton *btnBuild; int btnBuildX; int btnBuildY;
 	TOpenDialog *dlgOpenInp;
 	TOpenDialog *dlgOpenVoc;
+	TOpenDialog *dlgOpenWalk;
 	TSaveDialog *dlgSaveOut;
 	void __fastcall FormResize(TObject *Sender);
 	void __fastcall FormDestroy(TObject *Sender);
@@ -84,6 +88,8 @@ __published:	// IDE-managed Components
 	void __fastcall btnBrowseVocClick(TObject *Sender);
 	void __fastcall btnBrowseOutClick(TObject *Sender);
 	void __fastcall btnRemoveClick(TObject *Sender);
+	void __fastcall btnWordsClick(TObject *Sender);
+	void __fastcall btnWalkTestClick(TObject *Sender);
 	void __fastcall btnBuildClick(TObject *Sender);
 	void __fastcall btnExitClick(TObject *Sender);
 	void __fastcall tbOutputChange(TObject *Sender);
@@ -101,6 +107,10 @@ public:		// User declarations
     BOOL PackGames();
 
     TAddGameObj *FindAddGame(int num);
+    void FreeVocabPlan(VOCAB_PLAN_ENTRY *plan);
+    VOCAB_PLAN_ENTRY *LoadVocabPlanFromPresetFile(const TCHAR *filename);
+    void ReloadGamePresetIfPresent(TAddGameObj *game);
+    void TryImportAnalyzerSyncForSelectedGame();
     int RemoveAddGame(int num);
     void RemoveAddGames();
 

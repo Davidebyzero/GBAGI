@@ -87,6 +87,10 @@ struct TForm : TComponent {
         return TRUE;
     }
 
+    virtual LRESULT OnDrawItem(WPARAM wParam, LPARAM lParam) {
+        return FALSE;
+    }
+
     virtual BOOL OnSize(UINT width, UINT height) {
         return TRUE;
     }
