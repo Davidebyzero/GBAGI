@@ -432,6 +432,8 @@ void TFormVocabEdit::PopulatePreview()
     if(previewMoreMode) {
         leftWords = leftMore;
         rightWords = rightMore;
+        leftWords.insert(leftWords.end(), leftAuto.begin(), leftAuto.end());
+        rightWords.insert(rightWords.end(), rightAuto.begin(), rightAuto.end());
     } else {
         leftWords = leftNormal;
         rightWords = rightNormal;

@@ -831,6 +831,13 @@ void cSetHorizon()
 //	pixels on the priority screen with a value of 3).
 void cObjectOnWater()
 {
+	/*
+	 * AGI treats object.on.water/land/anything as mutually exclusive movement
+	 * modes. Using |= here lets a script leave both oWATER and oONLAND set in
+	 * the same cycle, which makes shoreline transitions fail when control tests
+	 * run before UpdateVObj() clears the transient flags at frame end.
+	 */
+	ViewObjs[ code[0] ].flags &= ~oONLAND;
 	ViewObjs[ code[0] ].flags |= oWATER;
 	code++;
 }
@@ -841,6 +848,12 @@ void cObjectOnWater()
 //	bit set (any pixels on the priority screen not with a value of 3).
 void cObjectOnLand()
 {
+	/*
+	 * Keep land/water state exclusive for the current logic cycle so an object
+	 * cannot be simultaneously constrained to both modes during a shoreline
+	 * transition.
+	 */
+	ViewObjs[ code[0] ].flags &= ~oWATER;
 	ViewObjs[ code[0] ].flags |= oONLAND;
 	code++;
 }
