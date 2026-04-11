@@ -13,6 +13,7 @@ romgui/*.opensdf
 romgui/*.sdf
 romgui/*.suo
 romgui/romgui.vcxproj.user
+romgui/.vs/
 romgui/ipch
 romgui/Debug
 romgui/Release
