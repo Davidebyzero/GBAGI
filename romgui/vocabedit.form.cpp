@@ -36,10 +36,10 @@ void TFormVocabEdit::OnInitDialog(HWND hWnd) {
 
     {
         HWND ownerDrawButtons[] = {
-            btnColLeft->hWnd, btnColRight->hWnd, btnColAuto->hWnd,
-            btnShowAuto->hWnd, btnShowNormal->hWnd, btnShowMore->hWnd
+            btnColLeft->hWnd, btnColRight->hWnd,
+            btnShowNormal->hWnd, btnShowMore->hWnd
         };
-        for(int i = 0; i < 6; ++i) {
+        for(int i = 0; i < 4; ++i) {
             LONG_PTR style = ::GetWindowLongPtr(ownerDrawButtons[i], GWL_STYLE);
             style &= ~BS_TYPEMASK;
             style |= BS_OWNERDRAW;
@@ -47,6 +47,11 @@ void TFormVocabEdit::OnInitDialog(HWND hWnd) {
             ::InvalidateRect(ownerDrawButtons[i], NULL, TRUE);
         }
     }
+
+    if(btnColAuto && btnColAuto->hWnd)
+        ::ShowWindow(btnColAuto->hWnd, SW_HIDE);
+    if(btnShowAuto && btnShowAuto->hWnd)
+        ::ShowWindow(btnShowAuto->hWnd, SW_HIDE);
 
     lblGame->SetFont(-16, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
     lblHelp->SetFont(-13, FW_NORMAL, FALSE, FALSE, FALSE, "Segoe UI");
@@ -87,10 +92,10 @@ LRESULT TFormVocabEdit::OnDrawItem(WPARAM wParam, LPARAM lParam) {
         return FALSE;
 
     switch(dis->CtlID) {
+        case IDC_LISTWORDS:
+            break;
         case IDC_BTNCOLLEFT:
         case IDC_BTNCOLRIGHT:
-        case IDC_BTNCOLAUTO:
-        case IDC_BTNSHOWAUTO:
         case IDC_BTNSHOWNORMAL:
         case IDC_BTNSHOWMORE:
             break;
@@ -104,6 +109,44 @@ LRESULT TFormVocabEdit::OnDrawItem(WPARAM wParam, LPARAM lParam) {
     HBRUSH hBrush;
     HPEN hPen;
     COLORREF textColor;
+
+    if(dis->CtlID == IDC_LISTWORDS) {
+        TCHAR itemText[512];
+        RECT fill = dis->rcItem;
+        COLORREF bg = (dis->itemState & ODS_SELECTED) ? ::GetSysColor(COLOR_HIGHLIGHT) : ::GetSysColor(COLOR_WINDOW);
+        COLORREF fg = ::GetSysColor(COLOR_WINDOWTEXT);
+        int groupIndex = GetSelectedGroupVectorIndex();
+        bool used = false;
+
+        itemText[0] = 0;
+        if(dis->itemID != (UINT)-1)
+            ::SendMessage(dis->hwndItem, LB_GETTEXT, dis->itemID, (LPARAM)itemText);
+
+        if(groupIndex >= 0 && groupIndex < (int)groups.size() &&
+           dis->itemID != (UINT)-1 && dis->itemID < visibleWords.size()) {
+            used = IsEffectivelyUsed(groups[groupIndex].group, visibleWords[dis->itemID].c_str());
+        }
+
+        if(!(dis->itemState & ODS_SELECTED))
+            fg = used ? RGB(0, 102, 204) : ::GetSysColor(COLOR_WINDOWTEXT);
+        else
+            fg = ::GetSysColor(COLOR_HIGHLIGHTTEXT);
+
+        hBrush = ::CreateSolidBrush(bg);
+        ::FillRect(dis->hDC, &fill, hBrush);
+        ::DeleteObject(hBrush);
+        ::SetTextColor(dis->hDC, fg);
+        ::SetBkMode(dis->hDC, TRANSPARENT);
+        fill.left += 3;
+        ::DrawText(dis->hDC, itemText, -1, &fill, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+
+        if(dis->itemState & ODS_FOCUS) {
+            RECT focus = dis->rcItem;
+            ::InflateRect(&focus, -1, -1);
+            ::DrawFocusRect(dis->hDC, &focus);
+        }
+        return TRUE;
+    }
 
     ::GetWindowText(dis->hwndItem, text, 128);
     active = (_tcsncmp(text, _T(">> "), 3) == 0);

@@ -430,12 +430,8 @@ void TFormVocabEdit::PopulatePreview()
     rightMore.erase(std::unique(rightMore.begin(), rightMore.end()), rightMore.end());
 
     if(previewMoreMode) {
-        leftWords = leftNormal;
-        rightWords = rightNormal;
-        leftWords.insert(leftWords.end(), leftAuto.begin(), leftAuto.end());
-        rightWords.insert(rightWords.end(), rightAuto.begin(), rightAuto.end());
-        leftWords.insert(leftWords.end(), leftMore.begin(), leftMore.end());
-        rightWords.insert(rightWords.end(), rightMore.begin(), rightMore.end());
+        leftWords = leftMore;
+        rightWords = rightMore;
     } else {
         leftWords = leftNormal;
         rightWords = rightNormal;
@@ -710,10 +706,6 @@ void TFormVocabEdit::UpdateActionButtons()
         ::EnableWindow(btnColLeft->hWnd, hasWord);
     if(btnColRight && btnColRight->hWnd)
         ::EnableWindow(btnColRight->hWnd, hasWord);
-    if(btnColAuto && btnColAuto->hWnd)
-        ::EnableWindow(btnColAuto->hWnd, hasWord);
-    if(btnShowAuto && btnShowAuto->hWnd)
-        ::EnableWindow(btnShowAuto->hWnd, hasWord);
     if(btnShowNormal && btnShowNormal->hWnd)
         ::EnableWindow(btnShowNormal->hWnd, hasWord);
     if(btnShowMore && btnShowMore->hWnd)
@@ -747,26 +739,18 @@ void TFormVocabEdit::UpdateModeButtonCaptions()
         ::SetWindowText(btnHide->hWnd, hidden ? _T("Hidden") : _T("Hide"));
 
     {
-        bool autoCol = !e || (e->columnOverride != 0 && e->columnOverride != 1);
-        bool autoShow = !e || (e->pickerVisibility != 0 && e->pickerVisibility != 1);
         if(btnColLeft && btnColLeft->hWnd)
-            ::SetWindowText(btnColLeft->hWnd, (hasWord && !autoCol && effectiveColumn == 0) ? _T(">> Column Left <<") : _T("Column Left"));
+            ::SetWindowText(btnColLeft->hWnd, (hasWord && effectiveColumn == 0) ? _T(">> Left <<") : _T("Left"));
         if(btnColRight && btnColRight->hWnd)
-            ::SetWindowText(btnColRight->hWnd, (hasWord && !autoCol && effectiveColumn == 1) ? _T(">> Column Right <<") : _T("Column Right"));
-        if(btnColAuto && btnColAuto->hWnd)
-            ::SetWindowText(btnColAuto->hWnd, (hasWord && autoCol) ? _T(">> Column Auto <<") : _T("Column Auto"));
+            ::SetWindowText(btnColRight->hWnd, (hasWord && effectiveColumn == 1) ? _T(">> Right <<") : _T("Right"));
         if(btnShowNormal && btnShowNormal->hWnd)
-            ::SetWindowText(btnShowNormal->hWnd, (hasWord && !autoShow && effectivePicker == 0) ? _T(">> Show Normal <<") : _T("Show Normal"));
+            ::SetWindowText(btnShowNormal->hWnd, (hasWord && effectivePicker != 1) ? _T(">> Normal <<") : _T("Normal"));
         if(btnShowMore && btnShowMore->hWnd)
-            ::SetWindowText(btnShowMore->hWnd, (hasWord && !autoShow && effectivePicker == 1) ? _T(">> Show More <<") : _T("Show More"));
-        if(btnShowAuto && btnShowAuto->hWnd)
-            ::SetWindowText(btnShowAuto->hWnd, (hasWord && autoShow) ? _T(">> Show Auto <<") : _T("Show Auto"));
+            ::SetWindowText(btnShowMore->hWnd, (hasWord && effectivePicker == 1) ? _T(">> More <<") : _T("More"));
         if(btnColLeft && btnColLeft->hWnd) ::InvalidateRect(btnColLeft->hWnd, NULL, TRUE);
         if(btnColRight && btnColRight->hWnd) ::InvalidateRect(btnColRight->hWnd, NULL, TRUE);
-        if(btnColAuto && btnColAuto->hWnd) ::InvalidateRect(btnColAuto->hWnd, NULL, TRUE);
         if(btnShowNormal && btnShowNormal->hWnd) ::InvalidateRect(btnShowNormal->hWnd, NULL, TRUE);
         if(btnShowMore && btnShowMore->hWnd) ::InvalidateRect(btnShowMore->hWnd, NULL, TRUE);
-        if(btnShowAuto && btnShowAuto->hWnd) ::InvalidateRect(btnShowAuto->hWnd, NULL, TRUE);
     }
 }
 

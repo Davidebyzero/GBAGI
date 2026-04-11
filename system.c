@@ -502,8 +502,8 @@ BTNSTATE *ParseButtons(U16 buttons)
 
     if(btnstate.state==BTN_INJECTED) {
 		btnstate.state	= BTN_PRESS;
-    	prevKeys = 0x8000;        
-        holdium = 2;
+    	prevKeys = 0;
+        holdium = 0;
     	return &btnstate;
     }
 
