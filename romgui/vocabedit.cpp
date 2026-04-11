@@ -32,6 +32,28 @@ static std::string LowerAscii(const std::string &value) {
     return out;
 }
 
+static int GetListVisibleCapacity(HWND hList)
+{
+    RECT rc;
+    int itemHeight;
+    int capacity;
+    if(!hList || !::GetClientRect(hList, &rc))
+        return 8;
+    itemHeight = (int)::SendMessage(hList, LB_GETITEMHEIGHT, 0, 0);
+    if(itemHeight <= 0)
+        itemHeight = 16;
+    capacity = (rc.bottom - rc.top) / itemHeight;
+    if(capacity < 1)
+        capacity = 1;
+    return capacity;
+}
+
+static void PushUniqueWord(std::vector<std::string> &words, const std::string &word)
+{
+    if(std::find(words.begin(), words.end(), word) == words.end())
+        words.push_back(word);
+}
+
 __fastcall TFormVocabEdit::TFormVocabEdit(TComponent* Owner)
     : TForm(Owner)
 {
@@ -208,6 +230,7 @@ bool TFormVocabEdit::AnalyzeCurrentWordset()
     gi = gameInfo;
     gameInfo->vocabPlan = NULL;
     autoStates.clear();
+    autoPreviewOrder.clear();
 
     if(!ProcessWords()) {
         gameInfo->vocabPlan = oldPlan;
@@ -225,6 +248,12 @@ bool TFormVocabEdit::AnalyzeCurrentWordset()
         else
             st.column = (w->group & 0x8000) ? 0 : 1;
         autoStates[MakeWordKey(w->group & 0x1FFF, w->string)] = st;
+        {
+            PreviewEntry pe;
+            pe.group = (w->group & 0x1FFF);
+            pe.word = w->string ? w->string : "";
+            autoPreviewOrder.push_back(pe);
+        }
     }
 
     FreeGame();
@@ -381,57 +410,36 @@ void TFormVocabEdit::PopulatePreview()
     if(listPreviewRight)
         listPreviewRight->Items->Clear();
 
-    for(size_t giIdx = 0; giIdx < groups.size(); ++giIdx) {
-        std::vector<std::string> groupWords = groups[giIdx].words;
-        for(VOCAB_PLAN_ENTRY *p = workingPlan; p; p = p->next) {
-            if(p->group != groups[giIdx].group || !p->word || !p->word[0] || !p->addAlias)
-                continue;
-            if(std::find(groupWords.begin(), groupWords.end(), p->word) == groupWords.end())
-                groupWords.push_back(p->word);
-        }
-        for(size_t wi = 0; wi < groupWords.size(); ++wi) {
-            const char *word = groupWords[wi].c_str();
-            const VOCAB_PLAN_ENTRY *e = FindPlanEntry(groups[giIdx].group, word);
-            int pickerVisibility;
-            if(!IsEffectivelyUsed(groups[giIdx].group, word))
-                continue;
-            if(e && e->hidden)
-                continue;
-            pickerVisibility = GetEffectivePickerVisibility(groups[giIdx].group, word);
-            if(GetEffectiveColumn(groups[giIdx].group, word) == 0) {
-                if(pickerVisibility == 0)
-                    leftNormal.push_back(groupWords[wi]);
-                else if(pickerVisibility == 1)
-                    leftMore.push_back(groupWords[wi]);
-                else
-                    leftAuto.push_back(groupWords[wi]);
-            } else {
-                if(pickerVisibility == 0)
-                    rightNormal.push_back(groupWords[wi]);
-                else if(pickerVisibility == 1)
-                    rightMore.push_back(groupWords[wi]);
-                else
-                    rightAuto.push_back(groupWords[wi]);
-            }
+    for(size_t i = 0; i < autoPreviewOrder.size(); ++i) {
+        const PreviewEntry &pe = autoPreviewOrder[i];
+        const char *word = pe.word.c_str();
+        const VOCAB_PLAN_ENTRY *e = FindPlanEntry(pe.group, word);
+        int pickerVisibility;
+        if(!IsEffectivelyUsed(pe.group, word))
+            continue;
+        if(e && e->hidden)
+            continue;
+        pickerVisibility = GetEffectivePickerVisibility(pe.group, word);
+        if(GetEffectiveColumn(pe.group, word) == 0) {
+            if(pickerVisibility == 0)
+                PushUniqueWord(leftNormal, pe.word);
+            else if(pickerVisibility == 1)
+                PushUniqueWord(leftMore, pe.word);
+            else
+                PushUniqueWord(leftAuto, pe.word);
+        } else {
+            if(pickerVisibility == 0)
+                PushUniqueWord(rightNormal, pe.word);
+            else if(pickerVisibility == 1)
+                PushUniqueWord(rightMore, pe.word);
+            else
+                PushUniqueWord(rightAuto, pe.word);
         }
     }
 
-    std::sort(leftAuto.begin(), leftAuto.end());
-    leftAuto.erase(std::unique(leftAuto.begin(), leftAuto.end()), leftAuto.end());
-    std::sort(rightAuto.begin(), rightAuto.end());
-    rightAuto.erase(std::unique(rightAuto.begin(), rightAuto.end()), rightAuto.end());
-    std::sort(leftNormal.begin(), leftNormal.end());
-    leftNormal.erase(std::unique(leftNormal.begin(), leftNormal.end()), leftNormal.end());
-    std::sort(rightNormal.begin(), rightNormal.end());
-    rightNormal.erase(std::unique(rightNormal.begin(), rightNormal.end()), rightNormal.end());
-    std::sort(leftMore.begin(), leftMore.end());
-    leftMore.erase(std::unique(leftMore.begin(), leftMore.end()), leftMore.end());
-    std::sort(rightMore.begin(), rightMore.end());
-    rightMore.erase(std::unique(rightMore.begin(), rightMore.end()), rightMore.end());
-
     if(previewMoreMode) {
-        leftWords = leftMore;
-        rightWords = rightMore;
+        leftWords.insert(leftWords.end(), leftMore.begin(), leftMore.end());
+        rightWords.insert(rightWords.end(), rightMore.begin(), rightMore.end());
         leftWords.insert(leftWords.end(), leftAuto.begin(), leftAuto.end());
         rightWords.insert(rightWords.end(), rightAuto.begin(), rightAuto.end());
     } else {
@@ -441,13 +449,8 @@ void TFormVocabEdit::PopulatePreview()
         rightWords.insert(rightWords.end(), rightAuto.begin(), rightAuto.end());
     }
 
-    std::sort(leftWords.begin(), leftWords.end());
-    leftWords.erase(std::unique(leftWords.begin(), leftWords.end()), leftWords.end());
-    std::sort(rightWords.begin(), rightWords.end());
-    rightWords.erase(std::unique(rightWords.begin(), rightWords.end()), rightWords.end());
-
     if(leftWords.empty() && rightWords.empty()) {
-        std::string placeholder = previewMoreMode ? "(No more-page words)" : "(No preview words)";
+        std::string placeholder = previewMoreMode ? "(No explicit Show More words)" : "(No preview words)";
         leftWords.push_back(placeholder);
     }
 
@@ -708,6 +711,8 @@ void TFormVocabEdit::UpdateActionButtons()
         ::EnableWindow(btnColLeft->hWnd, hasWord);
     if(btnColRight && btnColRight->hWnd)
         ::EnableWindow(btnColRight->hWnd, hasWord);
+    if(btnShowAuto && btnShowAuto->hWnd)
+        ::EnableWindow(btnShowAuto->hWnd, hasWord);
     if(btnShowNormal && btnShowNormal->hWnd)
         ::EnableWindow(btnShowNormal->hWnd, hasWord);
     if(btnShowMore && btnShowMore->hWnd)
@@ -745,10 +750,13 @@ void TFormVocabEdit::UpdateModeButtonCaptions()
             ::SetWindowText(btnColLeft->hWnd, (hasWord && effectiveColumn == 0) ? _T(">> Left <<") : _T("Left"));
         if(btnColRight && btnColRight->hWnd)
             ::SetWindowText(btnColRight->hWnd, (hasWord && effectiveColumn == 1) ? _T(">> Right <<") : _T("Right"));
+        if(btnShowAuto && btnShowAuto->hWnd)
+            ::SetWindowText(btnShowAuto->hWnd, (hasWord && effectivePicker == -1) ? _T(">> Auto <<") : _T("Auto"));
         if(btnShowNormal && btnShowNormal->hWnd)
-            ::SetWindowText(btnShowNormal->hWnd, (hasWord && effectivePicker != 1) ? _T(">> Normal <<") : _T("Normal"));
+            ::SetWindowText(btnShowNormal->hWnd, (hasWord && effectivePicker == 0) ? _T(">> Normal <<") : _T("Normal"));
         if(btnShowMore && btnShowMore->hWnd)
             ::SetWindowText(btnShowMore->hWnd, (hasWord && effectivePicker == 1) ? _T(">> More <<") : _T("More"));
+        if(btnShowAuto && btnShowAuto->hWnd) ::InvalidateRect(btnShowAuto->hWnd, NULL, TRUE);
         if(btnColLeft && btnColLeft->hWnd) ::InvalidateRect(btnColLeft->hWnd, NULL, TRUE);
         if(btnColRight && btnColRight->hWnd) ::InvalidateRect(btnColRight->hWnd, NULL, TRUE);
         if(btnShowNormal && btnShowNormal->hWnd) ::InvalidateRect(btnShowNormal->hWnd, NULL, TRUE);

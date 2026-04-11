@@ -70,9 +70,11 @@ private:
 
     struct TokGroup { int group; std::vector<std::string> words; };
     struct AutoWordState { bool used; int column; };
+    struct PreviewEntry { int group; std::string word; };
     std::vector<TokGroup> groups;
     std::vector<int> visibleGroupIndices;
     std::vector<std::string> visibleWords;
+    std::vector<PreviewEntry> autoPreviewOrder;
     std::string searchFilter;
     bool previewMoreMode;
     std::map<std::string, AutoWordState> autoStates;
