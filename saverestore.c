@@ -46,12 +46,33 @@
 #define MAX_SAVES 8
 #define SAVE_FILE_SIZE 4096
 
+#define BATTERYLESS_COMMIT_NONE	0
+#define BATTERYLESS_COMMIT_AUTO	1
+
+#define BATTERYLESS_COMMIT_MODE		BATTERYLESS_COMMIT_AUTO
+#define BATTERYLESS_COMMIT_SPAN		0x2000
+#define BATTERYLESS_COMMIT_PASSES	5
+#define BATTERYLESS_DELAY_TICKS		400
+
 const char szSaveHeader[]="GBAGI/Save_Game";
 char szSaveName[MAX_SAVENAME_LEN+1],szAutoSave[MAX_SAVENAME_LEN+1];
 char szSaveNames[MAX_SAVES][MAX_SAVENAME_LEN+1];
 char szTemp1[16],szTemp2[128];
 int saveSlot;
 BOOL OK_CLOSE;
+
+const char batteryless_test_tag[] = "BATTERYLESS_TEST_12345";
+const char batteryless_commit_tag[] = "BATTERYLESS_COMMIT_AUTO_54321";
+const char batteryless_pump_tag[] = "BATTERYLESS_COMMIT_PUMP_2026";
+const char *batteryless_test_tag_ptr = batteryless_test_tag;
+const char *batteryless_commit_tag_ptr = batteryless_commit_tag;
+const char *batteryless_pump_tag_ptr = batteryless_pump_tag;
+
+#ifndef _WINDOWS
+static const char szBatterylessCommitLine1[] = "Committing save...";
+static const char szBatterylessCommitLine2[] = "Do not power off.";
+static BOOL gBatterylessCommitPending = FALSE;
+#endif
 
 /*****************************************************************************/
 S16 wnSaveRestoreProc(WND *w, U16 msg, U16 wParam, U32 lParam);
@@ -194,6 +215,82 @@ void SRamMemCpy(U8 *a, U8 *b, int len)
     	*a++=*b++;
 }
 /*****************************************************************************/
+#ifndef _WINDOWS
+static void BatterylessBusyDelay(void)
+{
+	int delay;
+
+	delay = (64*BATTERYLESS_DELAY_TICKS)+1;
+	REG_TM0CNT_H = TIME_FREQUENcy1024 | TIME_ENABLE;
+	REG_TM0CNT_L = 0;
+	while(REG_TM0CNT_L <= delay) {
+	}
+	REG_TM0CNT_H = 0;
+}
+/*****************************************************************************/
+static void BatterylessShowCommitMessage(void)
+{
+	BoxNBorder(24,52,216,92,0x4F);
+	DrawStringAbs(42,62,(char*)szBatterylessCommitLine1,0xF0);
+	DrawStringAbs(42,74,(char*)szBatterylessCommitLine2,0xF0);
+}
+/*****************************************************************************/
+static void BatterylessCommitSRAM(void)
+{
+#if BATTERYLESS_COMMIT_MODE == BATTERYLESS_COMMIT_AUTO
+	volatile U8 *sram = (volatile U8*)GAMEPAK_RAM;
+	int pass, i;
+	BOOL wasGUIActive = GUI_ACTIVE;
+
+	// Cheap batteryless repro carts may lose SRAM-backed saves after power-off
+	// unless we force a visible post-save commit phase with real SRAM activity.
+	if(!wasGUIActive)
+		gfxGUIEnter();
+
+	BatterylessShowCommitMessage();
+	GBA_Flip();
+
+	for(pass=0; pass<BATTERYLESS_COMMIT_PASSES; pass++) {
+		for(i=0; i<BATTERYLESS_COMMIT_SPAN; i++) {
+			U8 original = sram[i];
+			sram[i] = (U8)(original ^ 0xFF);
+			sram[i] = original;
+		}
+	}
+
+	BatterylessBusyDelay();
+
+	if(!wasGUIActive) {
+		RedrawScreen(TEXT_MODE);
+		GBA_Flip();
+		GUI_ACTIVE = FALSE;
+		if(REG_DISPCNT & BACKBUFFER)
+			vidPtr = ((U16*)0x600A000);
+		else
+			vidPtr = ((U16*)0x6000000);
+	}
+#endif
+}
+/*****************************************************************************/
+void BatterylessNotifySaveDirty(void)
+{
+#if BATTERYLESS_COMMIT_MODE == BATTERYLESS_COMMIT_AUTO
+	gBatterylessCommitPending = TRUE;
+#endif
+}
+/*****************************************************************************/
+void BatterylessUpdateCommitPump(void)
+{
+#if BATTERYLESS_COMMIT_MODE == BATTERYLESS_COMMIT_AUTO
+	if(!gBatterylessCommitPending)
+		return;
+	gBatterylessCommitPending = FALSE;
+	BatterylessCommitSRAM();
+#endif
+}
+/*****************************************************************************/
+#endif
+/*****************************************************************************/
 BOOL SaveGame()
 {
     int i, totalOverlays, totalPViews;
@@ -289,6 +386,12 @@ BOOL SaveGame()
     }
 
     CLOSE_SAVE_FILE();
+
+#ifndef _WINDOWS
+#if BATTERYLESS_COMMIT_MODE == BATTERYLESS_COMMIT_AUTO
+    BatterylessNotifySaveDirty();
+#endif
+#endif
 
     return TRUE;
 }

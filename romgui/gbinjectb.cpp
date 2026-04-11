@@ -106,6 +106,29 @@ static std::wstring CliEnsureTrailingSlash(const wchar_t *path)
     return out;
 }
 
+static bool EnsureBatterylessPad16M(const TCHAR *filename)
+{
+	FILE *f;
+	long fileSize;
+	char zeros[4096];
+
+	memset(zeros, 0, sizeof(zeros));
+	f = _tfopen(filename, _T("ab"));
+	if(!f)
+		return false;
+
+	fseek(f, 0, SEEK_END);
+	fileSize = ftell(f);
+	while(fileSize < (16L * 1024L * 1024L)) {
+		long remaining = (16L * 1024L * 1024L) - fileSize;
+		size_t chunk = (remaining > (long)sizeof(zeros)) ? sizeof(zeros) : (size_t)remaining;
+		fwrite(zeros, 1, chunk, f);
+		fileSize += (long)chunk;
+	}
+	fclose(f);
+	return true;
+}
+
 struct CliGameSpec
 {
     std::wstring path;
@@ -324,11 +347,15 @@ static bool CliPackGameList(
 
     fclose(fout);
     fout = NULL;
-    if(!FixOutputRomForHardware(outromName, NULL))
-    {
-        CliPrint(L"Warning: built ROM, but hardware-header fixing failed.\n");
-    }
-    return true;
+	if(!FixOutputRomForHardware(outromName, NULL))
+	{
+		CliPrint(L"Warning: built ROM, but hardware-header fixing failed.\n");
+	}
+	if(!EnsureBatterylessPad16M(outromName))
+	{
+		CliPrint(L"Warning: built ROM, but 16MB padding failed.\n");
+	}
+	return true;
 }
 
 static bool CliPackOneGame(

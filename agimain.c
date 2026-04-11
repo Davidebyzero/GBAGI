@@ -202,6 +202,7 @@ void AGIMain()
 
 		DoDelayNPoll();
         if(QUIT_FLAG) break;
+		BatterylessUpdateCommitPump();
     	SystemDoit();
 
 		if(PLAYER_CONTROL)

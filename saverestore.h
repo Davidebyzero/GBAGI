@@ -103,6 +103,10 @@ BOOL ExecuteSaveDialog(const char *szTitle, const char *szType);
 BOOL SaveGame(void);
 BOOL RestoreGame(void);
 void SRamMemCpy(U8 *a, U8 *b, int len);
+#ifndef _WINDOWS
+void BatterylessNotifySaveDirty(void);
+void BatterylessUpdateCommitPump(void);
+#endif
 /*****************************************************************************/
 #endif
 /*****************************************************************************/

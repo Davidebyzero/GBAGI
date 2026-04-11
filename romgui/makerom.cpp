@@ -139,7 +139,12 @@ static const U8 kGbaNintendoLogo[0x9C] = {
 	0x88, 0x11, 0x3A, 0x94, 0x65, 0xC0, 0x7C, 0x63, 0x87, 0xF0, 0x3C, 0xAF,
 	0xD6, 0x25, 0xE4, 0x8B, 0x38, 0x0A, 0xAC, 0x72, 0x21, 0xD4, 0xF8, 0x07
 };
-static const char kSramSignature[] = "SRAM_V113";
+static const char *kSaveSignatures[] = {
+	"SRAM_V113",
+	"SRAM_F_V103",
+	"SRAM_F_VA1"
+};
+#define BATTERYLESS_PAD_TARGET_SIZE (16L*1024L*1024L)
 /******************************************************************************/
 static U8 CalcGbaHeaderComplement(const U8 *header)
 {
@@ -168,14 +173,40 @@ static void FillGbaHeaderText(U8 *dest, int len, const TCHAR *text, const char *
 		dest[i] = (U8)fallback[i];
 }
 /******************************************************************************/
+static BOOL FileContainsTag(FILE *f, const char *tag)
+{
+	U8 chunk[256];
+	size_t readCount;
+	size_t tagLen;
+	size_t i;
+
+	if(!f || !tag)
+		return FALSE;
+
+	tagLen = strlen(tag);
+	if(tagLen == 0)
+		return FALSE;
+
+	fseek(f, 0, SEEK_SET);
+	while((readCount = fread(chunk, 1, sizeof(chunk), f)) > 0) {
+		if(readCount < tagLen)
+			continue;
+		for(i = 0; i + tagLen <= readCount; i++) {
+			if(memcmp(chunk + i, tag, tagLen) == 0)
+				return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+/******************************************************************************/
 BOOL FixOutputRomForHardware(const TCHAR *filename, const TCHAR *titleText)
 {
 	FILE *f;
 	long fileSize;
 	U8 header[0xC0];
-	U8 chunk[256];
-	size_t readCount;
-	BOOL hasSram = FALSE;
+	U8 zero = 0;
+	int sigIndex;
 
 	if(!filename || !*filename)
 		return FALSE;
@@ -201,26 +232,22 @@ BOOL FixOutputRomForHardware(const TCHAR *filename, const TCHAR *titleText)
 
 	fseek(f, 0, SEEK_END);
 	fileSize = ftell(f);
-	fseek(f, 0, SEEK_SET);
-	while((readCount = fread(chunk, 1, sizeof(chunk), f)) > 0) {
-		if(readCount >= sizeof(kSramSignature) - 1) {
-			size_t i;
-			for(i = 0; i + sizeof(kSramSignature) - 1 <= readCount; i++) {
-				if(memcmp(chunk + i, kSramSignature, sizeof(kSramSignature) - 1) == 0) {
-					hasSram = TRUE;
-					break;
-				}
-			}
-			if(hasSram)
-				break;
+	for(sigIndex = 0; sigIndex < (int)(sizeof(kSaveSignatures) / sizeof(kSaveSignatures[0])); sigIndex++) {
+		const char *sig = kSaveSignatures[sigIndex];
+		size_t sigLen = strlen(sig);
+		if(FileContainsTag(f, sig))
+			continue;
+		fseek(f, 0, SEEK_END);
+		fwrite(sig, 1, sigLen, f);
+		fileSize += (long)sigLen;
+		while((fileSize & 3) != 0) {
+			fwrite(&zero, 1, 1, f);
+			fileSize++;
 		}
 	}
-	if(!hasSram) {
-		U8 zero = 0;
+	if(fileSize < BATTERYLESS_PAD_TARGET_SIZE) {
 		fseek(f, 0, SEEK_END);
-		fwrite(kSramSignature, 1, sizeof(kSramSignature) - 1, f);
-		fileSize += (long)(sizeof(kSramSignature) - 1);
-		while((fileSize & 3) != 0) {
+		while(fileSize < BATTERYLESS_PAD_TARGET_SIZE) {
 			fwrite(&zero, 1, 1, f);
 			fileSize++;
 		}

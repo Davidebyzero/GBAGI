@@ -40,6 +40,30 @@
 
 static const int kMaxInjectGames = 255;
 
+static bool EnsureBatterylessPad16M(const TCHAR *filename)
+{
+    FILE *f;
+    long fileSize;
+    char zeros[4096];
+
+    memset(zeros, 0, sizeof(zeros));
+    f = _tfopen(filename, _T("ab"));
+    if(!f)
+        return false;
+
+    fseek(f, 0, SEEK_END);
+    fileSize = ftell(f);
+    while(fileSize < (16L * 1024L * 1024L)) {
+        long remaining = (16L * 1024L * 1024L) - fileSize;
+        size_t chunk = (remaining > (long)sizeof(zeros)) ? sizeof(zeros) : (size_t)remaining;
+        fwrite(zeros, 1, chunk, f);
+        fileSize += (long)chunk;
+    }
+
+    fclose(f);
+    return true;
+}
+
 struct WalkItemResult {
     std::string item;
     std::string status;
@@ -1403,6 +1427,10 @@ BOOL TFormMain::PackGames()
 	if(!FixOutputRomForHardware(outromName, NULL))
 	{
 		ShowMessage(_T("Warning: ROM was built, but hardware-header fixing failed."));
+	}
+	if(!EnsureBatterylessPad16M(outromName))
+	{
+		ShowMessage(_T("Warning: ROM was built, but 16MB padding failed."));
 	}
 
 	return TRUE;
