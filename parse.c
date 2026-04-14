@@ -27,6 +27,7 @@
 #include "lsl1hack.h"
 #include "text.h"
 #include "commands.h"
+#include "agimain.h"
 #include "screen.h"
 #include "lsl1hack.h"
 /*****************************************************************************/
@@ -157,6 +158,16 @@ char *favWords[TOTAL_FAV] = {
 
 char *spaceChars=" ,?!();:[]{}`-\"";
 /*****************************************************************************/
+static BOOL IsPoliceQuestGame(void)
+{
+	char c0, c1;
+	c0 = szGameID[0];
+	c1 = szGameID[1];
+	if(c0 >= 'a' && c0 <= 'z') c0 -= 32;
+	if(c1 >= 'a' && c1 <= 'z') c1 -= 32;
+	return (c0 == 'P' && c1 == 'Q');
+}
+/*****************************************************************************/
 static BOOL IsHiddenDebugWord(const char *word)
 {
 	if(TestFlag(fDEBUG))
@@ -208,15 +219,30 @@ static int GetWordPickerVisibility(U8 *entry)
 char *StripInput(char *sStart)
 {
 	char *s=sStart,*so=szInputClean;
+	char word[32];
+	int wl;
 	while(*s) {
-        while(*s&&!strchr(spaceChars,*s))
-        	*so++ = (*s>='A'&&*s<='Z')?*s++|0x20:*s++;
-        while(*s&&strchr(spaceChars,*s)) s++;      
-        if(*s&&s!=sStart)
-        	*so++ = ' ';
-    }
-    *so = '\0';
-    return szInputClean;
+		wl = 0;
+		while(*s&&!strchr(spaceChars,*s)) {
+			char ch = (*s>='A'&&*s<='Z')?(*s|0x20):*s;
+			if(wl < (int)sizeof(word)-1)
+				word[wl++] = ch;
+			*so++ = ch;
+			s++;
+		}
+		word[wl] = '\0';
+		if(IsPoliceQuestGame() && wl == 8 && strcmp(word, "dispatch") == 0) {
+			/* PQ1 vocab uses the legacy misspelling "depatch". */
+			so -= wl;
+			strcpy(so, "depatch");
+			so += 7;
+		}
+		while(*s&&strchr(spaceChars,*s)) s++;
+		if(*s&&s!=sStart)
+			*so++ = ' ';
+	}
+	*so = '\0';
+	return szInputClean;
 }
 /*****************************************************************************/
 // thought I was free of doing this since the player input comes from the listboxes,
@@ -225,6 +251,9 @@ char *ParseInput(char *sStart)
 {
 	char *s=StripInput(sStart),*szWord;
     int l,group;
+	memset(input,0,sizeof(input));
+	memset(wordStrings,0,sizeof(wordStrings));
+	inpos = 0;
     wordCount = 0;
 	while(*s) {
     	l=0;

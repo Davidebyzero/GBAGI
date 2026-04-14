@@ -1759,7 +1759,21 @@ void cPause()
 //	and submit it again.
 void cEchoLine()
 {
-	ExecuteInputDialog(FALSE);
+    int guard = 0;
+    char dispatchCmd1[] = "Extender Depatch";
+    char dispatchCmd2[] = "Extender Dispatch";
+
+    // Prevent the trigger key from immediately re-submitting the echoed line.
+    vars[vKEYPRESSED] = 0;
+    while(GBACheckButtons()->state != BTN_IDLE && guard++ < 120)
+        SystemUpdate();
+
+    // Prefer explicit dispatcher text when available (PQ-style behavior).
+    ParseInput(dispatchCmd1);
+    if(wordCount <= 0)
+        ParseInput(dispatchCmd2);
+
+    ExecuteInputDialog(FALSE);
 }
 /******************************************************************************/
 //cancel.line();

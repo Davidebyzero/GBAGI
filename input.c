@@ -26,6 +26,7 @@
 #include "text.h"
 #include "wingui.h"
 #include "keyboard.h"
+#include "menu.h"
 #include "screen.h" // for Y_ADJUST_CL and RedrawScreenAll()
 #ifdef _WINDOWS
 #include <windows.h>
@@ -33,6 +34,64 @@
 /*****************************************************************************/
 EVENT tmpEvent, evStopEgo = {EV_DIRECTION, dirNONE};
 BTNSTATE btnstate;
+/*****************************************************************************/
+static BOOL IsDispatcherCaption(const char *name)
+{
+	const char *n1 = "dispatcher";
+	const char *n2 = "depatch";
+	char c;
+	int i, j;
+	if(!name)
+		return FALSE;
+	for(i = 0; name[i]; i++) {
+		j = 0;
+		while(name[i + j] && n1[j]) {
+			c = name[i + j];
+			if(c >= 'A' && c <= 'Z') c |= 0x20;
+			if(c != n1[j]) break;
+			j++;
+		}
+		if(!n1[j]) return TRUE;
+		j = 0;
+		while(name[i + j] && n2[j]) {
+			c = name[i + j];
+			if(c >= 'A' && c <= 'Z') c |= 0x20;
+			if(c != n2[j]) break;
+			j++;
+		}
+		if(!n2[j]) return TRUE;
+	}
+	return FALSE;
+}
+/*****************************************************************************/
+static BOOL IsDispatcherController(U8 ctl)
+{
+	MENU *m;
+	MENUITEM *mi;
+	for(m = menu; m; m = m->next) {
+		for(mi = m->items; mi; mi = mi->next) {
+			if(mi->controller == ctl && IsDispatcherCaption(mi->name))
+				return TRUE;
+		}
+	}
+	return FALSE;
+}
+/*****************************************************************************/
+static BOOL HasDispatcherBinding(void)
+{
+	CTLMAP *c;
+	for(c = ctlMap; c < ctlMap + MAX_CONTROLLERS; c++) {
+		if(c->key && IsDispatcherController(c->num))
+			return TRUE;
+	}
+	return FALSE;
+}
+/*****************************************************************************/
+static BOOL IsLooseDispatcherHotkey(U16 key)
+{
+	/* Cover ctrl-d encodings plus plain 'd' seen in some Windows builds. */
+	return (key == 4 || key == KEY_D || key == (KEY_D << 8) || key == 'd' || key == 'D');
+}
 /*****************************************************************************/
 const KEY keyDirs[]={
 	{KEY_UP, 		dirUP		}, {KEY_PGUP,		dirUPRIGHT		},
@@ -110,6 +169,11 @@ void PollInput()
 				ViewObjs[0].motion = mtNONE;
         } else {
         	U16 key = event->data;
+			if(!GUI_ACTIVE && HasDispatcherBinding() && IsLooseDispatcherHotkey(key)) {
+				char dispatchCmd[] = "Extender Depatch";
+				ParseInput(dispatchCmd);
+				continue;
+			}
             if(!GUI_ACTIVE){
                 switch(event->data) {
                 	case KEY_ENTER:
@@ -149,7 +213,12 @@ void PollInput()
             }
 			for(c = ctlMap; c < ctlMap+MAX_CONTROLLERS; c++)
 				if(key == c->key) {
-                	controllers[c->num]=1;
+					if(!GUI_ACTIVE && IsDispatcherController(c->num)) {
+						char dispatchCmd[] = "Extender Depatch";
+						ParseInput(dispatchCmd);
+						break;
+					}
+                 	controllers[c->num]=1;
 					break;
 				}
         	vars[vKEYPRESSED] = (U8)key;
