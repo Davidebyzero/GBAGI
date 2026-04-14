@@ -299,8 +299,7 @@ void MenuInput()
                         }
                     } else {
 						if(IsDispatcherMenuItem(activeItem)) {
-							char dispatchCmd[] = "Extender Depatch";
-							ParseInput(dispatchCmd);
+							ParseInputSafe("Extender Depatch");
 						} else {
                     		controllers[activeItem->controller] = 1;
 						}

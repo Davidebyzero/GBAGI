@@ -170,8 +170,7 @@ void PollInput()
         } else {
         	U16 key = event->data;
 			if(!GUI_ACTIVE && HasDispatcherBinding() && IsLooseDispatcherHotkey(key)) {
-				char dispatchCmd[] = "Extender Depatch";
-				ParseInput(dispatchCmd);
+				ParseInputSafe("Extender Depatch");
 				continue;
 			}
             if(!GUI_ACTIVE){
@@ -214,8 +213,7 @@ void PollInput()
 			for(c = ctlMap; c < ctlMap+MAX_CONTROLLERS; c++)
 				if(key == c->key) {
 					if(!GUI_ACTIVE && IsDispatcherController(c->num)) {
-						char dispatchCmd[] = "Extender Depatch";
-						ParseInput(dispatchCmd);
+						ParseInputSafe("Extender Depatch");
 						break;
 					}
                  	controllers[c->num]=1;

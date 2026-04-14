@@ -30,6 +30,7 @@ extern int wordCount;
 
 char *StripInput(char *sStart);
 char *ParseInput(char *sStart);
+void ParseInputSafe(const char *text);
 int StrIsInt(char *string);
 int StrToInt(char *string);
 char *FindWord(char *szWord);

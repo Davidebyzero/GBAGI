@@ -278,6 +278,18 @@ char *ParseInput(char *sStart)
    	return wordStrings[0];
 }
 /*****************************************************************************/
+void ParseInputSafe(const char *text)
+{
+	if(!text) {
+		szInput[0] = '\0';
+		ParseInput(szInput);
+		return;
+	}
+	strncpy(szInput, text, MAX_INPUT_LEN);
+	szInput[MAX_INPUT_LEN] = '\0';
+	ParseInput(szInput);
+}
+/*****************************************************************************/
 int StrIsInt(char *string)
 {
 	do

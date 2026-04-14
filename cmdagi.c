@@ -1760,8 +1760,6 @@ void cPause()
 void cEchoLine()
 {
     int guard = 0;
-    char dispatchCmd1[] = "Extender Depatch";
-    char dispatchCmd2[] = "Extender Dispatch";
 
     // Prevent the trigger key from immediately re-submitting the echoed line.
     vars[vKEYPRESSED] = 0;
@@ -1769,9 +1767,9 @@ void cEchoLine()
         SystemUpdate();
 
     // Prefer explicit dispatcher text when available (PQ-style behavior).
-    ParseInput(dispatchCmd1);
+    ParseInputSafe("Extender Depatch");
     if(wordCount <= 0)
-        ParseInput(dispatchCmd2);
+        ParseInputSafe("Extender Dispatch");
 
     ExecuteInputDialog(FALSE);
 }
