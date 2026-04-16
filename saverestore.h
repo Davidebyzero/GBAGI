@@ -17,96 +17,114 @@
  *  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  ***************************************************************************/
 
-/*****************************************************************************/
+ /*****************************************************************************/
 #ifndef _SAVERESTORE_H
 #define _SAVERESTORE_H
 /*****************************************************************************/
+
 #ifdef _WINDOWS
 
 #include <stdio.h>
+
 #define FREAD(x)\
-	fread(x,sizeof(x),1,f)
+	fread(&(x),sizeof(x),1,f)
 #define FWRITE(x)\
-	fwrite(x,sizeof(x),1,f)
+	fwrite(&(x),sizeof(x),1,f)
 #define FREADN(x,n)\
-	fread(x,n,1,f)
+	fread((x),n,1,f)
 #define FWRITEN(x,n)\
-	fwrite(x,n,1,f)
+	fwrite((x),n,1,f)
 #define FGETB(x)\
 	x=fgetc(f)
 #define FPUTB(x)\
-	fputc(x,f)
+	fputc((x),f)
 #define FGETW(x)\
 	x=(S16)(fgetc(f)|(fgetc(f)<<8))
 #define FSKIPW()\
 	fgetc(f);fgetc(f)
 #define FPUTW(x)\
-	fputc(((S16)x)&0xFF,f);\
-	fputc(((S16)x)>>8,f)
-
+	fputc(((S16)(x))&0xFF,f);\
+	fputc(((S16)(x))>>8,f)
 #define OPEN_SAVE_FILE()\
-	if((f=fopen("gbagi.sav","rb+") )==NULL)return FALSE;
+	if((f=fopen("gbagi.sav","rb+"))==NULL)return FALSE;
 #define CLOSE_SAVE_FILE()\
 	fclose(f);
 #define SAVE_SEEK_SET(x)\
-    	fseek(f,x,SEEK_SET)
+	fseek(f,(x),SEEK_SET)
 #define SAVE_SEEK_CUR(x)\
-    	fseek(f,x,SEEK_CUR)
+	fseek(f,(x),SEEK_CUR)
 
 #else
 
-#define GAMEPAK_RAM  ((U8*)0x0E000000)
+#define GAMEPAK_RAM ((U8*)0x0E000000)
 
 #define OPEN_SAVE_FILE()\
 	pSaveMem = GAMEPAK_RAM
 #define CLOSE_SAVE_FILE()\
 	;
-
 #define SAVE_SEEK_SET(x)\
 	pSaveMem = GAMEPAK_RAM+(x)
 #define SAVE_SEEK_CUR(x)\
-    	pSaveMem+=x
-                    
+	pSaveMem+=(x)
+
 #define FREAD(x)\
-	SRamMemCpy((U8*)x,pSaveMem,sizeof(x));\
-    pSaveMem+=sizeof(x)
+	SRamMemCpy((U8*)&(x),pSaveMem,sizeof(x));\
+	pSaveMem+=sizeof(x)
+
 #define FWRITE(x)\
-	SRamMemCpy(pSaveMem,(U8*)x,sizeof(x));\
-    pSaveMem+=sizeof(x)
+	SRamMemCpy(pSaveMem,(U8*)&(x),sizeof(x));\
+	pSaveMem+=sizeof(x)
+
 #define FREADN(x,n)\
-	SRamMemCpy((U8*)x,pSaveMem,n);\
-    pSaveMem+=n
+	SRamMemCpy((U8*)(x),pSaveMem,(n));\
+	pSaveMem+=(n)
+
 #define FWRITEN(x,n)\
-	SRamMemCpy(pSaveMem,(U8*)x,n);\
-    pSaveMem+=n
+	SRamMemCpy(pSaveMem,(U8*)(x),(n));\
+	pSaveMem+=(n)
+
 #define FGETB(x)\
-	x=*pSaveMem++
+	(x)=*pSaveMem++
+
 #define FPUTB(x)\
-	*pSaveMem++ = x
+	*pSaveMem++=(U8)(x)
+
 #define FGETW(x)\
-	x=(S16)(pSaveMem[0]|(pSaveMem[1]<<8));\
-    pSaveMem+=2
+	(x)=(S16)(pSaveMem[0]|(pSaveMem[1]<<8));\
+	pSaveMem+=2
+
 #define FSKIPW()\
-	pSaveMem+=2 
+	pSaveMem+=2
+
 #define FPUTW(x)\
-	*pSaveMem++ = ((S16)x)&0xFF;\
-	*pSaveMem++ = ((S16)x)>>8
+	*pSaveMem++=(U8)((U16)(x)&0xFF);\
+	*pSaveMem++=(U8)(((U16)(x)>>8)&0xFF)
+
 #endif
+
 extern const char szSaveHeader[16];
 
-#define MAX_SAVENAME_LEN	23
-extern char szSaveName[MAX_SAVENAME_LEN+1],szAutoSave[MAX_SAVENAME_LEN+1];
+#define MAX_SAVENAME_LEN 23
+
+extern char szSaveName[MAX_SAVENAME_LEN + 1], szAutoSave[MAX_SAVENAME_LEN + 1];
 
 /*****************************************************************************/
 void InitSaveRestore(void);
-BOOL ExecuteSaveDialog(const char *szTitle, const char *szType);
+BOOL ExecuteSaveDialog(const char* szTitle, const char* szType);
 BOOL SaveGame(void);
 BOOL RestoreGame(void);
-void SRamMemCpy(U8 *a, U8 *b, int len);
+BOOL RestoreLastSavedGameOnBoot(void);
+void SRamMemCpy(U8* a, U8* b, int len);
+
 #ifndef _WINDOWS
+void AutoHookWriteSram(const void* src, U32 addr, U32 len);
+void BatterylessCallArm(U32 armAddr);
+void BatterylessCallThumb(U32 thumbAddr);
+void BatterylessManualFlush(void);
 void BatterylessNotifySaveDirty(void);
 void BatterylessUpdateCommitPump(void);
 #endif
+
 /*****************************************************************************/
 #endif
 /*****************************************************************************/

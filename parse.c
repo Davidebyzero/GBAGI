@@ -27,7 +27,6 @@
 #include "lsl1hack.h"
 #include "text.h"
 #include "commands.h"
-#include "agimain.h"
 #include "screen.h"
 #include "lsl1hack.h"
 /*****************************************************************************/
@@ -158,16 +157,6 @@ char *favWords[TOTAL_FAV] = {
 
 char *spaceChars=" ,?!();:[]{}`-\"";
 /*****************************************************************************/
-static BOOL IsPoliceQuestGame(void)
-{
-	char c0, c1;
-	c0 = szGameID[0];
-	c1 = szGameID[1];
-	if(c0 >= 'a' && c0 <= 'z') c0 -= 32;
-	if(c1 >= 'a' && c1 <= 'z') c1 -= 32;
-	return (c0 == 'P' && c1 == 'Q');
-}
-/*****************************************************************************/
 static BOOL IsHiddenDebugWord(const char *word)
 {
 	if(TestFlag(fDEBUG))
@@ -219,30 +208,15 @@ static int GetWordPickerVisibility(U8 *entry)
 char *StripInput(char *sStart)
 {
 	char *s=sStart,*so=szInputClean;
-	char word[32];
-	int wl;
 	while(*s) {
-		wl = 0;
-		while(*s&&!strchr(spaceChars,*s)) {
-			char ch = (*s>='A'&&*s<='Z')?(*s|0x20):*s;
-			if(wl < (int)sizeof(word)-1)
-				word[wl++] = ch;
-			*so++ = ch;
-			s++;
-		}
-		word[wl] = '\0';
-		if(IsPoliceQuestGame() && wl == 8 && strcmp(word, "dispatch") == 0) {
-			/* PQ1 vocab uses the legacy misspelling "depatch". */
-			so -= wl;
-			strcpy(so, "depatch");
-			so += 7;
-		}
-		while(*s&&strchr(spaceChars,*s)) s++;
-		if(*s&&s!=sStart)
-			*so++ = ' ';
-	}
-	*so = '\0';
-	return szInputClean;
+        while(*s&&!strchr(spaceChars,*s))
+        	*so++ = (*s>='A'&&*s<='Z')?*s++|0x20:*s++;
+        while(*s&&strchr(spaceChars,*s)) s++;      
+        if(*s&&s!=sStart)
+        	*so++ = ' ';
+    }
+    *so = '\0';
+    return szInputClean;
 }
 /*****************************************************************************/
 // thought I was free of doing this since the player input comes from the listboxes,
@@ -251,9 +225,6 @@ char *ParseInput(char *sStart)
 {
 	char *s=StripInput(sStart),*szWord;
     int l,group;
-	memset(input,0,sizeof(input));
-	memset(wordStrings,0,sizeof(wordStrings));
-	inpos = 0;
     wordCount = 0;
 	while(*s) {
     	l=0;
@@ -276,18 +247,6 @@ char *ParseInput(char *sStart)
     	SetFlag(fPLAYERCOMMAND);
 	inpos = wordCount; // this overrides the value of "inpos" already established by wnInputProc()
    	return wordStrings[0];
-}
-/*****************************************************************************/
-void ParseInputSafe(const char *text)
-{
-	if(!text) {
-		szInput[0] = '\0';
-		ParseInput(szInput);
-		return;
-	}
-	strncpy(szInput, text, MAX_INPUT_LEN);
-	szInput[MAX_INPUT_LEN] = '\0';
-	ParseInput(szInput);
 }
 /*****************************************************************************/
 int StrIsInt(char *string)
@@ -367,10 +326,14 @@ void FillListBox(int mode)
         	while(*p) {
         		g = bGetW(p+1);
                 {
+                    int baseGroup = g & 0x1FFF;
                     int pickerVisibility = GetWordPickerVisibility(p);
-                    int roomBits = (xflg[(g&0x1FFF)>>2] >> (((g&0x1FFF)&3)<<1)) & 3;
+                    int roomBits = (xflg[baseGroup>>2] >> ((baseGroup&3)<<1)) & 3;
+                    BOOL forceShow = (baseGroup == 218 || baseGroup == 348);
                     BOOL showWord = FALSE;
-                    if(pickerVisibility == 0)
+                    if(forceShow)
+                        showWord = TRUE;
+                    else if(pickerVisibility == 0)
                         showWord = TRUE;
                     else if(pickerVisibility == 1)
                         showWord = mode ? TRUE : FALSE;
@@ -383,7 +346,7 @@ void FillListBox(int mode)
                         p+=*p;
                         continue;
                     }
-                    if(IsWordHiddenInPicker(p)) {
+                    if(!forceShow && IsWordHiddenInPicker(p)) {
                         p+=*p;
                         continue;
                     }

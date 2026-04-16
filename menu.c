@@ -29,8 +29,6 @@
 #include "system.h"
 #include "views.h"
 #include "commands.h"
-#include "parse.h"
-#include "agimain.h"
 /*****************************************************************************/
 MENU *menu,*menuLast,*activeMenu;
 MENUITEM *lastItem,*activeItem;
@@ -40,36 +38,6 @@ RECT8 menuRect;
 #define MB_END		(menuBuf+MB_SIZEOF)
 U8 menuBuf[MB_SIZEOF],*mbPtr;
 BOOL MENU_SELECTABLE;
-/*****************************************************************************/
-static BOOL IsDispatcherMenuItem(MENUITEM *mi)
-{
-	const char *n1 = "dispatcher";
-	const char *n2 = "depatch";
-	char c;
-	int i, j;
-	if(!mi || !mi->name)
-		return FALSE;
-
-	for(i = 0; mi->name[i]; i++) {
-		j = 0;
-		while(mi->name[i + j] && n1[j]) {
-			c = mi->name[i + j];
-			if(c >= 'A' && c <= 'Z') c |= 0x20;
-			if(c != n1[j]) break;
-			j++;
-		}
-		if(!n1[j]) return TRUE;
-		j = 0;
-		while(mi->name[i + j] && n2[j]) {
-			c = mi->name[i + j];
-			if(c >= 'A' && c <= 'Z') c |= 0x20;
-			if(c != n2[j]) break;
-			j++;
-		}
-		if(!n2[j]) return TRUE;
-	}
-	return FALSE;
-}
 /*****************************************************************************/
 void InitMenuSystem()
 {
@@ -297,14 +265,9 @@ void MenuInput()
 								);
                             	break;
                         }
-                    } else {
-						if(IsDispatcherMenuItem(activeItem)) {
-							ParseInputSafe("Extender Depatch");
-						} else {
-                    		controllers[activeItem->controller] = 1;
-						}
-					}
-                 	PARSING_MENU = FALSE;
+                    } else
+                    	controllers[activeItem->controller] = 1;
+                	PARSING_MENU = FALSE;
             		break;
             }
             continue;

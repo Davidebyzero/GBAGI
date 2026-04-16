@@ -4,8 +4,8 @@
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ *  the GNU General Public License as published by the Free Software Foundation;
+ *  either version 2 of the License, or (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,7 +17,7 @@
  *  Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  ***************************************************************************/
 
-/*****************************************************************************/
+ /*****************************************************************************/
 #include "gbagi.h"
 #include "saverestore.h"
 #include "text.h"
@@ -37,11 +37,10 @@
 /*****************************************************************************/
 
 #ifdef _WINDOWS
-	FILE *f;
+FILE* f;
 #else
-	U8 *pSaveMem;
+U8* pSaveMem;
 #endif
-
 
 #define MAX_SAVES 8
 #define SAVE_FILE_SIZE 4096
@@ -49,24 +48,24 @@
 #define BATTERYLESS_COMMIT_NONE	0
 #define BATTERYLESS_COMMIT_AUTO	1
 
-#define BATTERYLESS_COMMIT_MODE		BATTERYLESS_COMMIT_AUTO
+#define BATTERYLESS_COMMIT_MODE		BATTERYLESS_COMMIT_NONE
 #define BATTERYLESS_COMMIT_SPAN		0x2000
 #define BATTERYLESS_COMMIT_PASSES	5
 #define BATTERYLESS_DELAY_TICKS		400
 
-const char szSaveHeader[]="GBAGI/Save_Game";
-char szSaveName[MAX_SAVENAME_LEN+1],szAutoSave[MAX_SAVENAME_LEN+1];
-char szSaveNames[MAX_SAVES][MAX_SAVENAME_LEN+1];
-char szTemp1[16],szTemp2[128];
+const char szSaveHeader[] = "GBAGI/Save_Game";
+char szSaveName[MAX_SAVENAME_LEN + 1], szAutoSave[MAX_SAVENAME_LEN + 1];
+char szSaveNames[MAX_SAVES][MAX_SAVENAME_LEN + 1];
+char szTemp1[16], szTemp2[128];
 int saveSlot;
 BOOL OK_CLOSE;
 
 const char batteryless_test_tag[] = "BATTERYLESS_TEST_12345";
 const char batteryless_commit_tag[] = "BATTERYLESS_COMMIT_AUTO_54321";
 const char batteryless_pump_tag[] = "BATTERYLESS_COMMIT_PUMP_2026";
-const char *batteryless_test_tag_ptr = batteryless_test_tag;
-const char *batteryless_commit_tag_ptr = batteryless_commit_tag;
-const char *batteryless_pump_tag_ptr = batteryless_pump_tag;
+const char* batteryless_test_tag_ptr = batteryless_test_tag;
+const char* batteryless_commit_tag_ptr = batteryless_commit_tag;
+const char* batteryless_pump_tag_ptr = batteryless_pump_tag;
 
 #ifndef _WINDOWS
 static const char szBatterylessCommitLine1[] = "Committing save...";
@@ -75,7 +74,8 @@ static BOOL gBatterylessCommitPending = FALSE;
 #endif
 
 /*****************************************************************************/
-S16 wnSaveRestoreProc(WND *w, U16 msg, U16 wParam, U32 lParam);
+S16 wnSaveRestoreProc(WND* w, U16 msg, U16 wParam, U32 lParam);
+static BOOL RestoreGameSlotByIndex(int slot);
 
 WND wnSaveRestore = {
 	NULL,NULL,NULL,NULL,
@@ -84,7 +84,7 @@ WND wnSaveRestore = {
 	"S/R",
 	0,
 	0,
-	wsRESIZABLE|wsTITLE|wsSELECTABLE,
+	wsRESIZABLE | wsTITLE | wsSELECTABLE,
 	(WNPROC)wnSaveRestoreProc
 };
 WND bnSaveOK = {
@@ -94,7 +94,7 @@ WND bnSaveOK = {
 	"Save",
 	wnBUTTON,
 	0,
-	bsCAPTION|wsSELECTABLE,
+	bsCAPTION | wsSELECTABLE,
 	(WNPROC)wnSaveRestoreProc
 };
 WND bnSaveCancel = {
@@ -104,7 +104,7 @@ WND bnSaveCancel = {
 	"Cancel",
 	wnBUTTON,
 	0,
-	bsCAPTION|wsSELECTABLE,
+	bsCAPTION | wsSELECTABLE,
 	(WNPROC)wnSaveRestoreProc
 };
 WND lbSaveFiles = {
@@ -114,7 +114,7 @@ WND lbSaveFiles = {
 	"",
 	wnLISTBOX,
 	0,
-	wsSELECTABLE|wsEXTFIXED,
+	wsSELECTABLE | wsEXTFIXED,
 	(WNPROC)wnSaveRestoreProc
 };
 WND edSaveInput = {
@@ -137,121 +137,128 @@ WND txSaveName = {
 	0,
 	(WNPROC)wnSaveRestoreProc
 };
+
 /*****************************************************************************/
-S16 wnSaveRestoreProc(WND *w, U16 msg, U16 wParam, U32 lParam)
+S16 wnSaveRestoreProc(WND* w, U16 msg, U16 wParam, U32 lParam)
 {
-	switch(msg) {
-    	case wmLISTBOX_CHANGE:
-            edSaveInput.caption = ((LISTITEM*)lParam)->text;
-            wDrawWnd(&edSaveInput, 0);
-        	break;
-    	case wmEDIT_CHANGE:
-            wDrawWnd(&lbSaveFiles, 0);
-        	break;
-    	case wmBUTTON_CLICK:
-        	if(w==&bnSaveOK) {
-            	OK_CLOSE = TRUE;
-             	WndDispose(&wnSaveRestore);
-            } else if(w==&bnSaveCancel) {
-            	OK_CLOSE = FALSE;
-             	WndDispose(&wnSaveRestore);
-            }
-            break;
-    }
+	switch (msg) {
+	case wmLISTBOX_CHANGE:
+		edSaveInput.caption = ((LISTITEM*)lParam)->text;
+		wDrawWnd(&edSaveInput, 0);
+		break;
+	case wmEDIT_CHANGE:
+		wDrawWnd(&lbSaveFiles, 0);
+		break;
+	case wmBUTTON_CLICK:
+		if (w == &bnSaveOK) {
+			OK_CLOSE = TRUE;
+			WndDispose(&wnSaveRestore);
+		}
+		else if (w == &bnSaveCancel) {
+			OK_CLOSE = FALSE;
+			WndDispose(&wnSaveRestore);
+		}
+		break;
+	}
 	return 1;
 }
+
 /*****************************************************************************/
 void InitSaveRestore()
 {
-    szAutoSave[0] = '\0';
+	szAutoSave[0] = '\0';
 }
+
 /*****************************************************************************/
-BOOL ExecuteSaveDialog(const char *szTitle, const char *szType)
+BOOL ExecuteSaveDialog(const char* szTitle, const char* szType)
 {
 	wnSaveRestore.caption = (char*)szTitle;
-	bnSaveOK.caption = (char*)szType; 
+	bnSaveOK.caption = (char*)szType;
 
-    AddWindow(&wnSaveRestore);
-    AddWindow(&bnSaveCancel);
-    AddWindow(&bnSaveOK);
-    AddWindow(&lbSaveFiles);
-    edSaveInput.ext.edit.maxLen = 15;
-    AddWindow(&edSaveInput);
-    AddWindow(&txSaveName);
+	AddWindow(&wnSaveRestore);
+	AddWindow(&bnSaveCancel);
+	AddWindow(&bnSaveOK);
+	AddWindow(&lbSaveFiles);
+	edSaveInput.ext.edit.maxLen = 15;
+	AddWindow(&edSaveInput);
+	AddWindow(&txSaveName);
 
 	WinGUIDoit();
 
-    saveSlot = lbSaveFiles.ext.listbox.itemActive->index;
+	saveSlot = lbSaveFiles.ext.listbox.itemActive->index;
 
-    return OK_CLOSE;
+	return OK_CLOSE;
 }
+
 /*****************************************************************************/
-int FillSaveList(BOOL RES,int maxsaves)
+int FillSaveList(BOOL RES, int maxsaves)
 {
-	int i=0;
-	for(saveSlot=0;saveSlot<maxsaves;saveSlot++) {
-    	SAVE_SEEK_SET(saveSlot*SAVE_FILE_SIZE);
+	int i = 0;
+	for (saveSlot = 0;saveSlot < maxsaves;saveSlot++) {
+		SAVE_SEEK_SET(saveSlot * SAVE_FILE_SIZE);
 
-    	FREADN(szTemp1,sizeof(szSaveHeader));
-    	if(strcmp(szTemp1,szSaveHeader))
-        	continue;
-    	FREADN(szTemp1,sizeof(szGameID));
-    	if(strcmp(szTemp1,szGameID))
-        	continue;
+		FREADN(szTemp1, sizeof(szSaveHeader));
+		if (strcmp(szTemp1, szSaveHeader))
+			continue;
+		FREADN(szTemp1, sizeof(szGameID));
+		if (strcmp(szTemp1, szGameID))
+			continue;
 
-    	FREAD(szSaveNames[saveSlot]);
-        if(RES)ListBoxAdd(&lbSaveFiles,(char*)szSaveNames[saveSlot]);
-        i++;
-    }
+		FREAD(szSaveNames[saveSlot]);
+		if (RES)ListBoxAdd(&lbSaveFiles, (char*)szSaveNames[saveSlot]);
+		i++;
+	}
 
-    ListBoxSelect(&lbSaveFiles,0);
+	ListBoxSelect(&lbSaveFiles, 0);
 
-    return (i);
+	return (i);
 }
+
 /*****************************************************************************/
-void SRamMemCpy(U8 *a, U8 *b, int len)
+void SRamMemCpy(U8* a, U8* b, int len)
 {
- 	while(len--)
-    	*a++=*b++;
+	while (len--)
+		*a++ = *b++;
 }
+
 /*****************************************************************************/
 #ifndef _WINDOWS
 static void BatterylessBusyDelay(void)
 {
 	int delay;
 
-	delay = (64*BATTERYLESS_DELAY_TICKS)+1;
+	delay = (64 * BATTERYLESS_DELAY_TICKS) + 1;
 	REG_TM0CNT_H = TIME_FREQUENcy1024 | TIME_ENABLE;
 	REG_TM0CNT_L = 0;
-	while(REG_TM0CNT_L <= delay) {
+	while (REG_TM0CNT_L <= delay) {
 	}
 	REG_TM0CNT_H = 0;
 }
+
 /*****************************************************************************/
 static void BatterylessShowCommitMessage(void)
 {
-	BoxNBorder(24,52,216,92,0x4F);
-	DrawStringAbs(42,62,(char*)szBatterylessCommitLine1,0xF0);
-	DrawStringAbs(42,74,(char*)szBatterylessCommitLine2,0xF0);
+	BoxNBorder(24, 52, 216, 92, 0x4F);
+	DrawStringAbs(42, 62, (char*)szBatterylessCommitLine1, 0xF0);
+	DrawStringAbs(42, 74, (char*)szBatterylessCommitLine2, 0xF0);
 }
+
 /*****************************************************************************/
 static void BatterylessCommitSRAM(void)
 {
 #if BATTERYLESS_COMMIT_MODE == BATTERYLESS_COMMIT_AUTO
-	volatile U8 *sram = (volatile U8*)GAMEPAK_RAM;
+	volatile U8* sram = (volatile U8*)GAMEPAK_RAM;
 	int pass, i;
 	BOOL wasGUIActive = GUI_ACTIVE;
 
-	// Cheap batteryless repro carts may lose SRAM-backed saves after power-off
-	// unless we force a visible post-save commit phase with real SRAM activity.
-	if(!wasGUIActive)
+	if (!wasGUIActive)
 		gfxGUIEnter();
 
 	BatterylessShowCommitMessage();
 	GBA_Flip();
 
-	for(pass=0; pass<BATTERYLESS_COMMIT_PASSES; pass++) {
-		for(i=0; i<BATTERYLESS_COMMIT_SPAN; i++) {
+	for (pass = 0; pass < BATTERYLESS_COMMIT_PASSES; pass++) {
+		for (i = 0; i < BATTERYLESS_COMMIT_SPAN; i++) {
 			U8 original = sram[i];
 			sram[i] = (U8)(original ^ 0xFF);
 			sram[i] = original;
@@ -260,74 +267,77 @@ static void BatterylessCommitSRAM(void)
 
 	BatterylessBusyDelay();
 
-	if(!wasGUIActive) {
+	if (!wasGUIActive) {
 		RedrawScreen(TEXT_MODE);
 		GBA_Flip();
 		GUI_ACTIVE = FALSE;
-		if(REG_DISPCNT & BACKBUFFER)
+		if (REG_DISPCNT & BACKBUFFER)
 			vidPtr = ((U16*)0x600A000);
 		else
 			vidPtr = ((U16*)0x6000000);
 	}
 #endif
 }
+
 /*****************************************************************************/
 void BatterylessNotifySaveDirty(void)
 {
-#if BATTERYLESS_COMMIT_MODE == BATTERYLESS_COMMIT_AUTO
-	gBatterylessCommitPending = TRUE;
-#endif
+	BatterylessManualFlush();
 }
+
 /*****************************************************************************/
 void BatterylessUpdateCommitPump(void)
 {
 #if BATTERYLESS_COMMIT_MODE == BATTERYLESS_COMMIT_AUTO
-	if(!gBatterylessCommitPending)
+	if (!gBatterylessCommitPending)
 		return;
 	gBatterylessCommitPending = FALSE;
 	BatterylessCommitSRAM();
 #endif
 }
-/*****************************************************************************/
 #endif
+
 /*****************************************************************************/
 BOOL SaveGame()
 {
-    int i, totalOverlays, totalPViews;
+	int i, totalOverlays, totalPViews;
+	BOOL isAutoSave = FALSE;
 
 	OPEN_SAVE_FILE();
 
-    if(szAutoSave[0]) {
-     	strcpy(szSaveName,szAutoSave);
-        saveSlot=0;
-    } else {
-    	ListBoxClear(&lbSaveFiles);
-    	for(i=0;i<MAX_SAVES;i++) {
-    		strcpy(szSaveNames[i],"-");
-        	ListBoxAdd(&lbSaveFiles,(char*)szSaveNames[i]);
-    	}
-    	if(!FillSaveList(FALSE,MAX_SAVES)) {
-    	}
-    	
-   		edSaveInput.style |= wsSELECTABLE;
+	if (szAutoSave[0]) {
+		strcpy(szSaveName, szAutoSave);
+		saveSlot = 0;
+		isAutoSave = TRUE;
+	}
+	else {
+		ListBoxClear(&lbSaveFiles);
+		for (i = 0;i < MAX_SAVES;i++) {
+			strcpy(szSaveNames[i], "-");
+			ListBoxAdd(&lbSaveFiles, (char*)szSaveNames[i]);
+		}
+		if (!FillSaveList(FALSE, MAX_SAVES)) {
+		}
 
-		if(!ExecuteSaveDialog("Save Game", "Save")) {
-        	CLOSE_SAVE_FILE();
-        	return FALSE;
-        }
+		edSaveInput.style |= wsSELECTABLE;
 
-        sprintf(szSaveName,szSaveNames[saveSlot]);
+		if (!ExecuteSaveDialog("Save Game", "Save")) {
+			CLOSE_SAVE_FILE();
+			return FALSE;
+		}
+
+		sprintf(szSaveName, szSaveNames[saveSlot]);
 	}
 
-	SAVE_SEEK_SET(saveSlot*SAVE_FILE_SIZE);
+	SAVE_SEEK_SET(saveSlot * SAVE_FILE_SIZE);
 
-    FWRITE(szSaveHeader); // 16 bytes
-    FWRITE(szGameID); 	// 8 bytes
-    FWRITE(szSaveName);	// 24 bytes
+	FWRITE(szSaveHeader);
+	FWRITE(szGameID);
+	FWRITE(szSaveName);
 
-    FWRITE(vars);
-    FWRITE(flags);
-    FWRITE(strings);
+	FWRITE(vars);
+	FWRITE(flags);
+	FWRITE(strings);
 
 	FPUTB(PLAYER_CONTROL);
 	FPUTB(TEXT_MODE);
@@ -356,100 +366,117 @@ BOOL SaveGame()
 	FPUTB(cursorChar);
 	FPUTB(IF_RESULT);
 
-    FWRITE(&objBlock);
+	FWRITE(objBlock);
 	FWRITE(ViewObjs);
 	FWRITE(logScan);
-    FWRITE(invObjRooms);
+	FWRITE(invObjRooms);
 
 	FPUTW(msgX);
 	FPUTW(msgY);
 	FPUTW(msgHeight);
 	FPUTW(msgWidth);
 	FPUTW(maxWidth);
-    FWRITE(&wndDraw);
+	FWRITE(wndDraw);
 
-	totalPViews	= (pPView-pViews);
-    FPUTB( (U8)totalPViews );
-    for(i=0;i<totalPViews;i++) {
-     	FPUTB(pViews[i].view);
-        FPUTB(pViews[i].loop);
-        FPUTB(pViews[i].cel);
-        FPUTB(pViews[i].x);
-        FPUTB(pViews[i].y);
-        FPUTB(pViews[i].pri);
-        FPUTW(0); // for compatibility with old saves
-    }
-    totalOverlays = (pOverlay-overlays);
-    FPUTB( (U8)totalOverlays );
-    for(i=0;i<totalOverlays;i++) {
-     	FPUTB(overlays[i]);
-    }
+	totalPViews = (pPView - pViews);
+	FPUTB((U8)totalPViews);
+	for (i = 0;i < totalPViews;i++) {
+		FPUTB(pViews[i].view);
+		FPUTB(pViews[i].loop);
+		FPUTB(pViews[i].cel);
+		FPUTB(pViews[i].x);
+		FPUTB(pViews[i].y);
+		FPUTB(pViews[i].pri);
+		FPUTW(0);
+	}
+	totalOverlays = (pOverlay - overlays);
+	FPUTB((U8)totalOverlays);
+	for (i = 0;i < totalOverlays;i++) {
+		FPUTB(overlays[i]);
+	}
 
-    CLOSE_SAVE_FILE();
+	CLOSE_SAVE_FILE();
 
-#ifndef _WINDOWS
-#if BATTERYLESS_COMMIT_MODE == BATTERYLESS_COMMIT_AUTO
-    BatterylessNotifySaveDirty();
-#endif
-#endif
+	BatterylessNotifySaveDirty();
 
-    return TRUE;
+	return TRUE;
 }
+
 /*****************************************************************************/
 BOOL RestoreGame()
 {
 	int i;
-    int totalPViews, totalOverlays;
-    VOBJ *v;
+	int selectedIndex;
 
-    OPEN_SAVE_FILE();
-                    /*
-    if(szAutoSave[0]) {
-    	ListBoxClear(&lbSaveFiles);
-   	 	if(!FillSaveList(TRUE,1)) {
-			MessageBox("There are no previously saved games to restore.");
-       		CLOSE_SAVE_FILE();
-    		return FALSE;
-   		}
-    	SAVE_SEEK_SET(48);
-    } else {           */
-    	ListBoxClear(&lbSaveFiles);
-   	 	if(!FillSaveList(TRUE,MAX_SAVES)) {
-			MessageBox("There are no previously saved games to restore.");
-       		CLOSE_SAVE_FILE();
-    		return FALSE;
-   		}
-   		
-   		edSaveInput.style &= ~wsSELECTABLE;
-   		
-		if(!ExecuteSaveDialog("Restore Game", "Restore")) {
-       	 	CLOSE_SAVE_FILE();
-    		return FALSE;
-        }
-		for(i=0;i<MAX_SAVES;i++) {
-    		SAVE_SEEK_SET(i*SAVE_FILE_SIZE);
+	OPEN_SAVE_FILE();
 
-    		FREADN(szTemp1,sizeof(szSaveHeader));
-   		 	if(strcmp(szTemp1,szSaveHeader))
-	        	continue;
-	    	FREADN(szTemp1,sizeof(szGameID));
-	    	if(strcmp(szTemp1,szGameID))
-	        	continue;
+	ListBoxClear(&lbSaveFiles);
+	if (!FillSaveList(TRUE, MAX_SAVES)) {
+		MessageBox("There are no previously saved games to restore.");
+		CLOSE_SAVE_FILE();
+		return FALSE;
+	}
 
-    		SAVE_SEEK_CUR(MAX_SAVENAME_LEN+1);
+	edSaveInput.style &= ~wsSELECTABLE;
 
-    	   	if(!saveSlot--) break;
-	    }  /*
-    }
-    /*
-    	SAVE_SEEK_SET(48);     */
+	if (!ExecuteSaveDialog("Restore Game", "Restore")) {
+		CLOSE_SAVE_FILE();
+		return FALSE;
+	}
 
-	EraseBlitLists();   
+	selectedIndex = saveSlot;
+	for (i = 0;i < MAX_SAVES;i++) {
+		SAVE_SEEK_SET(i * SAVE_FILE_SIZE);
+
+		FREADN(szTemp1, sizeof(szSaveHeader));
+		if (strcmp(szTemp1, szSaveHeader))
+			continue;
+		FREADN(szTemp1, sizeof(szGameID));
+		if (strcmp(szTemp1, szGameID))
+			continue;
+
+		SAVE_SEEK_CUR(MAX_SAVENAME_LEN + 1);
+
+		if (selectedIndex == 0) {
+			saveSlot = i;
+			break;
+		}
+		selectedIndex--;
+	}
+	CLOSE_SAVE_FILE();
+
+	return RestoreGameSlotByIndex(saveSlot);
+}
+
+/*****************************************************************************/
+static BOOL RestoreGameSlotByIndex(int slot)
+{
+	int i;
+	int totalPViews, totalOverlays;
+	VOBJ* v;
+
+	OPEN_SAVE_FILE();
+	SAVE_SEEK_SET(slot * SAVE_FILE_SIZE);
+
+	FREADN(szTemp1, sizeof(szSaveHeader));
+	if (strcmp(szTemp1, szSaveHeader)) {
+		CLOSE_SAVE_FILE();
+		return FALSE;
+	}
+	FREADN(szTemp1, sizeof(szGameID));
+	if (strcmp(szTemp1, szGameID)) {
+		CLOSE_SAVE_FILE();
+		return FALSE;
+	}
+
+	SAVE_SEEK_CUR(MAX_SAVENAME_LEN + 1);
+
+	EraseBlitLists();
 	InitViewSystem();
 
-    FREAD(vars);
-    FREAD(flags);
-    FREAD(strings);
+	FREAD(vars);
+	FREAD(flags);
+	FREAD(strings);
 
 	FGETB(PLAYER_CONTROL);
 	FGETB(TEXT_MODE);
@@ -478,66 +505,73 @@ BOOL RestoreGame()
 	FGETB(cursorChar);
 	FGETB(IF_RESULT);
 
-    FREAD(&objBlock);
+	FREAD(objBlock);
 	FREAD(ViewObjs);
 	FREAD(logScan);
-    FREAD(invObjRooms);
+	FREAD(invObjRooms);
 
 	FGETW(msgX);
 	FGETW(msgY);
 	FGETW(msgHeight);
 	FGETW(msgWidth);
 	FGETW(maxWidth);
-    FREAD(&wndDraw);
+	FREAD(wndDraw);
 
-    FGETB(totalPViews);
-    for(i=0;i<totalPViews;i++) {
-     	FGETB(pViews[i].view);
-        FGETB(pViews[i].loop);
-        FGETB(pViews[i].cel);
-        FGETB(pViews[i].x);
-        FGETB(pViews[i].y);
-        FGETB(pViews[i].pri);
-        FSKIPW(); // padded!
-    }
-    FGETB(totalOverlays);
-    for(i=0;i<totalOverlays;i++) {
-     	FGETB(overlays[i]);
-    }
-                       /*
-    sprintf(szTemp1,"$%04X\n$%08X",(pSaveMem-GAMEPAK_RAM),pSaveMem);
-	MessageBox(szTemp1); */
+	FGETB(totalPViews);
+	for (i = 0;i < totalPViews;i++) {
+		FGETB(pViews[i].view);
+		FGETB(pViews[i].loop);
+		FGETB(pViews[i].cel);
+		FGETB(pViews[i].x);
+		FGETB(pViews[i].y);
+		FGETB(pViews[i].pri);
+		FSKIPW();
+	}
+	FGETB(totalOverlays);
+	for (i = 0;i < totalOverlays;i++) {
+		FGETB(overlays[i]);
+	}
 
-    CLOSE_SAVE_FILE();
+	CLOSE_SAVE_FILE();
 
-    AGIInitVars(); // restore these after being overwritten by FREAD(vars)
+	AGIInitVars();
 
-	for(v=ViewObjs; v<&ViewObjs[MAX_VOBJ]; v++)
-    	SetObjView(v,v->view);
+	for (v = ViewObjs; v < &ViewObjs[MAX_VOBJ]; v++)
+		SetObjView(v, v->view);
 
-    DrawPic(picNum);
+	DrawPic(picNum);
 
-	// 2/1/2004 fixed to point to start, OverlayPic/AddToPic will increment it accordingly
-    pPView		= pViews;
-    pOverlay	= overlays;
+	pPView = pViews;
+	pOverlay = overlays;
 
-    for(i=0;i<totalOverlays;i++)
-    	OverlayPic(overlays[i]);
-    for(i=0;i<totalPViews;i++)
-    	AddToPic(pViews[i].view, pViews[i].loop, pViews[i].cel, pViews[i].x, pViews[i].y, pViews[i].pri);
+	for (i = 0;i < totalOverlays;i++)
+		OverlayPic(overlays[i]);
+	for (i = 0;i < totalPViews;i++)
+		AddToPic(pViews[i].view, pViews[i].loop, pViews[i].cel, pViews[i].x, pViews[i].y, pViews[i].pri);
 
-    PIC_VISIBLE = TRUE;
-    ShowPic();
+	PIC_VISIBLE = TRUE;
+	ShowPic();
 
-   	cCancelLine();
+	cCancelLine();
 	WriteStatusLine();
 
-    ClearControllers();
+	ClearControllers();
 
-    SetFlag(fRESTORE);
+	SetFlag(fRESTORE);
 
 	code = NULL;
 
-    return TRUE;
+	return TRUE;
+}
+/*****************************************************************************/
+BOOL RestoreLastSavedGameOnBoot(void)
+{
+	if (!RestoreGameSlotByIndex(0))
+		return FALSE;
+
+	/* Boot path starts with fNEWROOM set; clear it so restored state survives
+	   the first AGI main-loop tick. */
+	ResetFlag(fNEWROOM);
+	return TRUE;
 }
 /*****************************************************************************/
