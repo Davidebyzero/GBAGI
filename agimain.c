@@ -52,6 +52,88 @@ int pushedScriptCount, scriptCount;
 U8 *pSnds[4],*sndBuf;
 int sndFlag,sndWaits[4];
 /*****************************************************************************/
+static void SyncKQ4Room1SwimState(void)
+{
+	VOBJ *ego;
+	U8 *row;
+	U8 deepColor;
+	int x;
+	int deepEdge = PIC_WIDTH;
+	int gapLen = 0;
+	int shoreEdge = -1;
+	int deepSwimEdge = 43;
+	int deepWadeEdge = 47;
+	int beachWalkEdge = 93;
+	int footX;
+	int rightFootX;
+
+	if(strcmp(szGameID, "KQ4") != 0)
+		return;
+	if(vars[vROOMNUM] != 1)
+		return;
+
+	ego = &ViewObjs[0];
+	if((ego->flags & (oDRAWN|oANIMATE)) != (oDRAWN|oANIMATE))
+		return;
+	if((ego->y < 0) || (ego->y > PIC_MAXY))
+		return;
+
+	row = MAKE_PICBUF_PTR(0, ego->y);
+	deepColor = row[0] & 0x0F;
+	for(x = 0; x < PIC_WIDTH; x++) {
+		if(((row[x] & 0xF0) == PRI_WATER) && ((row[x] & 0x0F) == deepColor)) {
+			gapLen = 0;
+			continue;
+		}
+		if(((row[x] & 0xF0) == PRI_WATER) && (gapLen < 2)) {
+			gapLen++;
+			continue;
+		}
+		deepEdge = x - gapLen;
+		if(deepEdge < 0)
+			deepEdge = 0;
+		break;
+	}
+	for(x = PIC_WIDTH - 1; x >= 0; x--) {
+		if((row[x] & 0xF0) == PRI_WATER) {
+			shoreEdge = x;
+			break;
+		}
+	}
+
+	footX = ego->x + (ego->width >> 1);
+	rightFootX = ego->x + ego->width - 1;
+
+	if(((ego->view == 5) || (vars[37] == 12)) ? (footX <= deepWadeEdge) : (footX <= deepSwimEdge)) {
+		if(ego->view != 5) {
+			SetObjView(ego, 5);
+			vars[vEGOVIEWNUM] = 5;
+		}
+		vars[37] = 12;
+	} else if(footX >= beachWalkEdge) {
+		if((ego->view >= 2) && (ego->view <= 5)) {
+			SetObjView(ego, 0);
+			vars[vEGOVIEWNUM] = 0;
+		}
+		if(vars[37] == 12)
+			vars[37] = 0;
+	} else if((shoreEdge >= 0) && (rightFootX <= shoreEdge)) {
+		if(ego->view != 4) {
+			SetObjView(ego, 4);
+			vars[vEGOVIEWNUM] = 4;
+		}
+		if(vars[37] == 12)
+			vars[37] = 0;
+	} else {
+		if((ego->view >= 2) && (ego->view <= 5)) {
+			SetObjView(ego, 0);
+			vars[vEGOVIEWNUM] = 0;
+		}
+		if(vars[37] == 12)
+			vars[37] = 0;
+	}
+}
+/*****************************************************************************/
 void InitSound()
 {	
 	sndBuf = NULL;
@@ -232,6 +314,8 @@ void AGIMain()
 			ResetFlag(fPLAYERCOMMAND);
 			oldScore = vars[vSCORE];
 		}
+
+		SyncKQ4Room1SwimState();
 
 		ViewObjs[0].direction = vars[vEGODIR];
 
