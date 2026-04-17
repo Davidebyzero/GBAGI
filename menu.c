@@ -33,11 +33,28 @@
 MENU *menu,*menuLast,*activeMenu;
 MENUITEM *lastItem,*activeItem;
 RECT8 menuRect;
+static char walkModeMenuCaption[] = "Input: Dpad Mode";
 
 #define MB_SIZEOF	((sizeof(MENU)*12)+(sizeof(MENUITEM)*32))
 #define MB_END		(menuBuf+MB_SIZEOF)
 U8 menuBuf[MB_SIZEOF],*mbPtr;
 BOOL MENU_SELECTABLE;
+/*****************************************************************************/
+static void UpdateWalkModeMenuCaption(void)
+{
+	strcpy(walkModeMenuCaption, WALK_HOLD ? "Input: Dpad Mode" : "Input: Classic Mode");
+}
+/*****************************************************************************/
+static BOOL IsWalkModeMenuItem(const MENUITEM *mi)
+{
+	if(!mi || !mi->name)
+		return FALSE;
+	return (
+		(strcmp(mi->name, walkModeMenuCaption) == 0) ||
+		(strncmp(mi->name, "Joystick", 8) == 0) ||
+		(strncmp(mi->name, "joystick", 8) == 0)
+	);
+}
 /*****************************************************************************/
 void InitMenuSystem()
 {
@@ -50,9 +67,10 @@ void InitMenuSystem()
 
     MENU_SET	= TRUE;
 
-    menuRect.right	= 0;
+	menuRect.right	= 0;
 
     mbPtr		= menuBuf;
+	UpdateWalkModeMenuCaption();
 }
 /*****************************************************************************/
 void FreeMenuSystem()
@@ -135,8 +153,13 @@ void SetMenuItem(char *caption,U8 ctl)
     	lastItem->next = mi;
         row = lastItem->row+1;
     }
-    mi->name		= caption; // no need to allocate, string is const
-	if((len = strlen(caption))>menuLast->width)
+    if(caption && ((!strncmp(caption, "Joystick", 8)) || (!strncmp(caption, "joystick", 8)))) {
+		UpdateWalkModeMenuCaption();
+    	mi->name		= walkModeMenuCaption;
+		ctl = 0;
+	} else
+    	mi->name		= caption; // no need to allocate, string is const
+	if((len = strlen(mi->name))>menuLast->width)
     	menuLast->width = len;
     mi->row			= row;
     mi->controller	= ctl;
@@ -208,6 +231,7 @@ void MenuInput()
     if(!activeMenu)
     	activeMenu = menu;
 
+	MENU_ACTIVE = TRUE;
     DrawMenuBar();
 	PARSING_MENU = TRUE;
     while(PARSING_MENU) {
@@ -223,6 +247,13 @@ void MenuInput()
         		case KEY_ENTER:
                     if((!activeItem)||!(activeItem->properties&MI_ENABLED))
                     	break;
+					if(IsWalkModeMenuItem(activeItem)) {
+						WALK_HOLD = !WALK_HOLD;
+						UpdateWalkModeMenuCaption();
+						DrawMenuBar();
+						PARSING_MENU = FALSE;
+						break;
+					}
                 	if(activeMenu==menuLast) {
                     	switch(activeItem->row) {
                          	case 2:
@@ -247,7 +278,7 @@ void MenuInput()
 									"START+SELECT+A+B:\n"
 									"        Exit to Game Select Screen"
 								);
-                                maxWidth = 38;
+                            maxWidth = 38;
 								MessageBox(
 									"BUTTONS: In GUI\n"
 									"\n"
@@ -306,6 +337,7 @@ void MenuInput()
                 break;
         }
     }
+	MENU_ACTIVE = FALSE;
     ClearMenuItems();
 	WriteStatusLine();
 }

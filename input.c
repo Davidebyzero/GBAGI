@@ -101,13 +101,16 @@ void PollInput()
 {
 	EVENT *event;
 	CTLMAP *c;
+	BOOL consumedHeldDirection = FALSE;
 
     while((BOOL)(event = ReadEvent()) && (!TestFlag(fPLAYERCOMMAND))) {
 		if(event->type==EV_DIRECTION) {
         	vars[vEGODIR] =
-                (WALK_HOLD || (event->data != ViewObjs[0].direction))? event->data : 0;
+                (IsWalkHoldActive() || (event->data != ViewObjs[0].direction))? event->data : 0;
             if(PLAYER_CONTROL)
 				ViewObjs[0].motion = mtNONE;
+			if(IsWalkHoldActive() && btnstate.state==BTN_HOLD)
+				consumedHeldDirection = TRUE;
         } else {
         	U16 key = event->data;
             if(!GUI_ACTIVE){
@@ -151,9 +154,11 @@ void PollInput()
 				if(key == c->key) {
                 	controllers[c->num]=1;
 					break;
-				}
+			}
         	vars[vKEYPRESSED] = (U8)key;
 		}
+		if(consumedHeldDirection)
+			break;
 	}
 }
 /*****************************************************************************/
@@ -172,7 +177,7 @@ EVENT *ReadEvent(void)
 		}
     	return &tmpEvent;
     } else
-    	if(WALK_HOLD && btnstate.state==BTN_RELEASE)
+    	if(IsWalkHoldActive() && btnstate.state==BTN_RELEASE)
 			return &evStopEgo;
 	return NULL;
 }

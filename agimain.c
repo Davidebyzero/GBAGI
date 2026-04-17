@@ -38,6 +38,7 @@
 /*****************************************************************************/
 BOOL PLAYER_CONTROL, TEXT_MODE, WINDOW_OPEN, REFRESH_SCREEN, MENU_SET, INPUT_ENABLED, QUIT_FLAG;
 BOOL SOUND_ON, PIC_VISIBLE, PRI_VISIBLE, STATUS_VISIBLE, VOBJ_BLOCKING,WALK_HOLD;
+BOOL MENU_ACTIVE;
 U8 oldScore;
 U8 horizon; 
 U8 picNum;
@@ -134,6 +135,45 @@ static void SyncKQ4Room1SwimState(void)
 	}
 }
 /*****************************************************************************/
+static BOOL IsPoliceQuestGame(void)
+{
+	return (GameEnts && (strncmp(GameEnts->name, "Police Quest", 12) == 0));
+}
+/*****************************************************************************/
+static BOOL IsPoliceQuestDriving(void)
+{
+	if(!IsPoliceQuestGame())
+		return FALSE;
+
+	/*
+	 * Police Quest driving uses a fixed set of room numbers. Keep the
+	 * override explicit so on-foot scenes stay in D-pad mode.
+	 */
+	return (
+		(vars[vROOMNUM] == 10) ||
+		(vars[vROOMNUM] == 11) ||
+		(vars[vROOMNUM] == 12) ||
+		(vars[vROOMNUM] == 13) ||
+		(vars[vROOMNUM] == 14) ||
+		(vars[vROOMNUM] == 15) ||
+		(vars[vROOMNUM] == 16) ||
+		(vars[vROOMNUM] == 17) ||
+		(vars[vROOMNUM] == 18) ||
+		(vars[vROOMNUM] == 19) ||
+		(vars[vROOMNUM] == 20) ||
+		(vars[vROOMNUM] == 21) ||
+		(vars[vROOMNUM] == 22) ||
+		(vars[vROOMNUM] == 23) ||
+		(vars[vROOMNUM] == 24) ||
+		(vars[vROOMNUM] == 25)
+	);
+}
+/*****************************************************************************/
+BOOL IsWalkHoldActive(void)
+{
+	return (WALK_HOLD && !MENU_ACTIVE && !IsPoliceQuestDriving());
+}
+/*****************************************************************************/
 void InitSound()
 {	
 	sndBuf = NULL;
@@ -202,7 +242,8 @@ BOOL AGIInit(BOOL RESTART)
     REFRESH_SCREEN	= FALSE;
     PIC_VISIBLE		= FALSE;
     PRI_VISIBLE		= FALSE;
-    WALK_HOLD		= FALSE;
+    WALK_HOLD		= TRUE;
+    MENU_ACTIVE		= FALSE;
     MENU_SELECTABLE	= TRUE;
 
     scriptCount 	= 0;

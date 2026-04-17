@@ -567,6 +567,19 @@ int SystemCheckKey()
         }
 		if(btnstate.state==BTN_PRESS)
         	return btnstate.btn;
+		if(IsWalkHoldActive()) {
+			switch(btnstate.btn) {
+				case KEY_RIGHT:
+				case KEY_LEFT:
+				case KEY_UP:
+				case KEY_DOWN:
+				case KEY_NUMPAD7:
+				case KEY_NUMPAD9:
+				case KEY_NUMPAD1:
+				case KEY_NUMPAD3:
+					return btnstate.btn;
+			}
+		}
     }
     return 0;
 }

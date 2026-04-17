@@ -22,6 +22,7 @@
 #include "wingui.h"
 #include "parse.h"
 #include "gamedata.h"
+#include "invobj.h"
 #include "system.h"
 #include "screen.h"
 #include "lsl1hack.h"
@@ -144,7 +145,7 @@ int wordCount;
 BOOL MORE_MODE;
 char *wordStrings[MAX_INPUT];
 
-#define TOTAL_FAV	7
+#define TOTAL_FAV	8
 char *favWords[TOTAL_FAV] = {
  	"look",
     "open",
@@ -152,7 +153,8 @@ char *favWords[TOTAL_FAV] = {
     "talk",
     "use",
     "take",
-    "give"
+    "give",
+    "wear"
 };
 
 char *spaceChars=" ,?!();:[]{}`-\"";
@@ -203,6 +205,79 @@ static int GetWordPickerVisibility(U8 *entry)
     if(wordFlags[offset] & 0x02)
         return 0;
     return -1;
+}
+/*****************************************************************************/
+static BOOL ListBoxContainsText(WND *w, const char *text)
+{
+    LISTITEM *item;
+
+    if(!w || !text)
+        return FALSE;
+
+    item = w->ext.listbox.itemFirst;
+    while(item) {
+        if(item->text && strcmp(item->text, text) == 0)
+            return TRUE;
+        item = item->next;
+    }
+    return FALSE;
+}
+/*****************************************************************************/
+static void AddPickerEntry(U8 *entry)
+{
+    char *text;
+    WND *list;
+
+    if(!entry)
+        return;
+
+    text = (char*)(entry + 3);
+    if(!text || !*text)
+        return;
+    if(IsHiddenDebugWord(text))
+        return;
+    if(IsWordHiddenInPicker(entry))
+        return;
+
+    list = (bGetW(entry + 1) & 0x8000) ? &lbSelWords : &lbWords;
+    if(!ListBoxContainsText(list, text))
+        ListBoxAdd(list, text);
+}
+/*****************************************************************************/
+static void AddPickerWordIfPresent(const char *word)
+{
+    char *entryText;
+
+    if(!word || !*word)
+        return;
+
+    entryText = FindWord((char*)word);
+    if(entryText)
+        AddPickerEntry((U8*)(entryText - 3));
+}
+/*****************************************************************************/
+static void AddFavoriteWordsToPicker(void)
+{
+    int i;
+
+    for(i=0;i<TOTAL_FAV;i++)
+        AddPickerWordIfPresent(favWords[i]);
+}
+/*****************************************************************************/
+static void AddInventoryWordsToPicker(void)
+{
+    int i;
+
+    for(i=0;i<MAX_IOBJ;i++) {
+        char *normalized;
+
+        if(invObjRooms[i] != 0xFF || !objNames[i] || !objNames[i][0])
+            continue;
+
+        normalized = StripInput(objNames[i]);
+        if(normalized[0])
+            AddPickerWordIfPresent(normalized);
+    }
 }
 /*****************************************************************************/
 char *StripInput(char *sStart)
@@ -359,6 +434,8 @@ void FillListBox(int mode)
         	}
         }
     }
+    AddFavoriteWordsToPicker();
+    AddInventoryWordsToPicker();
 	ListBoxSetScrollbar(&lbWords,&sbWords);
 	ListBoxSelect(&lbWords,0);
 	ListBoxSetScrollbar(&lbSelWords,&sbWordsSel);
