@@ -137,6 +137,139 @@ struct CliGameSpec
     VERLIST *version;
 };
 
+static void CliFreeVocabPlan(VOCAB_PLAN_ENTRY *plan)
+{
+    while(plan) {
+        VOCAB_PLAN_ENTRY *next = plan->next;
+        if(plan->word)
+            free(plan->word);
+        free(plan);
+        plan = next;
+    }
+}
+
+static VOCAB_PLAN_ENTRY *CliLoadVocabPlanFromPresetFile(const wchar_t *filename)
+{
+    FILE *f = _tfopen(filename, _T("rb"));
+    char line[2048];
+    bool isV3 = false;
+    bool isV4 = false;
+    VOCAB_PLAN_ENTRY *head = NULL;
+    VOCAB_PLAN_ENTRY *tail = NULL;
+
+    if(!f)
+        return NULL;
+    if(!fgets(line, sizeof(line), f)) {
+        fclose(f);
+        return NULL;
+    }
+    if(strncmp(line, "GBAGI_VOCAB_PRESET_V4", 21) == 0) {
+        isV3 = true;
+        isV4 = true;
+    } else if(strncmp(line, "GBAGI_VOCAB_PRESET_V3", 21) == 0) {
+        isV3 = true;
+    } else if(strncmp(line, "GBAGI_VOCAB_PRESET_V2", 21) != 0) {
+        fclose(f);
+        return NULL;
+    }
+
+    while(fgets(line, sizeof(line), f)) {
+        char *ctx = NULL;
+        char *groupS = strtok_s(line, "\t\r\n", &ctx);
+        char *keepS = strtok_s(NULL, "\t\r\n", &ctx);
+        char *removeS = strtok_s(NULL, "\t\r\n", &ctx);
+        char *hideS = strtok_s(NULL, "\t\r\n", &ctx);
+        char *addS = NULL;
+        char *replaceS = NULL;
+        char *showS = NULL;
+        char *colS = NULL;
+        char *wordS = NULL;
+
+        if(isV3) {
+            addS = strtok_s(NULL, "\t\r\n", &ctx);
+            replaceS = strtok_s(NULL, "\t\r\n", &ctx);
+            if(isV4) {
+                showS = strtok_s(NULL, "\t\r\n", &ctx);
+                colS = strtok_s(NULL, "\t\r\n", &ctx);
+            } else {
+                colS = strtok_s(NULL, "\t\r\n", &ctx);
+            }
+            wordS = strtok_s(NULL, "\r\n", &ctx);
+        } else {
+            colS = strtok_s(NULL, "\t\r\n", &ctx);
+            wordS = strtok_s(NULL, "\r\n", &ctx);
+        }
+
+        if(!groupS || !keepS || !removeS || !hideS || !colS)
+            continue;
+        if(isV3 && (!addS || !replaceS))
+            continue;
+        if(!wordS)
+            wordS = (char*)"";
+
+        VOCAB_PLAN_ENTRY *entry = (VOCAB_PLAN_ENTRY*)calloc(1, sizeof(VOCAB_PLAN_ENTRY));
+        if(!entry) {
+            CliFreeVocabPlan(head);
+            fclose(f);
+            return NULL;
+        }
+
+        entry->group = atoi(groupS);
+        entry->forceKeep = atoi(keepS) ? TRUE : FALSE;
+        entry->forceRemove = atoi(removeS) ? TRUE : FALSE;
+        entry->hidden = atoi(hideS) ? TRUE : FALSE;
+        entry->addAlias = isV3 && atoi(addS) ? TRUE : FALSE;
+        entry->replaceGroup = isV3 && atoi(replaceS) ? TRUE : FALSE;
+        entry->pickerVisibility = (isV4 && showS) ? atoi(showS) : -1;
+        entry->columnOverride = atoi(colS);
+        entry->word = _strdup(wordS);
+        if(!entry->word) {
+            free(entry);
+            CliFreeVocabPlan(head);
+            fclose(f);
+            return NULL;
+        }
+
+        if(!head)
+            head = entry;
+        else
+            tail->next = entry;
+        tail = entry;
+    }
+
+    fclose(f);
+    return head;
+}
+
+static std::wstring CliFindPresetPathForGameDir(const wchar_t *gameDir)
+{
+    std::wstring base = CliEnsureTrailingSlash(gameDir);
+    std::wstring preferred = base + L"gbagi_vocab_preset.tsv";
+    if(FileExists(preferred.c_str()))
+        return preferred;
+
+    std::vector<std::wstring> matches;
+    WIN32_FIND_DATAW findData;
+    HANDLE hFind = FindFirstFileW((base + L"*.tsv").c_str(), &findData);
+    if(hFind == INVALID_HANDLE_VALUE)
+        return L"";
+
+    do {
+        if(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            continue;
+        matches.push_back(base + findData.cFileName);
+    } while(FindNextFileW(hFind, &findData));
+    FindClose(hFind);
+
+    if(matches.empty())
+        return L"";
+
+    std::sort(matches.begin(), matches.end(), [](const std::wstring &a, const std::wstring &b) {
+        return _wcsicmp(a.c_str(), b.c_str()) < 0;
+    });
+    return matches[0];
+}
+
 static std::wstring CliNormalizeName(const wchar_t *text)
 {
     std::wstring out;
@@ -327,22 +460,34 @@ static bool CliPackGameList(
 
     for(size_t gameIndex = 0; gameIndex < gamesToPack.size(); gameIndex++) {
         const CliGameSpec &spec = gamesToPack[gameIndex];
+        std::wstring presetPath = CliFindPresetPathForGameDir(spec.path.c_str());
+        VOCAB_PLAN_ENTRY *vocabPlan = NULL;
+        if(!presetPath.empty()) {
+            vocabPlan = CliLoadVocabPlanFromPresetFile(presetPath.c_str());
+            if(vocabPlan)
+                CliPrint(L"  Using vocab preset: %ls\n", CliGetLeafName(presetPath).c_str());
+            else
+                CliPrint(L"  Warning: failed to load vocab preset: %ls\n", presetPath.c_str());
+        }
         GAMEINFO cliGame = {
             spec.version,
             spec.gameId.c_str(),
             spec.title.c_str(),
-            spec.path.c_str()
+            spec.path.c_str(),
+            vocabPlan
         };
 
         CliPrint(L"Packing game %d/%d: %S\n", (int)gameIndex + 1, (int)gamesToPack.size(), spec.title.c_str());
         if(!ProcessGame(&cliGame)) {
             FreeGame();
+            CliFreeVocabPlan(vocabPlan);
             fclose(fout);
             fout = NULL;
             CliPrint(L"Error processing game: %S\n", spec.title.c_str());
             return false;
         }
         FreeGame();
+        CliFreeVocabPlan(vocabPlan);
     }
 
     fclose(fout);
@@ -519,6 +664,9 @@ static int RunCliMode()
             LocalFree(argv);
             return 2;
         }
+    } else if(gameDir) {
+        std::wstring gameLeaf = CliGetLeafName(gameDir);
+        known = CliFindKnownGameByFolderName(gameLeaf.c_str());
     }
 
     VERLIST *version = NULL;

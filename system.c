@@ -36,6 +36,7 @@ U16 prevKeys,kDown,kUp;
 #else
 U32 prevKeys;
 #endif
+static U16 currentButtons;
 int holdium;
 
 extern int msgX, msgY, maxWidth;
@@ -530,6 +531,38 @@ BTNSTATE *ParseButtons(U16 buttons)
     return &btnstate;
 }
 /*****************************************************************************/
+static int GetDirectionalKeyFromButtons(U16 buttons)
+{
+	BOOL right = (buttons & B_RIGHT) ? TRUE : FALSE;
+	BOOL left = (buttons & B_LEFT) ? TRUE : FALSE;
+	BOOL up = (buttons & B_UP) ? TRUE : FALSE;
+	BOOL down = (buttons & B_DOWN) ? TRUE : FALSE;
+
+	if(left && right) {
+		left = FALSE;
+		right = FALSE;
+	}
+	if(up && down) {
+		up = FALSE;
+		down = FALSE;
+	}
+
+	if(up) {
+		if(left) return KEY_NUMPAD7;
+		if(right) return KEY_NUMPAD9;
+		return KEY_UP;
+	}
+	if(down) {
+		if(left) return KEY_NUMPAD1;
+		if(right) return KEY_NUMPAD3;
+		return KEY_DOWN;
+	}
+	if(left) return KEY_LEFT;
+	if(right) return KEY_RIGHT;
+
+	return 0;
+}
+/*****************************************************************************/
 #ifdef _WINDOWS
 BTNSTATE *GBACheckButtons()
 {
@@ -546,6 +579,7 @@ BTNSTATE *GBACheckButtons()
         }
         bmask <<= 1;
     }
+	currentButtons = buttons;
 
 	return ParseButtons(buttons);
 }
@@ -553,6 +587,7 @@ BTNSTATE *GBACheckButtons()
 BTNSTATE *GBACheckButtons()
 {
 	U16 buttons = (~(*KEYS))&0x3FF;
+	currentButtons = buttons;
 	return ParseButtons(buttons);
 }
 #endif
@@ -560,6 +595,11 @@ BTNSTATE *GBACheckButtons()
 int SystemCheckKey()
 {
 	GBACheckButtons();
+	if(IsWalkHoldActive()) {
+		int dirKey = GetDirectionalKeyFromButtons(currentButtons);
+		if(dirKey)
+			return dirKey;
+	}
 	if(btnstate.state==BTN_PRESS||btnstate.state==BTN_HOLD) {
     	switch(btnstate.btn) {
          	case KEY_RESET:
