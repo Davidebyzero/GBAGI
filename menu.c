@@ -33,7 +33,7 @@
 MENU *menu,*menuLast,*activeMenu;
 MENUITEM *lastItem,*activeItem;
 RECT8 menuRect;
-static char walkModeMenuCaption[] = "Input: Dpad Mode";
+static char walkModeMenuCaption[] = "Input: Classic Mode";
 
 #define MB_SIZEOF	((sizeof(MENU)*12)+(sizeof(MENUITEM)*32))
 #define MB_END		(menuBuf+MB_SIZEOF)
@@ -42,7 +42,7 @@ BOOL MENU_SELECTABLE;
 /*****************************************************************************/
 static void UpdateWalkModeMenuCaption(void)
 {
-	strcpy(walkModeMenuCaption, WALK_HOLD ? "Input: Dpad Mode" : "Input: Classic Mode");
+	strcpy(walkModeMenuCaption, WALK_HOLD ? "Input: Classic Mode" : "Input: Dpad Mode");
 }
 /*****************************************************************************/
 static BOOL IsWalkModeMenuItem(const MENUITEM *mi)
