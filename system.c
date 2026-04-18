@@ -37,6 +37,8 @@ U16 prevKeys,kDown,kUp;
 U32 prevKeys;
 #endif
 static U16 currentButtons;
+static U16 latchedDirectionalButtons;
+static U8 diagonalHoldGrace;
 int holdium;
 
 extern int msgX, msgY, maxWidth;
@@ -130,6 +132,44 @@ const KEYMAP buttonKeymap[] = {
 	{KEY_DOWN,		B_DOWN},
 	{0,0},
 };
+
+#define DIRECTIONAL_BUTTON_MASK (B_RIGHT|B_LEFT|B_UP|B_DOWN)
+#define DIAGONAL_HOLD_GRACE_POLLS 1
+
+static int GetDirectionalKeyForMask(U16 buttons)
+{
+	switch(buttons) {
+		case B_UP|B_LEFT:
+			return KEY_NUMPAD7;
+		case B_UP|B_RIGHT:
+			return KEY_NUMPAD9;
+		case B_DOWN|B_LEFT:
+			return KEY_NUMPAD1;
+		case B_DOWN|B_RIGHT:
+			return KEY_NUMPAD3;
+		case B_UP:
+			return KEY_UP;
+		case B_DOWN:
+			return KEY_DOWN;
+		case B_LEFT:
+			return KEY_LEFT;
+		case B_RIGHT:
+			return KEY_RIGHT;
+	}
+	return 0;
+}
+
+static U16 NormalizeDirectionalButtons(U16 buttons)
+{
+	U16 directions = buttons & DIRECTIONAL_BUTTON_MASK;
+
+	if((directions & (B_LEFT|B_RIGHT)) == (B_LEFT|B_RIGHT))
+		directions &= ~(B_LEFT|B_RIGHT);
+	if((directions & (B_UP|B_DOWN)) == (B_UP|B_DOWN))
+		directions &= ~(B_UP|B_DOWN);
+
+	return directions;
+}
 
 /*****************************************************************************/
 U16 bGetW(U8 *p)
@@ -250,6 +290,8 @@ BOOL SystemInit()
     fclose(f);      */
 
 	prevKeys=0;
+	latchedDirectionalButtons = 0;
+	diagonalHoldGrace = 0;
     kDown=0;
     kUp=0;
     btnstate.kbstate = 0;
@@ -417,6 +459,8 @@ BOOL SystemInit()
     wSetPort((_RECT*)&scrRect);
 
    	prevKeys = *KEYS;
+	latchedDirectionalButtons = 0;
+	diagonalHoldGrace = 0;
     btnstate.kbstate = 0;
     btnstate.kbkey = KEY_ESC;
     btnstate.kbrow = 0;
@@ -530,37 +574,36 @@ BTNSTATE *ParseButtons(U16 buttons)
 
     return &btnstate;
 }
-/*****************************************************************************/
 static int GetDirectionalKeyFromButtons(U16 buttons)
 {
-	BOOL right = (buttons & B_RIGHT) ? TRUE : FALSE;
-	BOOL left = (buttons & B_LEFT) ? TRUE : FALSE;
-	BOOL up = (buttons & B_UP) ? TRUE : FALSE;
-	BOOL down = (buttons & B_DOWN) ? TRUE : FALSE;
+	U16 directions = NormalizeDirectionalButtons(buttons);
+	int key;
 
-	if(left && right) {
-		left = FALSE;
-		right = FALSE;
-	}
-	if(up && down) {
-		up = FALSE;
-		down = FALSE;
+	if(!directions) {
+		latchedDirectionalButtons = 0;
+		diagonalHoldGrace = 0;
+		return 0;
 	}
 
-	if(up) {
-		if(left) return KEY_NUMPAD7;
-		if(right) return KEY_NUMPAD9;
-		return KEY_UP;
+	key = GetDirectionalKeyForMask(directions);
+	if((directions == (B_UP|B_LEFT)) || (directions == (B_UP|B_RIGHT)) ||
+	   (directions == (B_DOWN|B_LEFT)) || (directions == (B_DOWN|B_RIGHT))) {
+		latchedDirectionalButtons = directions;
+		diagonalHoldGrace = DIAGONAL_HOLD_GRACE_POLLS;
+		return key;
 	}
-	if(down) {
-		if(left) return KEY_NUMPAD1;
-		if(right) return KEY_NUMPAD3;
-		return KEY_DOWN;
-	}
-	if(left) return KEY_LEFT;
-	if(right) return KEY_RIGHT;
 
-	return 0;
+	if(latchedDirectionalButtons && diagonalHoldGrace) {
+		U16 sharedAxis = directions & latchedDirectionalButtons;
+		if(sharedAxis) {
+			diagonalHoldGrace--;
+			return GetDirectionalKeyForMask(latchedDirectionalButtons);
+		}
+	}
+
+	latchedDirectionalButtons = 0;
+	diagonalHoldGrace = 0;
+	return key;
 }
 /*****************************************************************************/
 #ifdef _WINDOWS
