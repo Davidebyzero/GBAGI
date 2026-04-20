@@ -134,7 +134,7 @@ const KEYMAP buttonKeymap[] = {
 };
 
 #define DIRECTIONAL_BUTTON_MASK (B_RIGHT|B_LEFT|B_UP|B_DOWN)
-#define DIAGONAL_HOLD_GRACE_POLLS 1
+#define DIAGONAL_HOLD_GRACE_POLLS 3
 
 static int GetDirectionalKeyForMask(U16 buttons)
 {
@@ -169,6 +169,23 @@ static U16 NormalizeDirectionalButtons(U16 buttons)
 		directions &= ~(B_UP|B_DOWN);
 
 	return directions;
+}
+/*****************************************************************************/
+static U16 GetInjectedKeyCode(void)
+{
+	U16 key = btnstate.btn;
+
+	switch(btnstate.kbstate) {
+		case KEYSTATE_ALT:
+			/* AGI set.key() expects ALT combos as extended keys: low byte 0, high byte scan code. */
+			return (U16)(key << 8);
+		case KEYSTATE_CTRL:
+			if(key >= KEY_A && key <= KEY_Z)
+				return (U16)(key - KEY_A + 1);
+			break;
+	}
+
+	return key;
 }
 
 /*****************************************************************************/
@@ -546,6 +563,7 @@ BTNSTATE *ParseButtons(U16 buttons)
     const KEYMAP *km;
 
     if(btnstate.state==BTN_INJECTED) {
+		btnstate.btn = GetInjectedKeyCode();
 		btnstate.state	= BTN_PRESS;
     	prevKeys = 0;
         holdium = 0;
