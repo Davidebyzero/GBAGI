@@ -20,12 +20,74 @@
 /*****************************************************************************/
 #include "gbagi.h"
 #include "agimain.h"
+#include "pcm_music.h"
 #include "variables.h"
+#include "system.h"
 #include "lsl1hack.h"
+#include "_generated/ambient_room_table.h"
 /*****************************************************************************/
 #define LSL1_QUIKIMART_ROOM 10
+#define LSL1_PHONE_EASTER_EGG_CLIP_LENGTH 126391U
+#define LSL1_PHONE_EASTER_EGG_CLIP_RATE 7680U
+#define LSL1_KEN_SENT_ME_CLIP_LENGTH 13640U
+#define LSL1_KEN_SENT_ME_CLIP_RATE 7680U
+#define SQ2_VOHAUL_INTRO_CLIP_LENGTH 138978U
+#define SQ2_VOHAUL_INTRO_CLIP_RATE 7680U
+#define SQ2_VOHAUL_PART2_CLIP_LENGTH 121283U
+#define SQ2_VOHAUL_PART2_CLIP_RATE 7680U
+#define SQ2_VOHAUL_CLIP_NONE 0U
+#define SQ2_VOHAUL_CLIP_INTRO 1U
+#define SQ2_VOHAUL_CLIP_PART2 2U
 static BOOL lsl1NeedSpecialPhoneMessage;
 static BOOL lsl1NeedPhoneEasterEggMessage;
+static BOOL lsl1KenSentMeClipActive;
+static BOOL sq2VohaulIntroClipActive;
+static U8 sq2VohaulClipKind;
+
+extern const S8 lsl1_phone_easter_egg_pcm_data[];
+extern const S8 lsl1_kensentme_pcm_data[];
+extern const S8 sq2_vohaul_intro_pcm_data[];
+extern const S8 sq2_vohaul_part2_pcm_data[];
+
+static const pcm_track_asset s_lsl1_phone_easter_egg_track = {
+	lsl1_phone_easter_egg_pcm_data,
+	LSL1_PHONE_EASTER_EGG_CLIP_LENGTH,
+	LSL1_PHONE_EASTER_EGG_CLIP_RATE,
+	PCM_CODEC_S8,
+	0,
+	0,
+	FALSE
+};
+
+static const pcm_track_asset s_lsl1_kensentme_track = {
+	lsl1_kensentme_pcm_data,
+	LSL1_KEN_SENT_ME_CLIP_LENGTH,
+	LSL1_KEN_SENT_ME_CLIP_RATE,
+	PCM_CODEC_S8,
+	0,
+	0,
+	FALSE
+};
+
+static const pcm_track_asset s_sq2_vohaul_intro_track = {
+	sq2_vohaul_intro_pcm_data,
+	SQ2_VOHAUL_INTRO_CLIP_LENGTH,
+	SQ2_VOHAUL_INTRO_CLIP_RATE,
+	PCM_CODEC_S8,
+	0,
+	0,
+	FALSE
+};
+
+static const pcm_track_asset s_sq2_vohaul_part2_track = {
+	sq2_vohaul_part2_pcm_data,
+	SQ2_VOHAUL_PART2_CLIP_LENGTH,
+	SQ2_VOHAUL_PART2_CLIP_RATE,
+	PCM_CODEC_S8,
+	0,
+	0,
+	FALSE
+};
 
 static char LowerChar(char c)
 {
@@ -65,6 +127,57 @@ static BOOL IsLSL1Game(void)
 {
 	/* Known LSL1 AGI game ID seen in bundled resources/save files. */
 	return (strcmp(szGameID, "LLLLL") == 0 || strcmp(szGameID, "LSL1") == 0);
+}
+
+static BOOL IsSQ2Game(void)
+{
+	return (BOOL)(
+		(strcmp(szGameID, "SQ2") == 0) ||
+		(strcmp(szGameID, "sq2") == 0)
+	);
+}
+
+static BOOL IsSQ2VohaulIntroMessage(char *msg)
+{
+	return (BOOL)(
+		msg &&
+		ContainsNoCase(msg, "welcome to my humble fortress") &&
+		ContainsNoCase(msg, "the name's vohaul") &&
+		ContainsNoCase(msg, "star generator")
+	);
+}
+
+static BOOL IsSQ2VohaulPart2Message(char *msg)
+{
+	return (BOOL)(
+		msg &&
+		ContainsNoCase(msg, "it was to be my ultimate war weapon") &&
+		ContainsNoCase(msg, "saving lives rather than destroying them") &&
+		ContainsNoCase(msg, "excuse me if i sound bitter")
+	);
+}
+
+BOOL IsLSL1AmbientRoom(U8 roomNum)
+{
+	U16 game_index;
+	U16 room_index;
+
+	if(!IsLSL1Game())
+		return FALSE;
+
+	for(game_index = 0; game_index < K_AMBIENT_ROOM_GAME_LIST_COUNT; game_index++) {
+		const ambient_room_game_list *game_list = &kAmbientRoomGameLists[game_index];
+
+		if(strcmp(szGameID, game_list->game_id) != 0)
+			continue;
+
+		for(room_index = 0; room_index < game_list->room_count; room_index++) {
+			if(game_list->rooms[room_index] == roomNum)
+				return TRUE;
+		}
+	}
+
+	return FALSE;
 }
 
 static BOOL IsLSL1WineOrderPrompt(char *prompt)
@@ -223,8 +336,11 @@ char *LSL1OverridePhoneMessage(char *msg)
 	   (ContainsNoCase(msg, "dial again") ||
 	    ContainsNoCase(msg, "hang up"))) {
 		lsl1NeedSpecialPhoneMessage = FALSE;
-		lsl1NeedPhoneEasterEggMessage = FALSE;
-		return "Are you guys still playing this game in 2026??!!?";
+		if(lsl1NeedPhoneEasterEggMessage) {
+			lsl1NeedPhoneEasterEggMessage = FALSE;
+			StartPCMMusicTrack(&s_lsl1_phone_easter_egg_track, 0xFFU);
+		}
+		return "Are you guys still playing this game in 2026??!!?\nSTOP CALLING THIS NUMBER!";
 	}
 	return msg;
 }
@@ -233,8 +349,161 @@ char *LSL1ConsumePhoneEasterEggMessage(void)
 {
 	if(lsl1NeedPhoneEasterEggMessage) {
 		lsl1NeedPhoneEasterEggMessage = FALSE;
-		return "Are you guys still playing this game in 2026??!!?";
+		return "Are you guys still playing this game in 2026??!!?\nSTOP CALLING THIS NUMBER!";
 	}
 	return NULL;
 }
 
+void LSL1MaybePlayKenSentMeClip(U8 logic_num, U8 message_num)
+{
+	if(!IsLSL1Game())
+		return;
+	if(logic_num != 15U || message_num != 9U)
+		return;
+
+	/*
+	 * Clear any active AGI sound effect first. Otherwise TIMER2 can finish the
+	 * old sound asynchronously and call StopSound(), which also kills PCM.
+	 */
+	StopLegacySoundEffectsOnly();
+	StartPCMMusicTrack(&s_lsl1_kensentme_track, 0xFFU);
+	lsl1KenSentMeClipActive = TRUE;
+}
+
+BOOL LSL1IsKenSentMeClipActive(void)
+{
+	return lsl1KenSentMeClipActive;
+}
+
+BOOL LSL1ShouldPreserveKenSentMeClip(void)
+{
+	if(!lsl1KenSentMeClipActive)
+		return FALSE;
+
+	/*
+	 * Let this one voiced line survive the immediate door-open room transition.
+	 * Once PCM has naturally finished, the flag will be cleared by the waiter.
+	 */
+	return IsPCMMusicPlaying();
+}
+
+void LSL1WaitForKenSentMeClip(void)
+{
+	U16 frames_waited;
+	U16 max_frames;
+
+	if(!lsl1KenSentMeClipActive)
+		return;
+
+	/*
+	 * This specific door-reply clip gets cut off because the room transition
+	 * logic continues immediately after the message. Keep the workaround narrow:
+	 * only for the Ken-sent-me clip and only long enough for the PCM track to
+	 * finish, with a conservative safety cap.
+	 */
+	max_frames = 180U;
+	frames_waited = 0U;
+	while(IsPCMMusicPlaying() && (frames_waited < max_frames)) {
+		WaitForFrames(1);
+		frames_waited++;
+	}
+
+	lsl1KenSentMeClipActive = FALSE;
+}
+
+void SQ2MaybePlayVohaulIntroClip(U8 logic_num, U8 message_num)
+{
+	if(!IsSQ2Game())
+		return;
+	if(logic_num != 6U || message_num != 3U)
+		return;
+
+	StopLegacySoundEffectsOnly();
+	StartPCMMusicTrack(&s_sq2_vohaul_intro_track, 0xFFU);
+	sq2VohaulIntroClipActive = TRUE;
+}
+
+void SQ2MaybePlayVohaulIntroClipForMessage(char *msg)
+{
+	if(IsSQ2VohaulIntroMessage(msg)) {
+		if(sq2VohaulIntroClipActive &&
+		   sq2VohaulClipKind == SQ2_VOHAUL_CLIP_INTRO &&
+		   IsPCMMusicPlaying())
+			return;
+
+		StopLegacySoundEffectsOnly();
+		StartPCMMusicTrack(&s_sq2_vohaul_intro_track, 0xFFU);
+		sq2VohaulIntroClipActive = TRUE;
+		sq2VohaulClipKind = SQ2_VOHAUL_CLIP_INTRO;
+		return;
+	}
+
+	if(IsSQ2VohaulPart2Message(msg)) {
+		if(sq2VohaulIntroClipActive &&
+		   sq2VohaulClipKind == SQ2_VOHAUL_CLIP_PART2 &&
+		   IsPCMMusicPlaying())
+			return;
+
+		StopLegacySoundEffectsOnly();
+		StartPCMMusicTrack(&s_sq2_vohaul_part2_track, 0xFFU);
+		sq2VohaulIntroClipActive = TRUE;
+		sq2VohaulClipKind = SQ2_VOHAUL_CLIP_PART2;
+	}
+}
+
+void SQ2MaybeStopVohaulIntroClipForMessage(char *msg)
+{
+	if(!sq2VohaulIntroClipActive)
+		return;
+
+	/*
+	 * SQ2 should not block on this voiceover, but it also should not keep
+	 * talking underneath the next textbox. As soon as a different messagebox
+	 * opens, stop this one-off clip cleanly.
+	 */
+	if(IsSQ2VohaulIntroMessage(msg) &&
+	   sq2VohaulClipKind == SQ2_VOHAUL_CLIP_INTRO &&
+	   IsPCMMusicPlaying())
+		return;
+
+	if(IsSQ2VohaulPart2Message(msg) &&
+	   sq2VohaulClipKind == SQ2_VOHAUL_CLIP_PART2 &&
+	   IsPCMMusicPlaying())
+		return;
+
+	StopPCMMusic();
+	sq2VohaulIntroClipActive = FALSE;
+	sq2VohaulClipKind = SQ2_VOHAUL_CLIP_NONE;
+}
+
+BOOL SQ2IsVohaulIntroClipActive(void)
+{
+	return sq2VohaulIntroClipActive;
+}
+
+BOOL SQ2ShouldPreserveVohaulIntroClip(void)
+{
+	if(!sq2VohaulIntroClipActive)
+		return FALSE;
+
+	return IsPCMMusicPlaying();
+}
+
+void SQ2WaitForVohaulIntroClip(void)
+{
+	U16 frames_waited;
+	U16 max_frames;
+
+	if(!sq2VohaulIntroClipActive)
+		return;
+
+	max_frames = 2400U;
+	frames_waited = 0U;
+	while(IsPCMMusicPlaying() && (frames_waited < max_frames)) {
+		WaitForFrames(1);
+		frames_waited++;
+	}
+
+	sq2VohaulIntroClipActive = FALSE;
+	sq2VohaulClipKind = SQ2_VOHAUL_CLIP_NONE;
+}

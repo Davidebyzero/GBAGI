@@ -176,6 +176,17 @@ enum {
 void DoDelayNPoll(void);
 
 void Delay(int amt);
+U8 GetActiveBoostMask(void);
+U16 GetCurrentGameplaySpeedTenths(void);
+U16 GetCurrentGameplayDelayResultTenths(void);
+void SetCharacterBoostEnabled(BOOL enabled);
+BOOL IsCharacterBoostEnabled(void);
+void SetAudioBoostEnabled(BOOL enabled);
+BOOL IsAudioBoostEnabled(void);
+void SetLarryMusicSpeedHackEnabled(BOOL enabled);
+BOOL IsLarryMusicSpeedHackEnabled(void);
+void SetComboBoostEnabled(BOOL enabled);
+BOOL IsComboBoostEnabled(void);
 void PollInput(void);
 EVENT *ReadEvent(void);
 int PollKey(void);

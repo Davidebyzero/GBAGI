@@ -58,6 +58,12 @@ __published:	// IDE-managed Components
 	TLabel *Label5;
 	TEdit *tbInput; int tbInputX; int tbInputY;
 	TLabel *Label6;
+	TLabel *Label8;
+	TLabel *Label9;
+	TLabel *Label10;
+	TLabel *Label11;
+	TLabel *Label12;
+	TLabel *Label13;
 	TPanel *Panel8;
 	TPanel *Panel9;
 	TLabel *Label7; int Label7X; int Label7Y;
@@ -77,6 +83,16 @@ __published:	// IDE-managed Components
 	TPanel *Panel11; int Panel11X; int Panel11Y;
 	TButton *btnExit; int btnExitX; int btnExitY;
 	TButton *btnBuild; int btnBuildX; int btnBuildY;
+	TButton *btnBrowseSoundfont;
+	TButton *btnBrowseMusicProject;
+	TButton *btnBrowseFluidsynth;
+	TButton *btnBrowseFfmpeg;
+	TComboBox *dropSoundtrackMode;
+	TComboBox *dropSampleRate;
+	TEdit *tbSoundfont;
+	TEdit *tbMusicProject;
+	TEdit *tbFluidsynth;
+	TEdit *tbFfmpeg;
 	TOpenDialog *dlgOpenInp;
 	TOpenDialog *dlgOpenVoc;
 	TOpenDialog *dlgOpenWalk;
@@ -95,11 +111,18 @@ __published:	// IDE-managed Components
 	void __fastcall tbOutputChange(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall Label3Click(TObject *Sender);
+	void __fastcall btnBrowseSoundfontClick(TObject *Sender);
+	void __fastcall btnBrowseMusicProjectClick(TObject *Sender);
+	void __fastcall btnBrowseFluidsynthClick(TObject *Sender);
+	void __fastcall btnBrowseFfmpegClick(TObject *Sender);
+	void __fastcall dropSoundtrackModeChange(TObject *Sender);
 private:	// User declarations
 	void CreateControls();
 	void OnInitDialog(HWND hWnd);
 	void OnCommand(WPARAM wParam, LPARAM lParam);
 	BOOL OnSize(UINT width, UINT height);
+    void UpdateSoundtrackControls();
+    BOOL PrepareRuntimeForSelectedSoundtrack();
 public:		// User declarations
 	__fastcall TFormMain(TComponent* Owner);
 

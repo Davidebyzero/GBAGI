@@ -110,6 +110,7 @@ extern char szSaveName[MAX_SAVENAME_LEN + 1], szAutoSave[MAX_SAVENAME_LEN + 1];
 
 /*****************************************************************************/
 void InitSaveRestore(void);
+void SaveGlobalAudioPreferences(void);
 BOOL ExecuteSaveDialog(const char* szTitle, const char* szType);
 BOOL SaveGame(void);
 BOOL RestoreGame(void);

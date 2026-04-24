@@ -1,0 +1,26 @@
+Processed games:
+  KQ1 -> KQ1: 22 cues, 4 skipped
+  KQ2 -> KQ2: 32 cues, 0 skipped
+  KQ3 -> KQ3: 34 cues, 0 skipped
+  larry1 -> LSL1: 28 cues, 0 skipped
+  P-Q1 -> PQ1: 36 cues, 0 skipped
+  sq1 -> SQ1: 50 cues, 1 skipped
+  SQ2 -> SQ2: 49 cues, 0 skipped
+
+Skipped games:
+  Enclosure: missing AGI or SNDDIR
+  Gold Rush!: missing AGI or SNDDIR
+  KQ4: missing AGI or SNDDIR
+  KQ6: missing AGI or SNDDIR
+  Manhunter 1 - New York: missing AGI or SNDDIR
+  Manhunter 2 - San Francisco: missing AGI or SNDDIR
+  Mixed Up Mother Goose: missing AGI or SNDDIR
+  SQ0: missing AGI or SNDDIR
+  The Black Cauldron: missing AGI or SNDDIR
+
+Skipped cues:
+  KQ1 sound 34: Invalid AGI header for sound 34
+  KQ1 sound 35: Invalid AGI header for sound 35
+  KQ1 sound 36: Invalid AGI header for sound 36
+  KQ1 sound 37: Invalid AGI header for sound 37
+  sq1 sound 0: [Errno 2] No such file or directory: 'H:\\CODEX\\GBAGI\\GBAGI-fresh-2026-04-16\\games\\sq1\\vol.15'

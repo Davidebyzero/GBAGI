@@ -45,6 +45,7 @@ void SystemUpdate(void);
 BTNSTATE *GBACheckButtons(void);
 int SystemCheckKey(void);
 void SystemExit(void);
+void WaitForFrames(U16 frames);
 
 /*****************************************************************************/
 #endif

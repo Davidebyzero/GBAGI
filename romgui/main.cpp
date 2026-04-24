@@ -34,11 +34,20 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <sstream>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
 static const int kMaxInjectGames = 255;
+static const int kSoundtrackModeKeepInput = 0;
+static const int kSoundtrackModeAuto = 1;
+static const int kSoundtrackModeMt32 = 2;
+static const int kSoundtrackModeGravis = 3;
+static const int kSoundtrackModeCustom = 4;
+static const int kSoundtrackModeExistingGenerated = 5;
+static const int kSoundtrackModeMp3Project = 6;
+static const int kSoundtrackModeLivePlayback = 7;
 
 static bool EnsureBatterylessPad16M(const TCHAR *filename)
 {
@@ -62,6 +71,244 @@ static bool EnsureBatterylessPad16M(const TCHAR *filename)
 
     fclose(f);
     return true;
+}
+
+static std::wstring ParentDirStd(const std::wstring &path)
+{
+    size_t end = path.size();
+    while(end > 0 && (path[end - 1] == L'\\' || path[end - 1] == L'/'))
+        end--;
+    if(end == 0)
+        return std::wstring();
+
+    size_t pos = path.find_last_of(L"\\/", end - 1);
+    if(pos == std::wstring::npos)
+        return std::wstring();
+    return path.substr(0, pos);
+}
+
+static std::wstring FileDirStd(const std::wstring &path)
+{
+    size_t pos = path.find_last_of(L"\\/");
+    if(pos == std::wstring::npos)
+        return std::wstring();
+    return path.substr(0, pos);
+}
+
+static bool DirectoryExistsStd(const std::wstring &path)
+{
+    DWORD attrs = GetFileAttributesW(path.c_str());
+    return attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
+}
+
+static std::wstring PathJoinStd(const std::wstring &left, const std::wstring &right)
+{
+    if(left.empty())
+        return right;
+    if(right.empty())
+        return left;
+    if(left[left.size() - 1] == L'\\' || left[left.size() - 1] == L'/')
+        return left + right;
+    return left + L"\\" + right;
+}
+
+static std::wstring QuoteArgStd(const std::wstring &value)
+{
+    std::wstring escaped = L"\"";
+    size_t backslashCount = 0;
+
+    for(size_t i = 0; i < value.size(); ++i) {
+        wchar_t ch = value[i];
+        if(ch == L'\\') {
+            backslashCount++;
+            continue;
+        }
+
+        if(ch == L'"') {
+            escaped.append(backslashCount * 2 + 1, L'\\');
+            escaped += L'"';
+            backslashCount = 0;
+            continue;
+        }
+
+        if(backslashCount) {
+            escaped.append(backslashCount, L'\\');
+            backslashCount = 0;
+        }
+        escaped += ch;
+    }
+
+    if(backslashCount)
+        escaped.append(backslashCount * 2, L'\\');
+    escaped += L'"';
+    return escaped;
+}
+
+static std::wstring WidenUtf8ish(const std::string &text)
+{
+    if(text.empty())
+        return std::wstring();
+
+    int len = MultiByteToWideChar(CP_UTF8, 0, text.c_str(), (int)text.size(), NULL, 0);
+    if(len > 0) {
+        std::wstring out((size_t)len, L'\0');
+        MultiByteToWideChar(CP_UTF8, 0, text.c_str(), (int)text.size(), &out[0], len);
+        return out;
+    }
+
+    len = MultiByteToWideChar(CP_ACP, 0, text.c_str(), (int)text.size(), NULL, 0);
+    if(len <= 0)
+        return std::wstring();
+    std::wstring out((size_t)len, L'\0');
+    MultiByteToWideChar(CP_ACP, 0, text.c_str(), (int)text.size(), &out[0], len);
+    return out;
+}
+
+static std::wstring FindProjectRootFromStart(const std::wstring &startDir)
+{
+    std::wstring current = startDir;
+    for(int i = 0; i < 8 && !current.empty(); ++i) {
+        if(
+            DirectoryExistsStd(PathJoinStd(current, L"games")) &&
+            DirectoryExistsStd(PathJoinStd(current, L"GBAGI")) &&
+            FileExists(PathJoinStd(current, L"GBAGI\\extra\\configure_pcm_music_assets.py").c_str())
+        ) {
+            return current;
+        }
+        current = ParentDirStd(current);
+    }
+    return std::wstring();
+}
+
+static std::wstring FirstExistingPathStd(const std::wstring &first, const std::wstring &second)
+{
+    if(!first.empty() && FileExists(first.c_str()))
+        return first;
+    if(!second.empty() && FileExists(second.c_str()))
+        return second;
+    return first.empty() ? second : first;
+}
+
+static bool OutputHasLineStd(const std::wstring &output, const std::wstring &needle)
+{
+    return output.find(needle) != std::wstring::npos;
+}
+
+static bool RunCommandCaptureStd(const std::wstring &commandLine, const std::wstring &workingDirectory, std::wstring &output, DWORD &exitCode)
+{
+    wchar_t tempPath[MAX_PATH];
+    wchar_t tempFile[MAX_PATH];
+    SECURITY_ATTRIBUTES sa;
+    STARTUPINFOW si;
+    PROCESS_INFORMATION pi;
+    HANDLE logFile;
+    std::wstring mutableCommand;
+    std::string bytes;
+
+    output.clear();
+    exitCode = (DWORD)-1;
+
+    if(!GetTempPathW(_countof(tempPath), tempPath))
+        return false;
+    if(!GetTempFileNameW(tempPath, L"gbi", 0, tempFile))
+        return false;
+
+    ZeroMemory(&sa, sizeof(sa));
+    sa.nLength = sizeof(sa);
+    sa.bInheritHandle = TRUE;
+
+    logFile = CreateFileW(tempFile, GENERIC_WRITE | GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY, NULL);
+    if(logFile == INVALID_HANDLE_VALUE) {
+        DeleteFileW(tempFile);
+        return false;
+    }
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_HIDE;
+    si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+    si.hStdOutput = logFile;
+    si.hStdError = logFile;
+
+    ZeroMemory(&pi, sizeof(pi));
+    mutableCommand = commandLine;
+    if(!CreateProcessW(NULL, &mutableCommand[0], NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, workingDirectory.empty() ? NULL : workingDirectory.c_str(), &si, &pi)) {
+        CloseHandle(logFile);
+        DeleteFileW(tempFile);
+        return false;
+    }
+
+    for(;;) {
+        DWORD waitResult = WaitForSingleObject(pi.hProcess, 50);
+        if(waitResult == WAIT_OBJECT_0)
+            break;
+        if(waitResult == WAIT_FAILED)
+            break;
+
+        MSG msg;
+        while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+    GetExitCodeProcess(pi.hProcess, &exitCode);
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+
+    SetFilePointer(logFile, 0, NULL, FILE_BEGIN);
+    for(;;) {
+        char buffer[4096];
+        DWORD readCount = 0;
+        if(!ReadFile(logFile, buffer, sizeof(buffer), &readCount, NULL) || readCount == 0)
+            break;
+        bytes.append(buffer, buffer + readCount);
+    }
+    CloseHandle(logFile);
+    DeleteFileW(tempFile);
+
+    output = WidenUtf8ish(bytes);
+    return true;
+}
+
+static bool BrowseForOpenFileSimple(HWND owner, const TCHAR *title, const TCHAR *filter, VclString &target)
+{
+    OPENFILENAME ofn;
+    TCHAR fileName[MAX_PATH];
+
+    ZeroMemory(&ofn, sizeof(ofn));
+    ZeroMemory(fileName, sizeof(fileName));
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = owner;
+    ofn.lpstrFile = fileName;
+    ofn.nMaxFile = _countof(fileName);
+    ofn.lpstrFilter = filter;
+    ofn.nFilterIndex = 1;
+    ofn.lpstrTitle = title;
+    ofn.Flags = OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ENABLESIZING;
+
+    if(!GetOpenFileName(&ofn))
+        return false;
+    target = fileName;
+    return true;
+}
+
+static const wchar_t *SelectedSampleRateText(int itemIndex)
+{
+    switch(itemIndex) {
+        case 0: return L"1024";
+        case 1: return L"1280";
+        case 2: return L"1536";
+        case 3: return L"1920";
+        case 4: return L"2560";
+        case 5: return L"3072";
+        case 6: return L"3840";
+        case 8: return L"7680";
+        case 9: return L"15360";
+        case 7:
+        default:
+            return L"5120";
+    }
 }
 
 struct WalkItemResult {
@@ -1021,6 +1268,16 @@ public:
 __fastcall TFormMain::TFormMain(TComponent* Owner)
 	: TForm(Owner)
 {
+    std::wstring projectRoot;
+    std::wstring sharedRoot;
+    std::wstring defaultRuntime;
+    std::wstring defaultVocab;
+    std::wstring defaultSoundfont;
+    std::wstring defaultMt32;
+    std::wstring defaultFfmpeg;
+    std::wstring defaultFluidsynth;
+    std::wstring defaultMusicProject;
+
     CreateControls();
 
     _tcscpy(szPath,GetCurrentDir().c_str());
@@ -1031,9 +1288,67 @@ __fastcall TFormMain::TFormMain(TComponent* Owner)
     	szPath[l-1]='\0'; 
     ProgramDir=VclString(GetProgramPath());
 
-    tbInput->Text	= ProgramDir+_T("\\gbagi.bin");
-    tbVocab->Text	= ProgramDir+_T("\\vocab.bin");
+    projectRoot = FindProjectRootFromStart(ProgramDir.c_str());
+    if(projectRoot.empty())
+        projectRoot = FindProjectRootFromStart(ParentDirStd(ProgramDir.c_str()));
+    sharedRoot = ParentDirStd(projectRoot);
+
+    defaultRuntime = PathJoinStd(projectRoot, L"GBAGI\\gbagi.bin");
+    defaultVocab = PathJoinStd(projectRoot, L"GBAGI\\vocab.bin");
+    if(FileExists(defaultRuntime.c_str()))
+        tbInput->Text = defaultRuntime.c_str();
+    else
+        tbInput->Text = ProgramDir + _T("\\gbagi.bin");
+    if(FileExists(defaultVocab.c_str()))
+        tbVocab->Text = defaultVocab.c_str();
+    else
+        tbVocab->Text = ProgramDir + _T("\\vocab.bin");
     tbOutput->Text	= ProgramDir+_T("\\agigames.gba");
+
+    dropSoundtrackMode->Items->Add(_T("Keep Input Runtime"));
+    dropSoundtrackMode->Items->Add(_T("Auto (Curated/Generated/Fallback)"));
+    dropSoundtrackMode->Items->Add(_T("MT-32 (Generate/Cache)"));
+    dropSoundtrackMode->Items->Add(_T("Gravis Ultrasound (Generate/Cache)"));
+    dropSoundtrackMode->Items->Add(_T("Custom SoundFont (Generate/Cache)"));
+    dropSoundtrackMode->Items->Add(_T("Existing Generated Soundtrack"));
+    dropSoundtrackMode->Items->Add(_T("MP3 Titles Project (Generate/Cache)"));
+    dropSoundtrackMode->Items->Add(_T("Live Playback Only"));
+    dropSoundtrackMode->ItemIndex = kSoundtrackModeKeepInput;
+
+    dropSampleRate->Items->Add(_T("1024"));
+    dropSampleRate->Items->Add(_T("1280"));
+    dropSampleRate->Items->Add(_T("1536"));
+    dropSampleRate->Items->Add(_T("1920"));
+    dropSampleRate->Items->Add(_T("2560"));
+    dropSampleRate->Items->Add(_T("3072"));
+    dropSampleRate->Items->Add(_T("3840"));
+    dropSampleRate->Items->Add(_T("5120"));
+    dropSampleRate->Items->Add(_T("7680"));
+    dropSampleRate->Items->Add(_T("15360"));
+    dropSampleRate->ItemIndex = 7;
+
+    defaultSoundfont = FirstExistingPathStd(
+        PathJoinStd(projectRoot, L"audio upgrade\\Gravis Ultrasound.sf2"),
+        PathJoinStd(sharedRoot, L"audio upgrade\\Gravis Ultrasound.sf2")
+    );
+    defaultMt32 = FirstExistingPathStd(
+        PathJoinStd(projectRoot, L"audio upgrade\\MT32 GS 2.51.sf2"),
+        PathJoinStd(sharedRoot, L"audio upgrade\\MT32 GS 2.51.sf2")
+    );
+    defaultFfmpeg = FirstExistingPathStd(
+        PathJoinStd(projectRoot, L"ffmpeg\\bin\\ffmpeg.exe"),
+        PathJoinStd(sharedRoot, L"ffmpeg\\bin\\ffmpeg.exe")
+    );
+    defaultFluidsynth = FirstExistingPathStd(
+        PathJoinStd(projectRoot, L"fluidsynth\\bin\\fluidsynth.exe"),
+        PathJoinStd(sharedRoot, L"fluidsynth\\bin\\fluidsynth.exe")
+    );
+    defaultMusicProject = PathJoinStd(projectRoot, L"GBAGI\\extra\\streamed_music_projects\\larry1_gravis_ultrasound.json");
+
+    tbSoundfont->Text = defaultSoundfont.c_str();
+    tbMusicProject->Text = defaultMusicProject.c_str();
+    tbFluidsynth->Text = defaultFluidsynth.c_str();
+    tbFfmpeg->Text = defaultFfmpeg.c_str();
 
 	DirDialog = new TDirDialog;
 
@@ -1141,6 +1456,256 @@ void __fastcall TFormMain::btnBrowseOutClick(TObject *Sender)
 	if(dlgSaveOut->Execute()) {
      	tbOutput->Text = dlgSaveOut->FileName;
     }
+}
+//---------------------------------------------------------------------------
+void TFormMain::UpdateSoundtrackControls()
+{
+    // Audio/soundtrack options are intentionally hidden in the GUI.
+    // Use the CLI flow for soundtrack preparation instead.
+}
+//---------------------------------------------------------------------------
+BOOL TFormMain::PrepareRuntimeForSelectedSoundtrack()
+{
+    std::wstring projectRoot;
+    std::wstring sharedRoot;
+    std::wstring gbagiDir;
+    std::wstring gameDir;
+    std::wstring runtimePath;
+    std::wstring scriptPath;
+    std::wstring configPath;
+    std::wstring assetGenPath;
+    std::wstring runtimeCachePath;
+    std::wstring makePath;
+    std::wstring soundfontPath;
+    std::wstring musicProjectPath;
+    std::wstring fluidsynthPath;
+    std::wstring ffmpegPath;
+    std::wstring commandLine;
+    std::wstring output;
+    std::wstring selectedModeText;
+    DWORD exitCode = 0;
+    int mode = dropSoundtrackMode->ItemIndex;
+    const wchar_t *sampleRateText = SelectedSampleRateText(dropSampleRate->ItemIndex);
+    const wchar_t *configMode = L"auto";
+    TAddGameObj *gameobj;
+
+    if(mode == kSoundtrackModeKeepInput)
+        return TRUE;
+
+    if(listbox->Items->Count != 1) {
+        ShowMessage(_T("Generated soundtrack modes currently require exactly one game in the queue. Use 'Keep Input Runtime' for multi-game builds."));
+        return FALSE;
+    }
+
+    gameobj = addGameFirst;
+    if(!gameobj || !gameobj->gameinfo.path) {
+        ShowMessage(_T("No game was selected for soundtrack preparation."));
+        return FALSE;
+    }
+    gameDir = gameobj->gameinfo.path;
+    selectedModeText = dropSoundtrackMode->Text.c_str();
+
+    projectRoot = FindProjectRootFromStart(FileDirStd(tbInput->Text.c_str()));
+    if(projectRoot.empty())
+        projectRoot = FindProjectRootFromStart(ProgramDir.c_str());
+    if(projectRoot.empty()) {
+        ShowMessage(_T("Could not locate the GBAGI project root needed to build streamed soundtrack assets."));
+        return FALSE;
+    }
+
+    sharedRoot = ParentDirStd(projectRoot);
+    gbagiDir = PathJoinStd(projectRoot, L"GBAGI");
+    runtimePath = PathJoinStd(gbagiDir, L"gbagi.bin");
+    configPath = PathJoinStd(gbagiDir, L"extra\\configure_pcm_music_assets.py");
+    assetGenPath = PathJoinStd(gbagiDir, L"extra\\generate_pcm_music_assets_c.py");
+    runtimeCachePath = PathJoinStd(gbagiDir, L"extra\\runtime_build_cache.py");
+    makePath = PathJoinStd(gbagiDir, L"make.bat");
+
+    if(mode == kSoundtrackModeAuto)
+        configMode = L"auto";
+    else if(mode == kSoundtrackModeLivePlayback)
+        configMode = L"none";
+    else
+        configMode = L"generated";
+
+    if(mode == kSoundtrackModeMt32) {
+        soundfontPath = FirstExistingPathStd(
+            PathJoinStd(projectRoot, L"audio upgrade\\MT32 GS 2.51.sf2"),
+            PathJoinStd(sharedRoot, L"audio upgrade\\MT32 GS 2.51.sf2")
+        );
+    } else if(mode == kSoundtrackModeGravis) {
+        soundfontPath = FirstExistingPathStd(
+            PathJoinStd(projectRoot, L"audio upgrade\\Gravis Ultrasound.sf2"),
+            PathJoinStd(sharedRoot, L"audio upgrade\\Gravis Ultrasound.sf2")
+        );
+    } else if(mode == kSoundtrackModeCustom) {
+        soundfontPath = tbSoundfont->Text.c_str();
+    }
+
+    if(mode == kSoundtrackModeMp3Project)
+        musicProjectPath = tbMusicProject->Text.c_str();
+
+    if(mode == kSoundtrackModeMt32 || mode == kSoundtrackModeGravis || mode == kSoundtrackModeCustom) {
+        scriptPath = PathJoinStd(gbagiDir, L"extra\\generate_soundfont_streamed_music.py");
+        fluidsynthPath = tbFluidsynth->Text.c_str();
+        ffmpegPath = tbFfmpeg->Text.c_str();
+        if(soundfontPath.empty() || !FileExists(soundfontPath.c_str())) {
+            ShowMessage(_T("The selected soundtrack mode requires a valid SoundFont file."));
+            return FALSE;
+        }
+        if(fluidsynthPath.empty() || !FileExists(fluidsynthPath.c_str())) {
+            ShowMessage(_T("FluidSynth was not found. Set it in the soundtrack options first."));
+            return FALSE;
+        }
+
+        std::wstringstream args;
+        args << L"py -3 " << QuoteArgStd(scriptPath)
+             << L" --game-dir " << QuoteArgStd(gameDir)
+             << L" --soundfont " << QuoteArgStd(soundfontPath)
+             << L" --fluidsynth " << QuoteArgStd(fluidsynthPath)
+             << L" --sample-rate " << sampleRateText;
+        if(!ffmpegPath.empty() && FileExists(ffmpegPath.c_str()))
+            args << L" --ffmpeg " << QuoteArgStd(ffmpegPath);
+
+        txStatus->Caption = _T("Generating streamed soundtrack...");
+        if(!RunCommandCaptureStd(args.str(), gbagiDir, output, exitCode)) {
+            ShowMessage(_T("Could not start the SoundFont soundtrack generator."));
+            return FALSE;
+        }
+        if(exitCode != 0) {
+            ShowMessage(_T("SoundFont soundtrack generation failed.\r\n\r\n") + VclString(output.c_str()));
+            return FALSE;
+        }
+    }
+
+    if(mode == kSoundtrackModeMp3Project) {
+        scriptPath = PathJoinStd(gbagiDir, L"extra\\generate_streamed_music_project_assets.py");
+        ffmpegPath = tbFfmpeg->Text.c_str();
+        if(musicProjectPath.empty() || !FileExists(musicProjectPath.c_str())) {
+            ShowMessage(_T("The selected soundtrack mode requires a valid music project JSON file."));
+            return FALSE;
+        }
+        if(ffmpegPath.empty() || !FileExists(ffmpegPath.c_str())) {
+            ShowMessage(_T("ffmpeg was not found. Set it in the soundtrack options first."));
+            return FALSE;
+        }
+
+        std::wstringstream args;
+        args << L"py -3 " << QuoteArgStd(scriptPath)
+             << L" --game-dir " << QuoteArgStd(gameDir)
+             << L" --project " << QuoteArgStd(musicProjectPath)
+             << L" --ffmpeg " << QuoteArgStd(ffmpegPath)
+             << L" --sample-rate " << sampleRateText;
+
+        txStatus->Caption = _T("Generating manual streamed soundtrack...");
+        if(!RunCommandCaptureStd(args.str(), gbagiDir, output, exitCode)) {
+            ShowMessage(_T("Could not start the MP3/project soundtrack generator."));
+            return FALSE;
+        }
+        if(exitCode != 0) {
+            ShowMessage(_T("MP3/project soundtrack generation failed.\r\n\r\n") + VclString(output.c_str()));
+            return FALSE;
+        }
+    }
+
+    {
+        std::wstringstream args;
+        args << L"py -3 " << QuoteArgStd(configPath)
+             << L" --game-dir " << QuoteArgStd(gameDir)
+             << L" --mode " << configMode;
+        txStatus->Caption = _T("Configuring PCM assets...");
+        if(!RunCommandCaptureStd(args.str(), gbagiDir, output, exitCode)) {
+            ShowMessage(_T("Could not start PCM asset configuration."));
+            return FALSE;
+        }
+        if(exitCode != 0) {
+            ShowMessage(_T("PCM asset configuration failed.\r\n\r\n") + VclString(output.c_str()));
+            return FALSE;
+        }
+    }
+
+    {
+        std::wstringstream args;
+        args << L"py -3 " << QuoteArgStd(runtimeCachePath)
+             << L" lookup"
+             << L" --game-dir " << QuoteArgStd(gameDir)
+             << L" --runtime " << QuoteArgStd(runtimePath)
+             << L" --config-mode " << configMode
+             << L" --selected-mode " << QuoteArgStd(selectedModeText)
+             << L" --sample-rate " << sampleRateText;
+        txStatus->Caption = _T("Checking runtime cache...");
+        if(!RunCommandCaptureStd(args.str(), gbagiDir, output, exitCode)) {
+            ShowMessage(_T("Could not start runtime cache lookup."));
+            return FALSE;
+        }
+        if(exitCode != 0) {
+            ShowMessage(_T("Runtime cache lookup failed.\r\n\r\n") + VclString(output.c_str()));
+            return FALSE;
+        }
+        if(OutputHasLineStd(output, L"CACHE_RESULT=hit")) {
+            if(!FileExists(runtimePath.c_str())) {
+                ShowMessage(_T("Runtime cache reported a hit, but gbagi.bin was not restored."));
+                return FALSE;
+            }
+            tbInput->Text = runtimePath.c_str();
+            txStatus->Caption = _T("Runtime ready (cached): ") + VclString(runtimePath.c_str());
+            return TRUE;
+        }
+    }
+
+    {
+        std::wstringstream args;
+        args << L"py -3 " << QuoteArgStd(assetGenPath);
+        txStatus->Caption = _T("Generating PCM source files...");
+        if(!RunCommandCaptureStd(args.str(), gbagiDir, output, exitCode)) {
+            ShowMessage(_T("Could not start PCM source generation."));
+            return FALSE;
+        }
+        if(exitCode != 0) {
+            ShowMessage(_T("PCM source generation failed.\r\n\r\n") + VclString(output.c_str()));
+            return FALSE;
+        }
+    }
+
+    {
+        std::wstringstream args;
+        args << L"cmd.exe /d /c " << QuoteArgStd(makePath);
+        txStatus->Caption = _T("Rebuilding GBAGI runtime...");
+        if(!RunCommandCaptureStd(args.str(), gbagiDir, output, exitCode)) {
+            ShowMessage(_T("Could not start the GBAGI runtime build."));
+            return FALSE;
+        }
+        if(exitCode != 0) {
+            ShowMessage(_T("GBAGI runtime build failed.\r\n\r\n") + VclString(output.c_str()));
+            return FALSE;
+        }
+    }
+
+    {
+        std::wstringstream args;
+        args << L"py -3 " << QuoteArgStd(runtimeCachePath)
+             << L" store"
+             << L" --game-dir " << QuoteArgStd(gameDir)
+             << L" --runtime " << QuoteArgStd(runtimePath)
+             << L" --config-mode " << configMode
+             << L" --selected-mode " << QuoteArgStd(selectedModeText)
+             << L" --sample-rate " << sampleRateText;
+        txStatus->Caption = _T("Caching rebuilt runtime...");
+        if(!RunCommandCaptureStd(args.str(), gbagiDir, output, exitCode)) {
+            txStatus->Caption = _T("Runtime ready (cache skipped): ") + VclString(runtimePath.c_str());
+        } else if(exitCode != 0) {
+            txStatus->Caption = _T("Runtime ready (cache skipped): ") + VclString(runtimePath.c_str());
+        }
+    }
+
+    if(!FileExists(runtimePath.c_str())) {
+        ShowMessage(_T("The runtime build finished without producing gbagi.bin."));
+        return FALSE;
+    }
+
+    tbInput->Text = runtimePath.c_str();
+    txStatus->Caption = _T("Runtime ready: ") + VclString(runtimePath.c_str());
+    return TRUE;
 }
 //---------------------------------------------------------------------------
 void __fastcall TFormMain::btnRemoveClick(TObject *Sender)
@@ -1527,7 +2092,7 @@ void __fastcall TFormMain::btnBuildClick(TObject *Sender)
 		ShowMessage(_T("You must add games to embed in the ROM!"));
 	} else {
 		Enabled = false;
-		if(PackGames()) {
+        if(PackGames()) {
 			ShowMessage(_T("ROM Build finished. Enjoy!"));
     		UpdateControls();
 		}
@@ -1596,6 +2161,31 @@ LPCTSTR TFormMain::GetProgramPath()
 		return szPath + 1;
 	else
 		return szPath;
+}
+//---------------------------------------------------------------------------
+void __fastcall TFormMain::btnBrowseSoundfontClick(TObject *Sender)
+{
+    BrowseForOpenFileSimple(hWnd, _T("Select SoundFont"), _T("SoundFonts (*.sf2;*.sf3)\0*.sf2;*.sf3\0All Files\0*.*\0"), tbSoundfont->Text);
+}
+//---------------------------------------------------------------------------
+void __fastcall TFormMain::btnBrowseMusicProjectClick(TObject *Sender)
+{
+    BrowseForOpenFileSimple(hWnd, _T("Select Music Project"), _T("JSON Files (*.json)\0*.json\0All Files\0*.*\0"), tbMusicProject->Text);
+}
+//---------------------------------------------------------------------------
+void __fastcall TFormMain::btnBrowseFluidsynthClick(TObject *Sender)
+{
+    BrowseForOpenFileSimple(hWnd, _T("Select FluidSynth"), _T("Executable (*.exe)\0*.exe\0All Files\0*.*\0"), tbFluidsynth->Text);
+}
+//---------------------------------------------------------------------------
+void __fastcall TFormMain::btnBrowseFfmpegClick(TObject *Sender)
+{
+    BrowseForOpenFileSimple(hWnd, _T("Select ffmpeg"), _T("Executable (*.exe)\0*.exe\0All Files\0*.*\0"), tbFfmpeg->Text);
+}
+//---------------------------------------------------------------------------
+void __fastcall TFormMain::dropSoundtrackModeChange(TObject *Sender)
+{
+    UpdateSoundtrackControls();
 }
 //---------------------------------------------------------------------------
 void __fastcall TFormMain::FormShow(TObject *Sender)

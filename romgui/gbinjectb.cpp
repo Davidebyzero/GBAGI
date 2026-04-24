@@ -687,9 +687,9 @@ static int RunCliMode()
     } else if(known) {
         version = known->version;
     } else {
-        std::wstring agiData = CliEnsureTrailingSlash(gameDir) + L"agidata.ovl";
-        version = FindAGIVersion((wchar_t*)agiData.c_str());
+        version = CliDetectVersionFromFolder(gameDir);
         if(!version) {
+            std::wstring agiData = CliEnsureTrailingSlash(gameDir) + L"agidata.ovl";
             CliPrint(L"Unable to autodetect AGI version from %ls\n", agiData.c_str());
             CliPrint(L"Pass --game, --version-index, or --version-name.\n");
             LocalFree(argv);

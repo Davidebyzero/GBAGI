@@ -647,6 +647,10 @@ BOOL MessageBox(char *szMsg)
 #endif
 	char *s;
     BOOL ENTER_CLOSE=TRUE,DOFIX=FALSE;
+	BOOL hold_for_ken_sent_me_clip = FALSE;
+
+	SQ2MaybeStopVohaulIntroClipForMessage(szMsg);
+	SQ2MaybePlayVohaulIntroClipForMessage(szMsg);
 	PUSH_TEXT_STYLE();
 
     szMsg=FormatAGIString(szMsg,msgBuf2);
@@ -712,32 +716,41 @@ BOOL MessageBox(char *szMsg)
 	SystemUpdate();
 //#endif
     WINDOW_OPEN = TRUE;
+	hold_for_ken_sent_me_clip = LSL1IsKenSentMeClipActive();
+	if(hold_for_ken_sent_me_clip) {
+		/*
+		 * Keep this one-off Larry door line on screen until the PCM clip
+		 * completes so the room script cannot advance and cut it short.
+		 */
+		LSL1WaitForKenSentMeClip();
+	}
 
    	POP_TEXT_STYLE();
 
 	if(TestFlag(fPRINTMODE)) {
 		ResetFlag(fPRINTMODE);
 	} else {
+		if(hold_for_ken_sent_me_clip) {
+			cCloseWindow();
+		} else {
 #ifndef _WINDOWS
-		if(vars[vPRINTDURATION]) {
-			delay = vars[vPRINTDURATION];
-			//Start the timer
-            while(delay--) {
-				REG_TM0CNT_H	= TIME_FREQUENcy256 | TIME_ENABLE;
-				REG_TM0CNT_L	= 0;
-				while(REG_TM0CNT_L<0x8000)
+			if(vars[vPRINTDURATION]) {
+				delay = vars[vPRINTDURATION];
+				//Start the timer
+            	while(delay--) {
+					WaitForFrames(30);
             		if((ENTER_CLOSE = CheckUserReply()) != -1) {
-                    	delay = 0;
-                        break;
-                    }
-				REG_TM0CNT_H	= 0;
-            }
-			vars[vPRINTDURATION] = 0;
-        } else
+                   		delay = 0;
+                       	break;
+                   	}
+            	}
+				vars[vPRINTDURATION] = 0;
+        	} else
 #endif
-			ENTER_CLOSE = WaitEnterEsc();
+				ENTER_CLOSE = WaitEnterEsc();
 
-		cCloseWindow();
+			cCloseWindow();
+		}
 	}
     msgX			= -1;
     msgY			= -1;

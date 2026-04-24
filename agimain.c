@@ -35,6 +35,7 @@
 #include "variables.h"
 #include "gamedata.h"
 #include "saverestore.h"
+#include "pcm_music.h"
 /*****************************************************************************/
 BOOL PLAYER_CONTROL, TEXT_MODE, WINDOW_OPEN, REFRESH_SCREEN, MENU_SET, INPUT_ENABLED, QUIT_FLAG;
 BOOL SOUND_ON, PIC_VISIBLE, PRI_VISIBLE, STATUS_VISIBLE, VOBJ_BLOCKING,WALK_HOLD;
@@ -52,6 +53,67 @@ int pushedScriptCount, scriptCount;
 
 U8 *pSnds[4],*sndBuf;
 int sndFlag,sndWaits[4];
+static BOOL s_current_sound_likely_music;
+static BOOL s_current_sound_use_original;
+static BOOL s_first_sound_after_boot;
+static U16 s_current_sound_payload_len;
+static U8 s_current_sound_num;
+static U8 s_current_sound_done_flag;
+static U8 s_current_music_num;
+static U8 s_current_music_done_flag;
+
+#define FIRST_SOUND_ORIGINAL_PAYLOAD_MAX 128
+/*****************************************************************************/
+static BOOL SoundChannelHasAudibleTone(const U8 *channel)
+{
+	U16 len;
+
+	if(!channel)
+		return FALSE;
+
+	len = (U16)(channel[0] + (channel[1] << 8));
+	if(len == 0xFFFF)
+		return FALSE;
+	if((channel[4] & 0x0F) == 0x0F)
+		return FALSE;
+	return ((((U16)channel[2] & 0x3F) << 4) | (U16)(channel[3] & 0x0F)) != 0;
+}
+/*****************************************************************************/
+static BOOL DetectLikelyMusic(U8 *base)
+{
+	int active_tones;
+	int sustained_tones;
+	int i;
+
+	active_tones = 0;
+	sustained_tones = 0;
+	for(i = 0; i < 3; i++) {
+		U8 *channel;
+		U16 len;
+
+		channel = base + bGetW(base + (i << 1));
+		if(!SoundChannelHasAudibleTone(channel))
+			continue;
+
+		active_tones++;
+		len = (U16)(channel[0] + (channel[1] << 8));
+		if(len >= 8)
+			sustained_tones++;
+	}
+
+	return ((active_tones >= 3) || ((active_tones >= 2) && (sustained_tones >= 1)));
+}
+/*****************************************************************************/
+static BOOL IsSq2OriginalCompatSound(U8 sound_num)
+{
+	switch(sound_num) {
+		case 40:
+		case 60:
+		case 61:
+			return TRUE;
+	}
+	return FALSE;
+}
 /*****************************************************************************/
 static void SyncKQ4Room1SwimState(void)
 {
@@ -140,6 +202,24 @@ static BOOL IsPoliceQuestGame(void)
 	return (GameEnts && (strncmp(GameEnts->name, "Police Quest", 12) == 0));
 }
 /*****************************************************************************/
+static BOOL IsLSL1GameForPCM(void)
+{
+	if ((strcmp(szGameID, "LLLLL") == 0) || (strcmp(szGameID, "LSL1") == 0)) {
+		return TRUE;
+	}
+
+	if (GameEnts && GameEnts->name) {
+		if (strncmp(GameEnts->name, "Leisure Suit Larry", 18) == 0) {
+			return TRUE;
+		}
+		if (strncmp(GameEnts->name, "Larry", 5) == 0) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+/*****************************************************************************/
 static BOOL IsPoliceQuestDriving(void)
 {
 	if(!IsPoliceQuestGame())
@@ -178,22 +258,92 @@ void InitSound()
 {	
 	sndBuf = NULL;
 	sndFlag=-1;
+	s_current_sound_likely_music = FALSE;
+	s_current_sound_use_original = FALSE;
+	s_first_sound_after_boot = TRUE;
+	s_current_sound_payload_len = 0;
+	s_current_sound_num = 0xFF;
+	s_current_sound_done_flag = 0xFF;
+	s_current_music_num = 0xFF;
+	s_current_music_done_flag = 0xFF;
+	InitAudioMode();
 }
 void TIMER2(void);
+static void StopLiveSoundEffects(void)
+{
+#ifndef _WINDOWS 
+	StopLegacyAudioHardware();
+#endif
+	if(sndBuf||(!TestFlag(fSOUND)&&sndFlag!=-1)) {
+    	SetFlag(sndFlag);
+        sndFlag=-1;
+		sndBuf=NULL;
+		s_current_sound_likely_music = FALSE;
+		if(s_first_sound_after_boot)
+			s_first_sound_after_boot = FALSE;
+		s_current_sound_use_original = FALSE;
+		s_current_sound_payload_len = 0;
+		s_current_sound_num = 0xFF;
+		s_current_sound_done_flag = 0xFF;
+    }
+}
+
+void StopLegacySoundEffectsOnly(void)
+{
+	StopLiveSoundEffects();
+}
+
 void StartSound(int num, int flag)
 {		
+	U8 *resource = (U8*)sndDir[num];
 	U8 *p = (U8*)sndDir[num]+5;
 	int i; 
+	BOOL likely_music;
+	BOOL has_pcm_mapping;
+
     if(!sndDir[num]) {
     	SetFlag(flag);
     	return;
     }
 
-	StopSound();
+	likely_music = DetectLikelyMusic(p);
+	if (IsHybridMusicBackendActive() && (num == 21)) {
+		StopLiveSoundEffects();
+		if (StartLSL1Sound21PCMMusic((U8)flag)) {
+			s_current_music_num = 21U;
+			s_current_music_done_flag = (U8)flag;
+			return;
+		}
+	}
+	has_pcm_mapping = (BOOL)(IsHybridMusicBackendActive() && HasPCMMusicForSound(szGameID, (U8)num));
+	if (has_pcm_mapping) {
+		StopLiveSoundEffects();
+		if (StartPCMMusicForSound(szGameID, (U8)num, (U8)flag)) {
+			s_current_music_num = (U8)num;
+			s_current_music_done_flag = (U8)flag;
+			return;
+		}
+	}
+	if (IsHybridMusicBackendActive() && likely_music && StartPCMMusicForSound(szGameID, (U8)num, (U8)flag)) {
+		s_current_music_num = (U8)num;
+		s_current_music_done_flag = (U8)flag;
+		return;
+	}
+
+	StopLiveSoundEffects();
 
 	sndFlag = flag;
     ResetFlag(sndFlag);
-
+	s_current_sound_done_flag = (U8)flag;
+	s_current_sound_num = (U8)num;
+	s_current_sound_payload_len = bGetW(resource + 3);
+	s_current_sound_likely_music = likely_music;
+	s_current_sound_use_original = (BOOL)(s_current_sound_payload_len <= FIRST_SOUND_ORIGINAL_PAYLOAD_MAX);
+	if((GameEnts && GameEnts->name) &&
+		((strncmp(GameEnts->name, "Space Quest 2", 13) == 0) ||
+		 (strncmp(GameEnts->name, "Space Quest II", 14) == 0)) &&
+		IsSq2OriginalCompatSound(s_current_sound_num))
+		s_current_sound_use_original = TRUE;
 	for(i=0;i<4;i++) {
 		pSnds[i] = p + bGetW(p+(i<<1));
 		sndWaits[i] = 0;
@@ -202,31 +352,60 @@ void StartSound(int num, int flag)
 #ifndef _WINDOWS
 	//TIMER2();
 #endif
-	sndBuf = p + bGetW(p);
+	sndBuf = pSnds[0] ? pSnds[0] : p;
 }
 void StopSound()
 {
-#ifndef _WINDOWS 
-	REG_SOUND1CNT_L=0;
-	REG_SOUND1CNT_H=0;
-	REG_SOUND1CNT_X=SOUND1INIT+0;	
-	REG_SOUND1CNT_X=0;			
-	REG_SOUND2CNT_L=0;
-	REG_SOUND2CNT_H=SOUND2INIT+0;
-	REG_SOUND2CNT_H=0;		
-	REG_SOUND3CNT_L=0;
-	REG_SOUND3CNT_H=SOUND3INIT+0;
-	REG_SOUND3CNT_H=0;
-	REG_SOUND3CNT_X=0;
-	REG_SOUND4CNT_L=0;
-	REG_SOUND4CNT_H=SOUND4INIT+0;
-	REG_SOUND4CNT_H=0;
-#endif
-    if(sndBuf||(!TestFlag(fSOUND)&&sndFlag!=-1)) {
-    	SetFlag(sndFlag);
-        sndFlag=-1;
-		sndBuf=NULL;
-    }
+	StopLiveSoundEffects();
+	StopPCMMusic();
+	s_current_music_num = 0xFF;
+	s_current_music_done_flag = 0xFF;
+}
+/*****************************************************************************/
+BOOL IsCurrentSoundLikelyMusic(void)
+{
+	return s_current_sound_likely_music;
+}
+/*****************************************************************************/
+BOOL UseOriginalForCurrentSound(void)
+{
+	return s_current_sound_use_original;
+}
+/*****************************************************************************/
+U8 GetCurrentSoundNumber(void)
+{
+	return s_current_sound_num;
+}
+/*****************************************************************************/
+U8 GetCurrentMusicNumber(void)
+{
+	return s_current_music_num;
+}
+/*****************************************************************************/
+U8 GetCurrentSoundDoneFlag(void)
+{
+	return s_current_sound_done_flag;
+}
+/*****************************************************************************/
+U8 GetCurrentMusicDoneFlag(void)
+{
+	return s_current_music_done_flag;
+}
+/*****************************************************************************/
+void ResumeCurrentAudioPlayback(void)
+{
+	if (!TestFlag(fSOUND)) {
+		return;
+	}
+
+	if (s_current_music_num != 0xFFU) {
+		StartSound((int)s_current_music_num, (int)s_current_music_done_flag);
+		return;
+	}
+
+	if (s_current_sound_num != 0xFFU) {
+		StartSound((int)s_current_sound_num, (int)s_current_sound_done_flag);
+	}
 }
 /*****************************************************************************/
 BOOL AGIInit(BOOL RESTART)
@@ -298,6 +477,7 @@ void AGIInitVars()
 	vars[vSOUNDTYPE]		= 1; // PC
 	vars[vMAXINPUT]		= MAX_STRINGS_LEN;
 	vars[vMEMORY]		= 10;
+	vars[vDELAY]		= 1; // start on "fast"
 }
 /*****************************************************************************/
 void AGIShutDown()
@@ -310,10 +490,6 @@ void AGIMain()
 {
 #ifdef SKIPTOSCREEN
 	 int m=1;
-#endif
-#ifndef _WINDOWS
-	REG_TM1CNT_H = TIME_FREQUENcy1024 | TIME_ENABLE;
-	REG_TM1CNT_L = 0;
 #endif
 	for (;;) {
 		ClearControllers();
@@ -336,6 +512,12 @@ void AGIMain()
 		CalcVObjsDir();
 
 		oldScore = vars[vSCORE];
+		{
+			U8 oldBoostMask;
+			U16 oldBoostDelayResultTenths;
+
+			oldBoostMask = GetActiveBoostMask();
+			oldBoostDelayResultTenths = GetCurrentGameplayDelayResultTenths();
 		SOUND_ON = TestFlag(fSOUND);
 
 #ifdef SKIPTOSCREEN
@@ -360,8 +542,11 @@ void AGIMain()
 
 		ViewObjs[0].direction = vars[vEGODIR];
 
-		if( (oldScore!=vars[vSCORE]) || (TestFlag(fSOUND)!=SOUND_ON) )
+		if( (oldScore!=vars[vSCORE]) || (TestFlag(fSOUND)!=SOUND_ON) ||
+			(oldBoostMask != GetActiveBoostMask()) ||
+			(oldBoostDelayResultTenths != GetCurrentGameplayDelayResultTenths()) )
 			WriteStatusLine();
+		}
 
 		vars[vOBJBORDER]		= 0;
 		vars[vOBJECT]		= 0;
@@ -377,4 +562,3 @@ void AGIMain()
 
 /*****************************************************************************/
 
-/*****************************************************************************/

@@ -43,6 +43,22 @@ int holdium;
 
 extern int msgX, msgY, maxWidth;
 
+void WaitForFrames(U16 frames)
+{
+#ifndef _WINDOWS
+	while (frames--) {
+		while (REG_VCOUNT >= 160) {
+		}
+		while (REG_VCOUNT < 160) {
+		}
+	}
+#else
+	while (frames--) {
+		Sleep(16);
+	}
+#endif
+}
+
 const _RECT scrRect={0,0,SCREEN_MAXX,SCREEN_MAXY};  
 const U16 Palette[256] = {
 0x0C63,0x2C63,0x0D63,0x2D63,0x0C6F,0x3CEB,0x0CEB,0x2D6B,0x1CE7,0x3CE3,0x1DE3,0x3DE7,0x1D6F,0x3CEF,0x0DEF,0x3DEF,

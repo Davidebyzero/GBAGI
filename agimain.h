@@ -49,7 +49,17 @@ extern int sndFlag,sndWaits[4];
 
 void StartSound(int num, int flag);
 void StopSound(void);
+void StopLegacySoundEffectsOnly(void);
 void InitSound(void);
+BOOL IsCurrentSoundLikelyMusic(void);
+BOOL UseOriginalForCurrentSound(void);
+U8 GetCurrentSoundNumber(void);
+U8 GetCurrentMusicNumber(void);
+U8 GetCurrentSoundDoneFlag(void);
+U8 GetCurrentMusicDoneFlag(void);
+void ResumeCurrentAudioPlayback(void);
+
+#include "enhanced_audio.h"
 /*****************************************************************************/
 #endif
 /*****************************************************************************/

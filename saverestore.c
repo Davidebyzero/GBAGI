@@ -34,6 +34,7 @@
 #include "errmsg.h"
 #include "system.h"
 #include "invobj.h"
+#include "enhanced_audio.h"
 /*****************************************************************************/
 
 #ifdef _WINDOWS
@@ -44,6 +45,10 @@ U8* pSaveMem;
 
 #define MAX_SAVES 8
 #define SAVE_FILE_SIZE 4096
+#define GLOBAL_AUDIO_PREF_OFFSET (MAX_SAVES * SAVE_FILE_SIZE)
+
+static const char kGlobalAudioPrefTag[4] = { 'A', 'U', 'D', '1' };
+static const char kSaveFormatTag[4] = { 'S', 'R', 'V', '2' };
 
 #define BATTERYLESS_COMMIT_NONE	0
 #define BATTERYLESS_COMMIT_AUTO	1
@@ -76,6 +81,10 @@ static BOOL gBatterylessCommitPending = FALSE;
 /*****************************************************************************/
 S16 wnSaveRestoreProc(WND* w, U16 msg, U16 wParam, U32 lParam);
 static BOOL RestoreGameSlotByIndex(int slot);
+static void LoadGlobalAudioPreferences(void);
+static void SaveViewObjectsCompact(void);
+static void LoadViewObjectsCompact(void);
+static int GetSaveDataOffset(int slot);
 
 WND wnSaveRestore = {
 	NULL,NULL,NULL,NULL,
@@ -89,7 +98,7 @@ WND wnSaveRestore = {
 };
 WND bnSaveOK = {
 	NULL,NULL,&wnSaveRestore,NULL,
-	130,4,52,16,
+	130,8,52,16,
 	{0,0,0,0},{0,0,0,0},
 	"Save",
 	wnBUTTON,
@@ -99,7 +108,7 @@ WND bnSaveOK = {
 };
 WND bnSaveCancel = {
 	NULL,NULL,&wnSaveRestore,NULL,
-	130,24,52,16,
+	130,30,52,16,
 	{0,0,0,0},{0,0,0,0},
 	"Cancel",
 	wnBUTTON,
@@ -109,7 +118,7 @@ WND bnSaveCancel = {
 };
 WND lbSaveFiles = {
 	NULL,NULL,&wnSaveRestore,NULL,
-	0,20,128,74,
+	0,4,128,68,
 	{0,0,0,0},{0,0,0,0},
 	"",
 	wnLISTBOX,
@@ -119,7 +128,7 @@ WND lbSaveFiles = {
 };
 WND edSaveInput = {
 	NULL,NULL,&wnSaveRestore,NULL,
-	32,4,96,14,
+	32,78,96,14,
 	{0,0,0,0},{0,0,0,0},
 	szSaveName,
 	wnEDIT,
@@ -129,7 +138,7 @@ WND edSaveInput = {
 };
 WND txSaveName = {
 	NULL,NULL,&wnSaveRestore,NULL,
-	2,8,30,8,
+	2,82,30,8,
 	{0,0,0,0},{0,0,0,0},
 	"Name:",
 	wnTEXT,
@@ -167,6 +176,176 @@ S16 wnSaveRestoreProc(WND* w, U16 msg, U16 wParam, U32 lParam)
 void InitSaveRestore()
 {
 	szAutoSave[0] = '\0';
+	LoadGlobalAudioPreferences();
+}
+
+/*****************************************************************************/
+void SaveGlobalAudioPreferences(void)
+{
+	U8 saved_mode;
+	U8 saved_backend;
+	U8 saved_toggle_flags;
+
+	OPEN_SAVE_FILE();
+	saved_mode = (U8)GetAudioMode();
+	saved_backend = (U8)GetAudioMusicBackend();
+	saved_toggle_flags = (U8)(
+		(IsLarryMusicSpeedHackEnabled() ? 0x01U : 0U) |
+		(IsAudioBoostEnabled() ? 0x02U : 0U) |
+		(IsCharacterBoostEnabled() ? 0x04U : 0U) |
+		(IsComboBoostEnabled() ? 0x08U : 0U)
+	);
+
+	SAVE_SEEK_SET(GLOBAL_AUDIO_PREF_OFFSET);
+	FWRITEN(kGlobalAudioPrefTag, 4);
+	FPUTB(saved_mode);
+	FPUTB(saved_backend);
+	FPUTB(saved_toggle_flags);
+	FPUTB(4);
+	CLOSE_SAVE_FILE();
+
+#ifndef _WINDOWS
+	BatterylessNotifySaveDirty();
+#endif
+}
+
+/*****************************************************************************/
+static void LoadGlobalAudioPreferences(void)
+{
+	char tag[4];
+	U8 saved_mode;
+	U8 saved_backend;
+	U8 saved_toggle_flags;
+	U8 pref_version;
+
+	OPEN_SAVE_FILE();
+	SAVE_SEEK_SET(GLOBAL_AUDIO_PREF_OFFSET);
+	FREADN(tag, 4);
+	if (memcmp(tag, kGlobalAudioPrefTag, 4) != 0) {
+		CLOSE_SAVE_FILE();
+		return;
+	}
+
+	FGETB(saved_mode);
+	FGETB(saved_backend);
+	FGETB(saved_toggle_flags);
+	FGETB(pref_version);
+	CLOSE_SAVE_FILE();
+	if (saved_mode > AUDIO_TANDY) {
+		saved_mode = (U8)AUDIO_MODE_DEFAULT;
+	}
+	if (saved_backend > AUDIO_BACKEND_TANDY_HYBRID) {
+		saved_backend = (U8)AUDIO_BACKEND_DEFAULT;
+	}
+
+	SetAudioMode((enum audio_mode)saved_mode);
+	SetAudioMusicBackend((enum audio_music_backend)saved_backend);
+	if (pref_version == 1U) {
+		SetLarryMusicSpeedHackEnabled(saved_toggle_flags ? TRUE : FALSE);
+		SetAudioBoostEnabled(FALSE);
+		SetCharacterBoostEnabled(TRUE);
+		SetComboBoostEnabled(TRUE);
+	} else if (pref_version == 2U) {
+		SetLarryMusicSpeedHackEnabled((saved_toggle_flags & 0x01U) ? TRUE : FALSE);
+		SetAudioBoostEnabled((saved_toggle_flags & 0x02U) ? TRUE : FALSE);
+		SetCharacterBoostEnabled(TRUE);
+		SetComboBoostEnabled(TRUE);
+	} else if (pref_version >= 3U) {
+		SetLarryMusicSpeedHackEnabled((saved_toggle_flags & 0x01U) ? TRUE : FALSE);
+		SetAudioBoostEnabled((saved_toggle_flags & 0x02U) ? TRUE : FALSE);
+		SetCharacterBoostEnabled((saved_toggle_flags & 0x04U) ? TRUE : FALSE);
+		if (pref_version >= 4U) {
+			SetComboBoostEnabled((saved_toggle_flags & 0x08U) ? TRUE : FALSE);
+		} else {
+			SetComboBoostEnabled(TRUE);
+		}
+	}
+}
+
+/*****************************************************************************/
+static int GetSaveDataOffset(int slot)
+{
+	return (slot * SAVE_FILE_SIZE) + sizeof(szSaveHeader) + sizeof(szGameID) + MAX_SAVENAME_LEN + 1;
+}
+
+/*****************************************************************************/
+static void SaveViewObjectsCompact(void)
+{
+	int i;
+	VOBJ* v;
+
+	for (i = 0; i < MAX_VOBJ; i++) {
+		v = &ViewObjs[i];
+
+		FPUTB(v->num);
+		FPUTW(v->x);
+		FPUTW(v->y);
+		FPUTW(v->prevX);
+		FPUTW(v->prevY);
+		FPUTB(v->width);
+		FPUTB(v->height);
+		FPUTB(v->prevWidth);
+		FPUTB(v->prevHeight);
+		FPUTB(v->view);
+		FPUTB(v->loop);
+		FPUTB(v->totalLoops);
+		FPUTB(v->cel);
+		FPUTB(v->totalCels);
+		FPUTB(v->direction);
+		FPUTB(v->motion);
+		FPUTB(v->priority);
+		FPUTW(v->flags);
+		FPUTB(v->stepTime);
+		FPUTB(v->stepCount);
+		FPUTB(v->stepSize);
+		FPUTB(v->cycle);
+		FPUTB(v->cycleTime);
+		FPUTB(v->cycleCount);
+		FPUTW(v->move.x);
+		FPUTW(v->move.y);
+		FPUTB(v->move.stepSize);
+		FPUTB(v->move.flag);
+	}
+}
+
+/*****************************************************************************/
+static void LoadViewObjectsCompact(void)
+{
+	int i;
+	VOBJ* v;
+
+	for (i = 0; i < MAX_VOBJ; i++) {
+		v = &ViewObjs[i];
+
+		FGETB(v->num);
+		FGETW(v->x);
+		FGETW(v->y);
+		FGETW(v->prevX);
+		FGETW(v->prevY);
+		FGETB(v->width);
+		FGETB(v->height);
+		FGETB(v->prevWidth);
+		FGETB(v->prevHeight);
+		FGETB(v->view);
+		FGETB(v->loop);
+		FGETB(v->totalLoops);
+		FGETB(v->cel);
+		FGETB(v->totalCels);
+		FGETB(v->direction);
+		FGETB(v->motion);
+		FGETB(v->priority);
+		FGETW(v->flags);
+		FGETB(v->stepTime);
+		FGETB(v->stepCount);
+		FGETB(v->stepSize);
+		FGETB(v->cycle);
+		FGETB(v->cycleTime);
+		FGETB(v->cycleCount);
+		FGETW(v->move.x);
+		FGETW(v->move.y);
+		FGETB(v->move.stepSize);
+		FGETB(v->move.flag);
+	}
 }
 
 /*****************************************************************************/
@@ -178,9 +357,9 @@ BOOL ExecuteSaveDialog(const char* szTitle, const char* szType)
 	AddWindow(&wnSaveRestore);
 	AddWindow(&bnSaveCancel);
 	AddWindow(&bnSaveOK);
-	AddWindow(&lbSaveFiles);
 	edSaveInput.ext.edit.maxLen = 15;
 	AddWindow(&edSaveInput);
+	AddWindow(&lbSaveFiles);
 	AddWindow(&txSaveName);
 
 	WinGUIDoit();
@@ -225,14 +404,13 @@ void SRamMemCpy(U8* a, U8* b, int len)
 #ifndef _WINDOWS
 static void BatterylessBusyDelay(void)
 {
-	int delay;
+	U32 frames;
 
-	delay = (64 * BATTERYLESS_DELAY_TICKS) + 1;
-	REG_TM0CNT_H = TIME_FREQUENcy1024 | TIME_ENABLE;
-	REG_TM0CNT_L = 0;
-	while (REG_TM0CNT_L <= delay) {
+	frames = (((U32)((64 * BATTERYLESS_DELAY_TICKS) + 1) * 60) + 16383) / 16384;
+	if (frames == 0) {
+		frames = 1;
 	}
-	REG_TM0CNT_H = 0;
+	WaitForFrames((U16)frames);
 }
 
 /*****************************************************************************/
@@ -334,6 +512,7 @@ BOOL SaveGame()
 	FWRITE(szSaveHeader);
 	FWRITE(szGameID);
 	FWRITE(szSaveName);
+	FWRITEN(kSaveFormatTag, 4);
 
 	FWRITE(vars);
 	FWRITE(flags);
@@ -367,7 +546,7 @@ BOOL SaveGame()
 	FPUTB(IF_RESULT);
 
 	FWRITE(objBlock);
-	FWRITE(ViewObjs);
+	SaveViewObjectsCompact();
 	FWRITE(logScan);
 	FWRITE(invObjRooms);
 
@@ -454,6 +633,8 @@ static BOOL RestoreGameSlotByIndex(int slot)
 	int i;
 	int totalPViews, totalOverlays;
 	VOBJ* v;
+	char formatTag[4];
+	BOOL isCompactSave = FALSE;
 
 	OPEN_SAVE_FILE();
 	SAVE_SEEK_SET(slot * SAVE_FILE_SIZE);
@@ -470,6 +651,13 @@ static BOOL RestoreGameSlotByIndex(int slot)
 	}
 
 	SAVE_SEEK_CUR(MAX_SAVENAME_LEN + 1);
+	FREADN(formatTag, 4);
+	if (memcmp(formatTag, kSaveFormatTag, 4) == 0) {
+		isCompactSave = TRUE;
+	}
+	else {
+		SAVE_SEEK_SET(GetSaveDataOffset(slot));
+	}
 
 	EraseBlitLists();
 	InitViewSystem();
@@ -506,7 +694,12 @@ static BOOL RestoreGameSlotByIndex(int slot)
 	FGETB(IF_RESULT);
 
 	FREAD(objBlock);
-	FREAD(ViewObjs);
+	if (isCompactSave) {
+		LoadViewObjectsCompact();
+	}
+	else {
+		FREAD(ViewObjs);
+	}
 	FREAD(logScan);
 	FREAD(invObjRooms);
 

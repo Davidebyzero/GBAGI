@@ -30,6 +30,7 @@
 #include "input.h"
 #include "screen.h"
 #include "picture.h"
+#include "lsl1hack.h"
 /*****************************************************************************/
 LOGIC *curLog,*log0;
 BOOL IF_RESULT;
@@ -128,8 +129,12 @@ U8 *ExecuteLogic(LOGIC *log)
             }
         }
     }
-    if(sndBuf)
-    	StopSound();
+    if(sndBuf) {
+    	if(LSL1ShouldPreserveKenSentMeClip() || SQ2ShouldPreserveVohaulIntroClip())
+    		StopLegacySoundEffectsOnly();
+    	else
+    		StopSound();
+    }
 #endif
 #ifdef _PRINT_LOG
 		cmdnum++;
@@ -259,7 +264,10 @@ U8 *NewRoom(U8 num)
 		vObj->stepSize		= 1;
 	}
 
-    StopSound();
+    if(LSL1ShouldPreserveKenSentMeClip() || SQ2ShouldPreserveVohaulIntroClip())
+    	StopLegacySoundEffectsOnly();
+    else
+    	StopSound();
     ClearControllers();
     
     pPView		= pViews;

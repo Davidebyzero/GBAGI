@@ -23,6 +23,9 @@
 #include "text.h"
 #include "screen.h"
 #include "wingui.h"
+#include "enhanced_audio.h"
+#include "agimain.h"
+#include "input.h"
 /*****************************************************************************/
 char tempStr[41];
 /*****************************************************************************/
@@ -38,6 +41,24 @@ void WriteStatusLine()
         DrawStringAbs(CHAR_WIDTH,statusRow*CHAR_HEIGHT,tempStr,clBLACK);
         sprintf(tempStr,"Sound:%s", TestFlag(fSOUND)?"on ":"off");
         DrawStringAbs(CHAR_WIDTH*30,statusRow*CHAR_HEIGHT,tempStr,clBLACK);
+		{
+			U8 boost_mask;
+			U16 speed_result_tenths;
+
+			boost_mask = GetActiveBoostMask();
+			speed_result_tenths = GetCurrentGameplayDelayResultTenths();
+			sprintf(
+				tempStr,
+				"BST:%c%c%c%c %u%u",
+				(boost_mask & 0x01U) ? 'A' : '-',
+				(boost_mask & 0x02U) ? 'M' : '-',
+				(boost_mask & 0x04U) ? 'R' : '-',
+				(boost_mask & 0x08U) ? 'c' : '-',
+				(unsigned)(speed_result_tenths / 10U),
+				(unsigned)(speed_result_tenths % 10U)
+			);
+			DrawStringAbs(CHAR_WIDTH*18,statusRow*CHAR_HEIGHT,tempStr,clBLACK);
+		}
         
         //ShowPic();
 	}

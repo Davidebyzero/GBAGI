@@ -3,6 +3,12 @@
 
 // Hand-written reimagination of what the auto-generated VCL code by Borland C++ Builder might looked like
 
+static void HideDialogItem(HWND hWnd, int controlId) {
+    HWND control = GetDlgItem(hWnd, controlId);
+    if(control)
+        ShowWindow(control, SW_HIDE);
+}
+
 void TFormMain::OnInitDialog(HWND hWnd) {
     Attach(hWnd);
 
@@ -37,6 +43,30 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     this->Label6 = new TLabel(this);
     this->Label6->Attach(GetDlgItem(hWnd, IDC_LABEL6)); // ROM Input Filename
     this->Label6->SetFont(-14, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label8 = new TLabel(this);
+    this->Label8->Attach(GetDlgItem(hWnd, IDC_LABEL8));
+    this->Label8->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label9 = new TLabel(this);
+    this->Label9->Attach(GetDlgItem(hWnd, IDC_LABEL9));
+    this->Label9->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label10 = new TLabel(this);
+    this->Label10->Attach(GetDlgItem(hWnd, IDC_LABEL10));
+    this->Label10->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label11 = new TLabel(this);
+    this->Label11->Attach(GetDlgItem(hWnd, IDC_LABEL11));
+    this->Label11->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label12 = new TLabel(this);
+    this->Label12->Attach(GetDlgItem(hWnd, IDC_LABEL12));
+    this->Label12->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label13 = new TLabel(this);
+    this->Label13->Attach(GetDlgItem(hWnd, IDC_LABEL13));
+    this->Label13->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label7 = new TLabel(this);
     this->Label7->Attach(GetDlgItem(hWnd, IDC_LABEL7)); /* Games To Inject */ this->Label7->GetSize(this->Label7X, this->Label7Y); this->Label7X -= width;
@@ -92,6 +122,18 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     this->btnBuild->Attach(GetDlgItem(hWnd, IDC_BTNBUILD)); this->btnBuild->GetPos(this->btnBuildX, this->btnBuildY); this->btnBuildX -= width; this->btnBuildY -= height;
     this->btnBuild->SetFont(-17, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
+    this->btnBrowseSoundfont = new TButton(this);
+    this->btnBrowseSoundfont->Attach(GetDlgItem(hWnd, IDC_BTNBROWSESOUNDFONT));
+
+    this->btnBrowseMusicProject = new TButton(this);
+    this->btnBrowseMusicProject->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEMUSICPROJECT));
+
+    this->btnBrowseFluidsynth = new TButton(this);
+    this->btnBrowseFluidsynth->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEFLUIDSYNTH));
+
+    this->btnBrowseFfmpeg = new TButton(this);
+    this->btnBrowseFfmpeg->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEFFMPEG));
+
     this->btnRemove = new TButton(this);
     this->btnRemove->Attach(GetDlgItem(hWnd, IDC_BTNREMOVE)); this->btnRemove->GetPos(this->btnRemoveX, this->btnRemoveY); this->btnRemoveX -= width;
 
@@ -113,8 +155,44 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     this->tbVocab = new TEdit(this);
     this->tbVocab->Attach(GetDlgItem(hWnd, IDC_TBVOCAB)); this->tbVocab->GetSize(this->tbVocabX, this->tbVocabY); this->tbVocabX -= width;
 
+    this->tbSoundfont = new TEdit(this);
+    this->tbSoundfont->Attach(GetDlgItem(hWnd, IDC_TBSOUNDFONT));
+
+    this->tbMusicProject = new TEdit(this);
+    this->tbMusicProject->Attach(GetDlgItem(hWnd, IDC_TBMUSICPROJECT));
+
+    this->tbFluidsynth = new TEdit(this);
+    this->tbFluidsynth->Attach(GetDlgItem(hWnd, IDC_TBFLUIDSYNTH));
+
+    this->tbFfmpeg = new TEdit(this);
+    this->tbFfmpeg->Attach(GetDlgItem(hWnd, IDC_TBFFMPEG));
+
     this->listbox = new TListBox(this);
     this->listbox->Attach(GetDlgItem(hWnd, IDC_LISTBOX)); this->listbox->GetSize(this->listboxX, this->listboxY); this->listboxX -= width; this->listboxY -= height;
+
+    this->dropSoundtrackMode = new TComboBox(this);
+    this->dropSoundtrackMode->Attach(GetDlgItem(hWnd, IDC_DROPSOUNDMODE));
+
+    this->dropSampleRate = new TComboBox(this);
+    this->dropSampleRate->Attach(GetDlgItem(hWnd, IDC_DROPSAMPLERATE));
+
+    // Soundtrack preparation is CLI-only now, so keep these GUI controls hidden.
+    HideDialogItem(hWnd, IDC_LABEL8);
+    HideDialogItem(hWnd, IDC_LABEL9);
+    HideDialogItem(hWnd, IDC_LABEL10);
+    HideDialogItem(hWnd, IDC_LABEL11);
+    HideDialogItem(hWnd, IDC_LABEL12);
+    HideDialogItem(hWnd, IDC_LABEL13);
+    HideDialogItem(hWnd, IDC_DROPSOUNDMODE);
+    HideDialogItem(hWnd, IDC_DROPSAMPLERATE);
+    HideDialogItem(hWnd, IDC_TBSOUNDFONT);
+    HideDialogItem(hWnd, IDC_TBMUSICPROJECT);
+    HideDialogItem(hWnd, IDC_TBFLUIDSYNTH);
+    HideDialogItem(hWnd, IDC_TBFFMPEG);
+    HideDialogItem(hWnd, IDC_BTNBROWSESOUNDFONT);
+    HideDialogItem(hWnd, IDC_BTNBROWSEMUSICPROJECT);
+    HideDialogItem(hWnd, IDC_BTNBROWSEFLUIDSYNTH);
+    HideDialogItem(hWnd, IDC_BTNBROWSEFFMPEG);
 
     OPENFILENAME ofnSaveOut;
     ZeroMemory(&ofnSaveOut, sizeof(OPENFILENAME)); // dlgSaveOut
@@ -224,12 +302,37 @@ void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
         this->UpdateControls();
     }
 
+    if (LOWORD(wParam) == IDC_BTNBROWSESOUNDFONT && HIWORD(wParam) == BN_CLICKED) {
+        this->btnBrowseSoundfontClick(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_BTNBROWSEMUSICPROJECT && HIWORD(wParam) == BN_CLICKED) {
+        this->btnBrowseMusicProjectClick(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_BTNBROWSEFLUIDSYNTH && HIWORD(wParam) == BN_CLICKED) {
+        this->btnBrowseFluidsynthClick(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_BTNBROWSEFFMPEG && HIWORD(wParam) == BN_CLICKED) {
+        this->btnBrowseFfmpegClick(this);
+        this->UpdateControls();
+    }
+
     if (LOWORD(wParam) == IDC_LISTBOX && HIWORD(wParam) == LBN_SELCHANGE) {
         this->UpdateControls();
     }
 
     if (LOWORD(wParam) == IDC_TBOUTPUT && HIWORD(wParam) == EN_CHANGE) {
         this->tbOutputChange(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_DROPSOUNDMODE && HIWORD(wParam) == CBN_SELCHANGE) {
+        this->dropSoundtrackModeChange(this);
         this->UpdateControls();
     }
 

@@ -304,6 +304,92 @@ static BOOL IsSpaceQuest1(void)
 		  strstr(gi->title, "2") == NULL));
 }
 /******************************************************************************/
+static BOOL IsLarry1(void)
+{
+	return gi && gi->title && strcmp(gi->title, "Leisure Suit Larry") == 0;
+}
+/******************************************************************************/
+static U16 PatchGameSpecificLogicMessages(U8 *logicData, U16 logicLen, U8 *scratch, size_t scratchSize)
+{
+	const char *originalText = "\"This is a computer.\"";
+	const char *replacementText = "\"The line disconnected.\"";
+	U16 codeLen, msgSize;
+	U8 msgTotal;
+	U8 *msgBase, *msg, *outMsgBase, *outMsg;
+	size_t tableBytes, writePos, maxMessageBytes;
+	int i;
+	BOOL changed = FALSE;
+
+	if(!IsLarry1() || !logicData || !scratch || logicLen < 5)
+		return logicLen;
+
+	codeLen = bGetW(logicData);
+	if((size_t)codeLen + 3u > logicLen)
+		return logicLen;
+
+	msgBase = logicData + codeLen + 2;
+	msgTotal = *msgBase;
+	if(!msgTotal)
+		return logicLen;
+
+	msg = msgBase + 1;
+	msgSize = bGetW(msg);
+	tableBytes = ((size_t)msgTotal + 1u) << 1;
+	if(msgSize < tableBytes || (size_t)codeLen + 3u + msgSize > logicLen)
+		return logicLen;
+
+	memcpy(scratch, logicData, (size_t)codeLen + 3u);
+	outMsgBase = scratch + codeLen + 2;
+	outMsg = outMsgBase + 1;
+	writePos = tableBytes;
+	maxMessageBytes = scratchSize - ((size_t)codeLen + 3u);
+
+	for(i = 1; i <= msgTotal; ++i) {
+		U16 offset = bGetW(msg + (i << 1));
+		const char *src;
+		const char *text;
+		size_t remaining, textLen;
+
+		if(offset == 0) {
+			outMsg[i << 1] = 0;
+			outMsg[(i << 1) + 1] = 0;
+			continue;
+		}
+		if(offset < tableBytes || offset >= msgSize)
+			return logicLen;
+
+		src = (const char *)(msg + offset);
+		remaining = (size_t)msgSize - offset;
+		text = src;
+		textLen = 0;
+		while(textLen < remaining && src[textLen] != '\0')
+			textLen++;
+		if(textLen >= remaining)
+			return logicLen;
+
+		if(strcmp(src, originalText) == 0) {
+			text = replacementText;
+			textLen = strlen(replacementText);
+			changed = TRUE;
+		}
+
+		if(writePos + textLen + 1u > maxMessageBytes)
+			return logicLen;
+
+		outMsg[i << 1] = (U8)(writePos & 0xFF);
+		outMsg[(i << 1) + 1] = (U8)((writePos >> 8) & 0xFF);
+		memcpy(outMsg + writePos, text, textLen + 1u);
+		writePos += textLen + 1u;
+	}
+
+	if(!changed)
+		return logicLen;
+
+	outMsg[0] = (U8)(writePos & 0xFF);
+	outMsg[1] = (U8)((writePos >> 8) & 0xFF);
+	return (U16)((size_t)codeLen + 3u + writePos);
+}
+/******************************************************************************/
 static void RemoveAddedWord(const char *string)
 {
 	WORDSET *w = wordset;
@@ -2865,14 +2951,20 @@ BOOL ProcessDirs()
 	FILE *f;
 	U8 *pvol;
 	U16 enclen,declen;
-	U8 *fbuf;
+	U8 *fbuf, *logicPatchBuf;
     char *msg;
+	size_t allocVolSize;
 
 	if(!volSize) return FALSE;
-	if((volData = (U8*)malloc(volSize))==NULL)
+	allocVolSize = (size_t)volSize + 64u;
+	if((volData = (U8*)malloc(allocVolSize))==NULL)
 		return FALSE;
 	if((fbuf = (U8*)malloc(65535u))==NULL)
 		return FALSE;
+	if((logicPatchBuf = (U8*)malloc(65535u))==NULL) {
+		mFree(fbuf);
+		return FALSE;
+	}
 
 	pvol = volData;
 	for(vn=-1;vn<16;vn++) {
@@ -2911,12 +3003,6 @@ BOOL ProcessDirs()
 						enclen 	= declen;  
                         fseek(f,0,SEEK_SET);
                     }
-                    *pvol++ = 0x34;
-                    *pvol++ = 0x12;
-                    *pvol++ = vi;
-                    *pvol++ = declen&0xFF;
-                    *pvol++ = declen>>8;
-
 					fread(fbuf,enclen,1,f);
                     if(vn==0x7F)
         				fclose(f);
@@ -2924,13 +3010,36 @@ BOOL ProcessDirs()
 		               	if(t==0) { // logic
 		            		msg = (char*)(fbuf+bGetW(fbuf)+2);	// pointer to messages
 				    		msgTotal = (U8)*msg++;			// number of messages
-							if(msgTotal)
+							if(msgTotal) {
 								DecryptBlock(msg + ((msgTotal + 1)<<1),msg+bGetW((U8*)msg));
+								{
+									U16 patchedDeclen = PatchGameSpecificLogicMessages(fbuf, declen, logicPatchBuf, 65535u);
+									if(patchedDeclen != declen) {
+										memcpy(fbuf, logicPatchBuf, patchedDeclen);
+										declen = patchedDeclen;
+									}
+								}
+							}
 		                }
+	                    *pvol++ = 0x34;
+    	                *pvol++ = 0x12;
+        	            *pvol++ = vi;
+            	        *pvol++ = declen&0xFF;
+                	    *pvol++ = declen>>8;
 						memcpy(pvol,fbuf,declen);
 					} else if(vi&0x80) { // compressed picture file
+	                    *pvol++ = 0x34;
+    	                *pvol++ = 0x12;
+        	            *pvol++ = vi;
+            	        *pvol++ = declen&0xFF;
+                	    *pvol++ = declen>>8;
            				PIC_expand(fbuf, pvol, declen);
 					} else { // compressed LZW
+	                    *pvol++ = 0x34;
+    	                *pvol++ = 0x12;
+        	            *pvol++ = vi;
+            	        *pvol++ = declen&0xFF;
+                	    *pvol++ = declen>>8;
            				LZW_expand(fbuf, pvol, declen);
 					}
 					pvol += declen;
@@ -2942,6 +3051,8 @@ BOOL ProcessDirs()
         } else
             vn = -1;
 	}
+	volSize = (U32)(pvol - volData);
+	mFree(logicPatchBuf);
 	mFree(fbuf);
 	return TRUE;
 }

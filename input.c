@@ -26,6 +26,10 @@
 #include "text.h"
 #include "wingui.h"
 #include "keyboard.h"
+#include "agimain.h"
+#include "gamedata.h"
+#include "pcm_music.h"
+#include "lsl1hack.h"
 #include "screen.h" // for Y_ADJUST_CL and RedrawScreenAll()
 #ifdef _WINDOWS
 #include <windows.h>
@@ -51,6 +55,238 @@ int DelayTimes[5] = {1,20,30,50,60};//{0,12,24,32,60};//{0,12,24,40};
 #else
 int DelayTimes[5] = {0,96,140,280,560};//{0,32,96,320};
 #endif
+static BOOL s_characterBoostEnabled = TRUE;
+static BOOL s_audioBoostEnabled = TRUE;
+static BOOL s_larryMusicSpeedHackEnabled = TRUE;
+static BOOL s_comboBoostEnabled = TRUE;
+
+static U16 DelayTicks1024ToFrames(U32 ticks)
+{
+	U32 frames;
+
+	frames = (ticks * 60 + 16383) / 16384;
+	if (frames == 0) {
+		frames = 1;
+	}
+	return (U16)frames;
+}
+
+static BOOL IsLarryMusicSpeedOverrideActive(void)
+{
+	if (!s_larryMusicSpeedHackEnabled) {
+		return FALSE;
+	}
+
+	if ((strcmp(szGameID, "LLLLL") != 0) && (strcmp(szGameID, "LSL1") != 0)) {
+		return FALSE;
+	}
+
+	return IsLSL1AmbientRoom(vars[vROOMNUM]);
+}
+
+static BOOL IsAudioBoostActive(void)
+{
+	if (!s_audioBoostEnabled) {
+		return FALSE;
+	}
+
+	if (!TestFlag(fSOUND)) {
+		return FALSE;
+	}
+
+	return IsCurrentPCMMusicLongerThanSeconds(4U);
+}
+
+static BOOL IsPoliceQuestDrivingRoomForMoveBoost(void)
+{
+	if (!(GameEnts && (strncmp(GameEnts->name, "Police Quest", 12) == 0))) {
+		return FALSE;
+	}
+
+	return (BOOL)((vars[vROOMNUM] >= 10) && (vars[vROOMNUM] <= 25));
+}
+
+static BOOL HasMultipleMovingCharactersOnScreen(void)
+{
+	int moving_count;
+	VOBJ *v;
+
+	moving_count = 0;
+	for (v = ViewObjs; v < &ViewObjs[MAX_VOBJ]; v++) {
+		if ((v->flags & (oDRAWN | oANIMATE | oUPDATE)) != (oDRAWN | oANIMATE | oUPDATE)) {
+			continue;
+		}
+		if ((v->direction == dirNONE) && (v->motion == mtNONE)) {
+			continue;
+		}
+		moving_count++;
+		if (moving_count > 1) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+static BOOL IsCharacterBoostActive(void)
+{
+	if (!s_characterBoostEnabled) {
+		return FALSE;
+	}
+
+	if (IsPoliceQuestDrivingRoomForMoveBoost()) {
+		return FALSE;
+	}
+
+	return HasMultipleMovingCharactersOnScreen();
+}
+
+static BOOL IsComboBoostActive(void)
+{
+	if (!s_comboBoostEnabled) {
+		return FALSE;
+	}
+
+	return (BOOL)(IsAudioBoostActive() && IsLarryMusicSpeedOverrideActive());
+}
+
+static U8 GetEffectiveDelayIndex(void)
+{
+	U8 delay_index;
+
+	delay_index = (U8)(vars[vDELAY] < 4 ? vars[vDELAY] : 4);
+	if (delay_index == 2) {
+		delay_index = 1;
+	}
+
+	return delay_index;
+}
+
+static U32 GetBaseGameplayDelayTicks1024(void)
+{
+	U8 delay_index;
+
+	delay_index = GetEffectiveDelayIndex();
+	return (U32)(DelayTimes[delay_index] * 10 + 1);
+}
+
+static U32 GetGameplayDelayTicks1024(void)
+{
+	U32 ticks;
+	BOOL audio_boost_active;
+	BOOL character_boost_active;
+
+	ticks = GetBaseGameplayDelayTicks1024();
+	audio_boost_active = IsAudioBoostActive();
+	character_boost_active = IsCharacterBoostActive();
+
+	/* Audio Boost, Character Boost, and Larry Room Boost can all stack their
+	   own reductions when active. */
+	if (audio_boost_active && (ticks > 1U)) {
+		ticks = (ticks * 9U + 8U) >> 4;
+	}
+	if (character_boost_active && (ticks > 1U)) {
+		ticks = (ticks * 3U + 2U) >> 2;
+	}
+	if (IsLarryMusicSpeedOverrideActive() && (ticks > 1U)) {
+		ticks = (ticks * 11U + 8U) >> 4;
+	}
+	if (IsComboBoostActive() && (ticks > 1U)) {
+		ticks = (ticks * 7U + 4U) >> 3;
+	}
+
+	return ticks;
+}
+
+static U16 GetGameplayDelayFrames(void)
+{
+	return DelayTicks1024ToFrames(GetGameplayDelayTicks1024());
+}
+
+void SetLarryMusicSpeedHackEnabled(BOOL enabled)
+{
+	s_larryMusicSpeedHackEnabled = enabled ? TRUE : FALSE;
+}
+
+BOOL IsLarryMusicSpeedHackEnabled(void)
+{
+	return s_larryMusicSpeedHackEnabled;
+}
+
+void SetComboBoostEnabled(BOOL enabled)
+{
+	s_comboBoostEnabled = enabled ? TRUE : FALSE;
+}
+
+BOOL IsComboBoostEnabled(void)
+{
+	return s_comboBoostEnabled;
+}
+
+void SetCharacterBoostEnabled(BOOL enabled)
+{
+	s_characterBoostEnabled = enabled ? TRUE : FALSE;
+}
+
+BOOL IsCharacterBoostEnabled(void)
+{
+	return s_characterBoostEnabled;
+}
+
+U8 GetActiveBoostMask(void)
+{
+	U8 mask;
+
+	mask = 0;
+	if (IsAudioBoostActive()) {
+		mask |= 0x01U;
+	}
+	if (IsCharacterBoostActive()) {
+		mask |= 0x02U;
+	}
+	if (IsLarryMusicSpeedOverrideActive()) {
+		mask |= 0x04U;
+	}
+	if (IsComboBoostActive()) {
+		mask |= 0x08U;
+	}
+
+	return mask;
+}
+
+U16 GetCurrentGameplaySpeedTenths(void)
+{
+	U32 base_ticks;
+	U32 current_ticks;
+
+	base_ticks = GetBaseGameplayDelayTicks1024();
+	current_ticks = GetGameplayDelayTicks1024();
+	if (current_ticks == 0U) {
+		return 10U;
+	}
+
+	return (U16)((base_ticks * 10U + (current_ticks >> 1)) / current_ticks);
+}
+
+U16 GetCurrentGameplayDelayResultTenths(void)
+{
+#ifdef _WINDOWS
+	return (U16)GetGameplayDelayTicks1024();
+#else
+	return (U16)((GetGameplayDelayTicks1024() * 600U + 8191U) / 16384U);
+#endif
+}
+
+void SetAudioBoostEnabled(BOOL enabled)
+{
+	s_audioBoostEnabled = enabled ? TRUE : FALSE;
+}
+
+BOOL IsAudioBoostEnabled(void)
+{
+	return s_audioBoostEnabled;
+}
+
 void DoDelayNPoll()
 {
 	Delay(-1);
@@ -61,7 +297,7 @@ void Delay(int amt)
 {
 #ifdef _WINDOWS    
 	if(amt==-1) {
-		amt = (DelayTimes[vars[vDELAY]<4?vars[vDELAY]:4]);
+		amt = (int)((GetGameplayDelayTicks1024() + 9U) / 10U);
 	    while(amt>>4) {
     	    SystemUpdate();
     	    PollInput();
@@ -77,22 +313,14 @@ void Delay(int amt)
 #else
 	int delay;
 	if(amt==-1) {
-     	delay = (DelayTimes[vars[vDELAY]<4?vars[vDELAY]:4])*10+1;
-		while(REG_TM1CNT_L <= delay){
+		delay = GetGameplayDelayFrames();
+		while(delay--) {
 			PollInput();
-        }
-        REG_TM1CNT_H=0;
-		REG_TM1CNT_L = 0;
-		REG_TM1CNT_H = TIME_FREQUENcy1024 | TIME_ENABLE;
+			WaitForFrames(1);
+		}
     } else {
 		delay = (64*amt)+1;
-		//Start the timer
-		REG_TM0CNT_H = TIME_FREQUENcy1024 | TIME_ENABLE;
-		REG_TM0CNT_L = 0;
-		while(REG_TM0CNT_L <= delay){
-			//PollInput();
-        }
-		REG_TM0CNT_H = 0;
+		WaitForFrames(DelayTicks1024ToFrames((U32)delay));
     }
 #endif
 }
