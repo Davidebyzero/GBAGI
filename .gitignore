@@ -53,3 +53,5 @@ extra/agi_soundfont_projects/**/*.mid
 pcm_music_assets.c
 pcm_music_assets.h
 pcm_music_assets.s
+
+extra/agi_soundfont_projects/batch_report.txt
