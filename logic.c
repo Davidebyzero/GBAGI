@@ -30,6 +30,7 @@
 #include "input.h"
 #include "screen.h"
 #include "picture.h"
+#include "lsl1hack.h"
 /*****************************************************************************/
 LOGIC *curLog,*log0;
 BOOL IF_RESULT;
@@ -128,8 +129,12 @@ U8 *ExecuteLogic(LOGIC *log)
             }
         }
     }
-    if(sndBuf)
-    	StopSound();
+    if(sndBuf) {
+    	if(LSL1ShouldPreserveKenSentMeClip() || SQ2ShouldPreserveVohaulIntroClip())
+    		StopLegacySoundEffectsOnly();
+    	else
+    		StopSound();
+    }
 #endif
 #ifdef _PRINT_LOG
 		cmdnum++;
@@ -259,7 +264,10 @@ U8 *NewRoom(U8 num)
 		vObj->stepSize		= 1;
 	}
 
-    StopSound();
+    if(LSL1ShouldPreserveKenSentMeClip() || SQ2ShouldPreserveVohaulIntroClip())
+    	StopLegacySoundEffectsOnly();
+    else
+    	StopSound();
     ClearControllers();
     
     pPView		= pViews;
@@ -275,6 +283,24 @@ U8 *NewRoom(U8 num)
 	vars[vOBJBORDER]	= 0;
 	vars[vMEMORY]		= 10;
 	vars[vEGOVIEWNUM]	= ViewObjs[0].view;
+
+	/*
+	 * KQ4 room 1 positions ego on shore when entering from rooms 7/25, but the
+	 * room script never restores Rosella's normal walking view. If the adjacent
+	 * water room hands room 1 a swimming view, the state leaks across the room
+	 * change and persists until some later room explicitly fixes it.
+	 *
+	 * Keep the workaround narrow: only KQ4, only ego, only room 1, and only
+	 * when entering from the two adjacent swim rooms with one of the swim views
+	 * still active.
+	 */
+	if( (strcmp(szGameID, "KQ4") == 0) &&
+		(num == 1) &&
+		((vars[vROOMPREV] == 7) || (vars[vROOMPREV] == 25)) &&
+		(ViewObjs[0].view >= 2) && (ViewObjs[0].view <= 5) ) {
+		SetObjView(&ViewObjs[0], 0);
+		vars[vEGOVIEWNUM] = 0;
+	}
 
 	switch(vars[vEGOBORDER]) {
    		case bdTOP: 	// coming from the top, go to the bottom

@@ -30,6 +30,9 @@ INT_PTR CALLBACK TFormDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
         case WM_SETCURSOR:
             form = (TForm*)::GetWindowLongPtr(hWnd, GWLP_USERDATA);
             return form->OnSetCursor(wParam, lParam);
+        case WM_DRAWITEM:
+            form = (TForm*)::GetWindowLongPtr(hWnd, GWLP_USERDATA);
+            return form->OnDrawItem(wParam, lParam);
         case WM_DESTROY:
             form = (TForm*)::GetWindowLongPtr(hWnd, GWLP_USERDATA);
             if (form->Owner == NULL) {

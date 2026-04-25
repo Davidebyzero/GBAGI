@@ -27,6 +27,20 @@
 #include "invobj.h"
 #include "system.h"
 /*****************************************************************************/
+static int strcmpi_local(const char *s1, const char *s2)
+{
+	unsigned char c1, c2;
+	do {
+		 c1 = (unsigned char)*s1++;
+		 c2 = (unsigned char)*s2++;
+		 if(c1 >= 'A' && c1 <= 'Z') c1 |= 0x20;
+		 if(c2 >= 'A' && c2 <= 'Z') c2 |= 0x20;
+		 if(c1 != c2)
+			 return (int)c1 - (int)c2;
+	} while(c1);
+	return 0;
+}
+/*****************************************************************************/
 
 /******************************************************************************/
 // NULL evaluation
@@ -240,7 +254,7 @@ void cSaid()
 //	exclamation marks are ignored.
 void cCompareStrings()
 {
-	IF_RESULT = (strcmpi(strings[code[0]],strings[code[1]])==0);
+	IF_RESULT = (strcmpi_local(strings[code[0]],strings[code[1]])==0);
 	code += 2;
 }
 /******************************************************************************/

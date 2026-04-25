@@ -1,0 +1,154 @@
+{
+  "project_name": "larry1_gravis_ultrasound",
+  "game_id": "LSL1",
+  "default_soundfont": "H:\\CODEX\\GBAGI\\audio upgrade\\Gravis Ultrasound.sf2",
+  "ffmpeg": "H:\\CODEX\\GBAGI\\ffmpeg\\bin\\ffmpeg.exe",
+  "register": false,
+  "preview_all": false,
+  "tracks": [
+    {
+      "sound_num": 1,
+      "symbol": "larry1_gravis_lsl1_1",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(1).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 2,
+      "symbol": "larry1_gravis_lsl1_10",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(10).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 3,
+      "symbol": "larry1_gravis_lsl1_11",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(11).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 4,
+      "symbol": "larry1_gravis_lsl1_12",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(12).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 5,
+      "symbol": "larry1_gravis_lsl1_12bis",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(12bis).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 6,
+      "symbol": "larry1_gravis_lsl1_13",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(13).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 7,
+      "symbol": "larry1_gravis_lsl1_14",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(14).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 8,
+      "symbol": "larry1_gravis_lsl1_15",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(15).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 9,
+      "symbol": "larry1_gravis_lsl1_16",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(16).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 10,
+      "symbol": "larry1_gravis_lsl1_17",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(17).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 11,
+      "symbol": "larry1_gravis_lsl1_2",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(2).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 12,
+      "symbol": "larry1_gravis_lsl1_3",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(3).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 13,
+      "symbol": "larry1_gravis_lsl1_4",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(4).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 14,
+      "symbol": "larry1_gravis_lsl1_5",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(5).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 15,
+      "symbol": "larry1_gravis_lsl1_6",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(6).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 16,
+      "symbol": "larry1_gravis_lsl1_7",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(7).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 17,
+      "symbol": "larry1_gravis_lsl1_8",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(8).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    },
+    {
+      "sound_num": 18,
+      "symbol": "larry1_gravis_lsl1_9",
+      "source_path": "H:\\CODEX\\GBAGI\\audio upgrade\\LSL1and2Music\\LEISURE SUIT LARRY 1 & 2\\LSL1(9).mp3",
+      "soundfont_override": "",
+      "loop": false,
+      "preview_wav": false
+    }
+  ]
+}

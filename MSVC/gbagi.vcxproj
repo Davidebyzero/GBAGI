@@ -30,6 +30,7 @@
     <ClCompile Include="../invobj.c" />
     <ClCompile Include="../keyboard.c" />
     <ClCompile Include="../logic.c" />
+    <ClCompile Include="../lsl1hack.c" />
     <ClCompile Include="../main.c" />
     <ClCompile Include="../menu.c" />
     <ClCompile Include="../parse.c" />
@@ -57,6 +58,7 @@
     <ClInclude Include="../keyboard.h" />
     <ClInclude Include="../keypad.h" />
     <ClInclude Include="../logic.h" />
+    <ClInclude Include="../lsl1hack.h" />
     <ClInclude Include="../menu.h" />
     <ClInclude Include="../parse.h" />
     <ClInclude Include="../picture.h" />
@@ -243,3 +245,4 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
+

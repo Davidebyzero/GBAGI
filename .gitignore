@@ -3,6 +3,9 @@ gbagi.elf
 gbagi.bin
 *.gba
 object.bin
+gbagi_gc.bin
+gbagi_gc.elf
+*.stackdump
 
 
 gbarom/aginject.exe
@@ -13,9 +16,13 @@ romgui/*.opensdf
 romgui/*.sdf
 romgui/*.suo
 romgui/romgui.vcxproj.user
+romgui/.vs/
 romgui/ipch
 romgui/Debug
 romgui/Release
+romgui/Release-cli/
+romgui/Release-gui/
+romgui/Release-cachetest/
 
 
 MSVC/*.opensdf
@@ -26,3 +33,25 @@ MSVC/ipch
 MSVC/Debug
 MSVC/Release
 flog.txt
+_generated/
+audio/
+extra/__pycache__/
+extra/runtime_cache/
+extra/kq4_debug/
+extra/kq4_debug_scan/
+extra/kq4_debug_scan2/
+extra/ambient_room_scan_report.txt
+extra/larry1_sound21_3840_u8.wav
+extra/larry1_sound21_5120_4bit_ima.wav
+extra/larry1_sound21_5120_u8.wav
+extra/larry1_sound21_7680_4bit_ima.wav
+extra/larry1_sound21_7680_u8.wav
+extra/agi_soundfont_projects/**/*.wav
+extra/agi_soundfont_projects/**/*.mp3
+extra/agi_soundfont_projects/**/*.pcm
+extra/agi_soundfont_projects/**/*.mid
+pcm_music_assets.c
+pcm_music_assets.h
+pcm_music_assets.s
+
+extra/agi_soundfont_projects/batch_report.txt

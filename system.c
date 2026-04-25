@@ -36,9 +36,28 @@ U16 prevKeys,kDown,kUp;
 #else
 U32 prevKeys;
 #endif
+static U16 currentButtons;
+static U16 latchedDirectionalButtons;
+static U8 diagonalHoldGrace;
 int holdium;
 
 extern int msgX, msgY, maxWidth;
+
+void WaitForFrames(U16 frames)
+{
+#ifndef _WINDOWS
+	while (frames--) {
+		while (REG_VCOUNT >= 160) {
+		}
+		while (REG_VCOUNT < 160) {
+		}
+	}
+#else
+	while (frames--) {
+		Sleep(16);
+	}
+#endif
+}
 
 const _RECT scrRect={0,0,SCREEN_MAXX,SCREEN_MAXY};  
 const U16 Palette[256] = {
@@ -129,6 +148,61 @@ const KEYMAP buttonKeymap[] = {
 	{KEY_DOWN,		B_DOWN},
 	{0,0},
 };
+
+#define DIRECTIONAL_BUTTON_MASK (B_RIGHT|B_LEFT|B_UP|B_DOWN)
+#define DIAGONAL_HOLD_GRACE_POLLS 3
+
+static int GetDirectionalKeyForMask(U16 buttons)
+{
+	switch(buttons) {
+		case B_UP|B_LEFT:
+			return KEY_NUMPAD7;
+		case B_UP|B_RIGHT:
+			return KEY_NUMPAD9;
+		case B_DOWN|B_LEFT:
+			return KEY_NUMPAD1;
+		case B_DOWN|B_RIGHT:
+			return KEY_NUMPAD3;
+		case B_UP:
+			return KEY_UP;
+		case B_DOWN:
+			return KEY_DOWN;
+		case B_LEFT:
+			return KEY_LEFT;
+		case B_RIGHT:
+			return KEY_RIGHT;
+	}
+	return 0;
+}
+
+static U16 NormalizeDirectionalButtons(U16 buttons)
+{
+	U16 directions = buttons & DIRECTIONAL_BUTTON_MASK;
+
+	if((directions & (B_LEFT|B_RIGHT)) == (B_LEFT|B_RIGHT))
+		directions &= ~(B_LEFT|B_RIGHT);
+	if((directions & (B_UP|B_DOWN)) == (B_UP|B_DOWN))
+		directions &= ~(B_UP|B_DOWN);
+
+	return directions;
+}
+/*****************************************************************************/
+static U16 GetInjectedKeyCode(void)
+{
+	U16 key = btnstate.btn;
+
+	switch(btnstate.kbstate) {
+		case KEYSTATE_ALT:
+			/* AGI set.key() expects ALT combos as extended keys: low byte 0, high byte scan code. */
+			return (U16)(key << 8);
+		case KEYSTATE_CTRL:
+			if(key >= KEY_A && key <= KEY_Z)
+				return (U16)(key - KEY_A + 1);
+			break;
+	}
+
+	return key;
+}
 
 /*****************************************************************************/
 U16 bGetW(U8 *p)
@@ -249,6 +323,8 @@ BOOL SystemInit()
     fclose(f);      */
 
 	prevKeys=0;
+	latchedDirectionalButtons = 0;
+	diagonalHoldGrace = 0;
     kDown=0;
     kUp=0;
     btnstate.kbstate = 0;
@@ -416,6 +492,8 @@ BOOL SystemInit()
     wSetPort((_RECT*)&scrRect);
 
    	prevKeys = *KEYS;
+	latchedDirectionalButtons = 0;
+	diagonalHoldGrace = 0;
     btnstate.kbstate = 0;
     btnstate.kbkey = KEY_ESC;
     btnstate.kbrow = 0;
@@ -501,9 +579,10 @@ BTNSTATE *ParseButtons(U16 buttons)
     const KEYMAP *km;
 
     if(btnstate.state==BTN_INJECTED) {
+		btnstate.btn = GetInjectedKeyCode();
 		btnstate.state	= BTN_PRESS;
-    	prevKeys = 0x8000;        
-        holdium = 2;
+    	prevKeys = 0;
+        holdium = 0;
     	return &btnstate;
     }
 
@@ -529,6 +608,37 @@ BTNSTATE *ParseButtons(U16 buttons)
 
     return &btnstate;
 }
+static int GetDirectionalKeyFromButtons(U16 buttons)
+{
+	U16 directions = NormalizeDirectionalButtons(buttons);
+	int key;
+
+	if(!directions) {
+		latchedDirectionalButtons = 0;
+		diagonalHoldGrace = 0;
+		return 0;
+	}
+
+	key = GetDirectionalKeyForMask(directions);
+	if((directions == (B_UP|B_LEFT)) || (directions == (B_UP|B_RIGHT)) ||
+	   (directions == (B_DOWN|B_LEFT)) || (directions == (B_DOWN|B_RIGHT))) {
+		latchedDirectionalButtons = directions;
+		diagonalHoldGrace = DIAGONAL_HOLD_GRACE_POLLS;
+		return key;
+	}
+
+	if(latchedDirectionalButtons && diagonalHoldGrace) {
+		U16 sharedAxis = directions & latchedDirectionalButtons;
+		if(sharedAxis) {
+			diagonalHoldGrace--;
+			return GetDirectionalKeyForMask(latchedDirectionalButtons);
+		}
+	}
+
+	latchedDirectionalButtons = 0;
+	diagonalHoldGrace = 0;
+	return key;
+}
 /*****************************************************************************/
 #ifdef _WINDOWS
 BTNSTATE *GBACheckButtons()
@@ -546,6 +656,7 @@ BTNSTATE *GBACheckButtons()
         }
         bmask <<= 1;
     }
+	currentButtons = buttons;
 
 	return ParseButtons(buttons);
 }
@@ -553,6 +664,7 @@ BTNSTATE *GBACheckButtons()
 BTNSTATE *GBACheckButtons()
 {
 	U16 buttons = (~(*KEYS))&0x3FF;
+	currentButtons = buttons;
 	return ParseButtons(buttons);
 }
 #endif
@@ -560,6 +672,11 @@ BTNSTATE *GBACheckButtons()
 int SystemCheckKey()
 {
 	GBACheckButtons();
+	if(IsWalkHoldActive()) {
+		int dirKey = GetDirectionalKeyFromButtons(currentButtons);
+		if(dirKey)
+			return dirKey;
+	}
 	if(btnstate.state==BTN_PRESS||btnstate.state==BTN_HOLD) {
     	switch(btnstate.btn) {
          	case KEY_RESET:
@@ -567,6 +684,19 @@ int SystemCheckKey()
         }
 		if(btnstate.state==BTN_PRESS)
         	return btnstate.btn;
+		if(IsWalkHoldActive()) {
+			switch(btnstate.btn) {
+				case KEY_RIGHT:
+				case KEY_LEFT:
+				case KEY_UP:
+				case KEY_DOWN:
+				case KEY_NUMPAD7:
+				case KEY_NUMPAD9:
+				case KEY_NUMPAD1:
+				case KEY_NUMPAD3:
+					return btnstate.btn;
+			}
+		}
     }
     return 0;
 }

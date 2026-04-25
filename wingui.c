@@ -978,31 +978,45 @@ void EditScrollChar(WND *w,int dir)
 void EditScrollCol(WND *w,int dir, BOOL del)
 {
 	int col=w->ext.edit.col;
-    if(col&&del)
-     	w->caption[col]		= '\0';
-    if(!del && ((w->style&esDIGITONLY)&&(w->caption[col]<'0'||w->caption[col]>'9'))) {
-     	w->caption[col]		= '0';
+    int len;
+    if(del) {
+        len = strlen(w->caption);
+        if(col < len)
+            memmove(&w->caption[col], &w->caption[col+1], len-col);
+        if(col > 0)
+            col--;
+
+        w->ext.edit.col = col;
+        wDrawWnd(w,wdFULL);
+        WndMessage(w, wmEDIT_CHANGE, 0, 0, 0);
+
+#ifdef _WINDOWS
+	Delay(40);
+#else
+	Delay(20);
+#endif
+        return;
+    }
+    if((w->style&esDIGITONLY)&&(w->caption[col]<'0'||w->caption[col]>'9')) {
+	w->caption[col]		= '0';
         w->caption[col+1]	= '\0';
     }
     col+=dir;
     if(col<0) col=0;
     else if(col>=w->ext.edit.maxLen)
-    	col = w->ext.edit.maxLen-1;
+	col = w->ext.edit.maxLen-1;
     if(!w->caption[col]) {
-      	w->caption[col]		= (w->style&esDIGITONLY)?'0':' ';
+	w->caption[col]		= (w->style&esDIGITONLY)?'0':' ';
         w->caption[col+1]	= '\0';
     }
 
     w->ext.edit.col = col;
     wDrawWnd(w,wdFULL);
 
-	if(del)
-    	WndMessage(w, wmEDIT_CHANGE, 0, 0, 0);
-
 #ifdef _WINDOWS
-    	Delay(40);
+	Delay(40);
 #else
-    	Delay(20);
+	Delay(20);
 #endif
 }
 /******************************************************************************/
@@ -1525,10 +1539,10 @@ const char *keynames[6][2][16] = {
 /******************************************************************************/
 // BAH! TEEEEEEEEEEEEEEEEDIOUS and a half!
 const U16 keycodes[6][4][16] = {
-	{{27,59<<8,60<<8,61<<8,62<<8,63<<8,64<<8,65<<8,66<<8,67<<8,68},
-     {27,84<<8,85<<8,86<<8,87<<8,88<<8,89<<8,90<<8,91<<8,92<<8,93},
-	 {27,94<<8,95<<8,96<<8,97<<8,98<<8,99<<8,100<<8,101<<8,102<<8,103},
-     {27,104<<8,105<<8,106<<8,107<<8,108<<8,109<<8,110<<8,111<<8,112<<8,113}},
+	{{27,59<<8,60<<8,61<<8,62<<8,63<<8,64<<8,65<<8,66<<8,67<<8,68<<8},
+     {27,84<<8,85<<8,86<<8,87<<8,88<<8,89<<8,90<<8,91<<8,92<<8,93<<8},
+	 {27,94<<8,95<<8,96<<8,97<<8,98<<8,99<<8,100<<8,101<<8,102<<8,103<<8},
+     {27,104<<8,105<<8,106<<8,107<<8,108<<8,109<<8,110<<8,111<<8,112<<8,113<<8}},
 
 	{//{0x29<<8,2<<8,3<<8,4<<8,5<<8,6<<8,7<<8,8<<8,9<<8,10<<8,11<<8,12<<8,13<<8,0x2B<<8,8},
      {'\'','1','2','3','4','5','6','7','8','9','0','-','=','\\',8},

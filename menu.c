@@ -33,11 +33,168 @@
 MENU *menu,*menuLast,*activeMenu;
 MENUITEM *lastItem,*activeItem;
 RECT8 menuRect;
+static char walkModeMenuCaption[] = "Input: Classic Mode";
+static char audioModeMenuCaption[] = "SFX Voice: Original";
+static char musicBackendMenuCaption[] = "Music Backend: Live Tandy";
+static char characterBoostMenuCaption[] = "Move Boost: On";
+static char audioBoostMenuCaption[] = "Audio Boost: On";
+static char larrySpeedHackMenuCaption[] = "Larry Room Boost: On";
+static char comboBoostMenuCaption[] = "Combo Boost: On";
 
-#define MB_SIZEOF	((sizeof(MENU)*12)+(sizeof(MENUITEM)*32))
+static enum audio_mode GetNextAudioMode(enum audio_mode mode)
+{
+	switch(mode) {
+		case AUDIO_ORIGINAL:
+			return AUDIO_SEMI_TANDY;
+		case AUDIO_SEMI_TANDY:
+			return AUDIO_TANDY;
+		default:
+			return AUDIO_ORIGINAL;
+	}
+}
+
+static enum audio_music_backend GetNextAudioMusicBackend(enum audio_music_backend mode)
+{
+	return (mode == AUDIO_BACKEND_TANDY_LIVE) ? AUDIO_BACKEND_TANDY_HYBRID : AUDIO_BACKEND_TANDY_LIVE;
+}
+
+#define MB_SIZEOF	((sizeof(MENU)*12)+(sizeof(MENUITEM)*36))
 #define MB_END		(menuBuf+MB_SIZEOF)
 U8 menuBuf[MB_SIZEOF],*mbPtr;
 BOOL MENU_SELECTABLE;
+/*****************************************************************************/
+static void UpdateWalkModeMenuCaption(void)
+{
+	strcpy(walkModeMenuCaption, WALK_HOLD ? "Input: Classic Mode" : "Input: Dpad Mode");
+}
+/*****************************************************************************/
+static void UpdateAudioModeMenuCaption(void)
+{
+	switch(GetAudioMode()) {
+		case AUDIO_ORIGINAL:
+			strcpy(audioModeMenuCaption, "SFX Voice: Original");
+			break;
+		case AUDIO_SEMI_TANDY:
+			strcpy(audioModeMenuCaption, "SFX Voice: Semi-Tandy");
+			break;
+		default:
+			strcpy(audioModeMenuCaption, "SFX Voice: Tandy");
+			break;
+	}
+}
+/*****************************************************************************/
+static void UpdateMusicBackendMenuCaption(void)
+{
+	strcpy(
+		musicBackendMenuCaption,
+		(GetAudioMusicBackend() == AUDIO_BACKEND_TANDY_HYBRID) ? "Music Backend: Streamed PCM" : "Music Backend: Live Tandy"
+	);
+}
+/*****************************************************************************/
+static void UpdateCharacterBoostMenuCaption(void)
+{
+	strcpy(
+		characterBoostMenuCaption,
+		IsCharacterBoostEnabled() ? "Move Boost: On" : "Move Boost: Off"
+	);
+}
+/*****************************************************************************/
+static void UpdateAudioBoostMenuCaption(void)
+{
+	strcpy(
+		audioBoostMenuCaption,
+		IsAudioBoostEnabled() ? "Audio Boost: On" : "Audio Boost: Off"
+	);
+}
+/*****************************************************************************/
+static void UpdateLarrySpeedHackMenuCaption(void)
+{
+	strcpy(
+		larrySpeedHackMenuCaption,
+		IsLarryMusicSpeedHackEnabled() ? "Larry Room Boost: On" : "Larry Room Boost: Off"
+	);
+}
+/*****************************************************************************/
+static void UpdateComboBoostMenuCaption(void)
+{
+	strcpy(
+		comboBoostMenuCaption,
+		IsComboBoostEnabled() ? "Combo Boost: On" : "Combo Boost: Off"
+	);
+}
+/*****************************************************************************/
+static BOOL IsWalkModeMenuItem(const MENUITEM *mi)
+{
+	if(!mi || !mi->name)
+		return FALSE;
+	return (
+		(strcmp(mi->name, walkModeMenuCaption) == 0) ||
+		(strncmp(mi->name, "Joystick", 8) == 0) ||
+		(strncmp(mi->name, "joystick", 8) == 0)
+	);
+}
+/*****************************************************************************/
+static BOOL IsAudioModeMenuItem(const MENUITEM *mi)
+{
+	if(!mi || !mi->name)
+		return FALSE;
+	return (
+		(strcmp(mi->name, audioModeMenuCaption) == 0) ||
+		(strncmp(mi->name, "SFX Voice:", 10) == 0) ||
+		(strncmp(mi->name, "Audio:", 6) == 0)
+	);
+}
+/*****************************************************************************/
+static BOOL IsMusicBackendMenuItem(const MENUITEM *mi)
+{
+	if(!mi || !mi->name)
+		return FALSE;
+	return (
+		(strcmp(mi->name, musicBackendMenuCaption) == 0) ||
+		(strncmp(mi->name, "Music Backend:", 14) == 0) ||
+		(strncmp(mi->name, "Music:", 6) == 0)
+	);
+}
+/*****************************************************************************/
+static BOOL IsCharacterBoostMenuItem(const MENUITEM *mi)
+{
+	if(!mi || !mi->name)
+		return FALSE;
+	return (
+		(strcmp(mi->name, characterBoostMenuCaption) == 0) ||
+		(strncmp(mi->name, "Move Boost:", 11) == 0)
+	);
+}
+/*****************************************************************************/
+static BOOL IsAudioBoostMenuItem(const MENUITEM *mi)
+{
+	if(!mi || !mi->name)
+		return FALSE;
+	return (
+		(strcmp(mi->name, audioBoostMenuCaption) == 0) ||
+		(strncmp(mi->name, "Audio Boost:", 12) == 0)
+	);
+}
+/*****************************************************************************/
+static BOOL IsLarrySpeedHackMenuItem(const MENUITEM *mi)
+{
+	if(!mi || !mi->name)
+		return FALSE;
+	return (
+		(strcmp(mi->name, larrySpeedHackMenuCaption) == 0) ||
+		(strncmp(mi->name, "Larry Room Boost:", 17) == 0)
+	);
+}
+/*****************************************************************************/
+static BOOL IsComboBoostMenuItem(const MENUITEM *mi)
+{
+	if(!mi || !mi->name)
+		return FALSE;
+	return (
+		(strcmp(mi->name, comboBoostMenuCaption) == 0) ||
+		(strncmp(mi->name, "Combo Boost:", 12) == 0)
+	);
+}
 /*****************************************************************************/
 void InitMenuSystem()
 {
@@ -50,9 +207,16 @@ void InitMenuSystem()
 
     MENU_SET	= TRUE;
 
-    menuRect.right	= 0;
+	menuRect.right	= 0;
 
-    mbPtr		= menuBuf;
+	mbPtr		= menuBuf;
+	UpdateWalkModeMenuCaption();
+	UpdateAudioModeMenuCaption();
+	UpdateMusicBackendMenuCaption();
+	UpdateCharacterBoostMenuCaption();
+	UpdateAudioBoostMenuCaption();
+	UpdateLarrySpeedHackMenuCaption();
+	UpdateComboBoostMenuCaption();
 }
 /*****************************************************************************/
 void FreeMenuSystem()
@@ -135,8 +299,37 @@ void SetMenuItem(char *caption,U8 ctl)
     	lastItem->next = mi;
         row = lastItem->row+1;
     }
-    mi->name		= caption; // no need to allocate, string is const
-	if((len = strlen(caption))>menuLast->width)
+	if(caption && ((!strncmp(caption, "Joystick", 8)) || (!strncmp(caption, "joystick", 8)))) {
+		UpdateWalkModeMenuCaption();
+    	mi->name		= walkModeMenuCaption;
+		ctl = 0;
+	} else if(caption && ((!strncmp(caption, "SFX Voice:", 10)) || (!strncmp(caption, "Audio:", 6)))) {
+		UpdateAudioModeMenuCaption();
+		mi->name		= audioModeMenuCaption;
+		ctl = 0;
+	} else if(caption && ((!strncmp(caption, "Music Backend:", 14)) || (!strncmp(caption, "Music:", 6)))) {
+		UpdateMusicBackendMenuCaption();
+		mi->name		= musicBackendMenuCaption;
+		ctl = 0;
+	} else if(caption && ((!strncmp(caption, "Character Boost:", 16)) || (!strncmp(caption, "Move Boost:", 11)))) {
+		UpdateCharacterBoostMenuCaption();
+		mi->name		= characterBoostMenuCaption;
+		ctl = 0;
+	} else if(caption && (!strncmp(caption, "Audio Boost:", 12))) {
+		UpdateAudioBoostMenuCaption();
+		mi->name		= audioBoostMenuCaption;
+		ctl = 0;
+	} else if(caption && (!strncmp(caption, "Larry Room Boost:", 17))) {
+		UpdateLarrySpeedHackMenuCaption();
+		mi->name		= larrySpeedHackMenuCaption;
+		ctl = 0;
+	} else if(caption && (!strncmp(caption, "Combo Boost:", 12))) {
+		UpdateComboBoostMenuCaption();
+		mi->name		= comboBoostMenuCaption;
+		ctl = 0;
+	} else
+     	mi->name		= caption; // no need to allocate, string is const
+	if((len = strlen(mi->name))>menuLast->width)
     	menuLast->width = len;
     mi->row			= row;
     mi->controller	= ctl;
@@ -151,6 +344,12 @@ void SubmitMenu()
 	if(menu) {
     	SetMenu("\x90\0");
         menuLast->column = 39;
+    	SetMenuItem("SFX Voice: Original",0);
+    	SetMenuItem("Music Backend: Live Tandy",0);
+    	SetMenuItem("Move Boost: On",0);
+    	SetMenuItem("Audio Boost: On",0);
+    	SetMenuItem("Larry Room Boost: On",0);
+    	SetMenuItem("Combo Boost: On",0);
     	SetMenuItem("About",0);
     	SetMenuItem("GBAGI Help",0);
     	MENU_SET = TRUE;
@@ -208,6 +407,7 @@ void MenuInput()
     if(!activeMenu)
     	activeMenu = menu;
 
+	MENU_ACTIVE = TRUE;
     DrawMenuBar();
 	PARSING_MENU = TRUE;
     while(PARSING_MENU) {
@@ -223,13 +423,86 @@ void MenuInput()
         		case KEY_ENTER:
                     if((!activeItem)||!(activeItem->properties&MI_ENABLED))
                     	break;
-                	if(activeMenu==menuLast) {
-                    	switch(activeItem->row) {
+					if(IsWalkModeMenuItem(activeItem)) {
+						WALK_HOLD = !WALK_HOLD;
+						UpdateWalkModeMenuCaption();
+						DrawMenuBar();
+						PARSING_MENU = FALSE;
+						break;
+					}
+					if(IsAudioModeMenuItem(activeItem)) {
+						SetAudioMode(GetNextAudioMode(GetAudioMode()));
+						SaveGlobalAudioPreferences();
+						UpdateAudioModeMenuCaption();
+						DrawMenuBar();
+						WriteStatusLine();
+						PARSING_MENU = FALSE;
+						break;
+					}
+					if(IsMusicBackendMenuItem(activeItem)) {
+						SetAudioMusicBackend(GetNextAudioMusicBackend(GetAudioMusicBackend()));
+						SaveGlobalAudioPreferences();
+						UpdateMusicBackendMenuCaption();
+						DrawMenuBar();
+						WriteStatusLine();
+						PARSING_MENU = FALSE;
+						break;
+					}
+					if(IsCharacterBoostMenuItem(activeItem)) {
+						SetCharacterBoostEnabled(!IsCharacterBoostEnabled());
+						SaveGlobalAudioPreferences();
+						UpdateCharacterBoostMenuCaption();
+						DrawMenuBar();
+						WriteStatusLine();
+						PARSING_MENU = FALSE;
+						break;
+					}
+					if(IsAudioBoostMenuItem(activeItem)) {
+						SetAudioBoostEnabled(!IsAudioBoostEnabled());
+						SaveGlobalAudioPreferences();
+						UpdateAudioBoostMenuCaption();
+						DrawMenuBar();
+						WriteStatusLine();
+						PARSING_MENU = FALSE;
+						break;
+					}
+					if(IsLarrySpeedHackMenuItem(activeItem)) {
+						SetLarryMusicSpeedHackEnabled(!IsLarryMusicSpeedHackEnabled());
+						SaveGlobalAudioPreferences();
+						UpdateLarrySpeedHackMenuCaption();
+						DrawMenuBar();
+						WriteStatusLine();
+						PARSING_MENU = FALSE;
+						break;
+					}
+					if(IsComboBoostMenuItem(activeItem)) {
+						SetComboBoostEnabled(!IsComboBoostEnabled());
+						SaveGlobalAudioPreferences();
+						UpdateComboBoostMenuCaption();
+						DrawMenuBar();
+						WriteStatusLine();
+						PARSING_MENU = FALSE;
+						break;
+					}
+                 	if(activeMenu==menuLast) {
+                     	switch(activeItem->row) {
                          	case 2:
-                            	cVersion();
-                            	break;
-                            case 3:
-                            	maxWidth = 38;
+								break;
+                         	case 3:
+								break;
+                         	case 4:
+								break;
+                         	case 5:
+								break;
+                         	case 6:
+								break;
+                         	case 7:
+								break;
+                         	case 8:
+                             	cVersion();
+                             	break;
+                            case 9:
+                             	maxWidth = 38;
 								MessageBox(
 									"BUTTONS: In Game\n"
 									"\n"
@@ -247,7 +520,7 @@ void MenuInput()
 									"START+SELECT+A+B:\n"
 									"        Exit to Game Select Screen"
 								);
-                                maxWidth = 38;
+                            maxWidth = 38;
 								MessageBox(
 									"BUTTONS: In GUI\n"
 									"\n"
@@ -306,6 +579,7 @@ void MenuInput()
                 break;
         }
     }
+	MENU_ACTIVE = FALSE;
     ClearMenuItems();
 	WriteStatusLine();
 }

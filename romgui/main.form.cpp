@@ -3,6 +3,12 @@
 
 // Hand-written reimagination of what the auto-generated VCL code by Borland C++ Builder might looked like
 
+static void HideDialogItem(HWND hWnd, int controlId) {
+    HWND control = GetDlgItem(hWnd, controlId);
+    if(control)
+        ShowWindow(control, SW_HIDE);
+}
+
 void TFormMain::OnInitDialog(HWND hWnd) {
     Attach(hWnd);
 
@@ -14,34 +20,58 @@ void TFormMain::OnInitDialog(HWND hWnd) {
 
     this->Label1 = new TLabel(this);
     this->Label1->Attach(GetDlgItem(hWnd, IDC_LABEL1)); /* GBAGI Injection Utility */ this->Label1->GetSize(this->Label1X, this->Label1Y); this->Label1X -= width;
-    this->Label1->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->Label1->SetFont(-24, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label2 = new TLabel(this);
     this->Label2->Attach(GetDlgItem(hWnd, IDC_LABEL2)); /* By Brian Provinciano */ this->Label2->GetSize(this->Label2X, this->Label2Y); this->Label2X -= width;
-    this->Label2->SetFont(-13, FW_NORMAL, FALSE, FALSE, FALSE, "Verdana");
+    this->Label2->SetFont(-14, FW_NORMAL, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label3 = new TLabel(this);
     this->Label3->Attach(GetDlgItem(hWnd, IDC_LABEL3)); /* http://www.bripro.com */ this->Label3->GetSize(this->Label3X, this->Label3Y); this->Label3X -= width;
-    this->Label3->SetFont(-11, FW_NORMAL, FALSE, TRUE, FALSE, "Verdana");
+    this->Label3->SetFont(-13, FW_NORMAL, FALSE, TRUE, FALSE, "Segoe UI");
     this->Label3->Color = clBlue;
     this->Label3->hCursor = LoadCursor(NULL, IDC_HAND);
 
     this->Label4 = new TLabel(this);
     this->Label4->Attach(GetDlgItem(hWnd, IDC_LABEL4));
-    this->Label4->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->Label4->SetFont(-14, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label5 = new TLabel(this);
     this->Label5->Attach(GetDlgItem(hWnd, IDC_LABEL5));
-    this->Label5->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->Label5->SetFont(-14, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label6 = new TLabel(this);
     this->Label6->Attach(GetDlgItem(hWnd, IDC_LABEL6)); // ROM Input Filename
-    this->Label6->SetFont(-11, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->Label6->SetFont(-14, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label8 = new TLabel(this);
+    this->Label8->Attach(GetDlgItem(hWnd, IDC_LABEL8));
+    this->Label8->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label9 = new TLabel(this);
+    this->Label9->Attach(GetDlgItem(hWnd, IDC_LABEL9));
+    this->Label9->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label10 = new TLabel(this);
+    this->Label10->Attach(GetDlgItem(hWnd, IDC_LABEL10));
+    this->Label10->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label11 = new TLabel(this);
+    this->Label11->Attach(GetDlgItem(hWnd, IDC_LABEL11));
+    this->Label11->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label12 = new TLabel(this);
+    this->Label12->Attach(GetDlgItem(hWnd, IDC_LABEL12));
+    this->Label12->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->Label13 = new TLabel(this);
+    this->Label13->Attach(GetDlgItem(hWnd, IDC_LABEL13));
+    this->Label13->SetFont(-13, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
 
     this->Label7 = new TLabel(this);
     this->Label7->Attach(GetDlgItem(hWnd, IDC_LABEL7)); /* Games To Inject */ this->Label7->GetSize(this->Label7X, this->Label7Y); this->Label7X -= width;
-    this->Label7->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
-    this->Label7->SetBgColor(11829830);
+    this->Label7->SetFont(-17, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+    this->Label7->SetBgColor(12040119);
     this->Label7->Color = clWhite;
 
     this->txStatus = new TLabel(this);
@@ -90,10 +120,28 @@ void TFormMain::OnInitDialog(HWND hWnd) {
 
     this->btnBuild = new TButton(this);
     this->btnBuild->Attach(GetDlgItem(hWnd, IDC_BTNBUILD)); this->btnBuild->GetPos(this->btnBuildX, this->btnBuildY); this->btnBuildX -= width; this->btnBuildY -= height;
-    this->btnBuild->SetFont(-16, FW_BOLD, FALSE, FALSE, FALSE, "Verdana");
+    this->btnBuild->SetFont(-17, FW_SEMIBOLD, FALSE, FALSE, FALSE, "Segoe UI");
+
+    this->btnBrowseSoundfont = new TButton(this);
+    this->btnBrowseSoundfont->Attach(GetDlgItem(hWnd, IDC_BTNBROWSESOUNDFONT));
+
+    this->btnBrowseMusicProject = new TButton(this);
+    this->btnBrowseMusicProject->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEMUSICPROJECT));
+
+    this->btnBrowseFluidsynth = new TButton(this);
+    this->btnBrowseFluidsynth->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEFLUIDSYNTH));
+
+    this->btnBrowseFfmpeg = new TButton(this);
+    this->btnBrowseFfmpeg->Attach(GetDlgItem(hWnd, IDC_BTNBROWSEFFMPEG));
 
     this->btnRemove = new TButton(this);
     this->btnRemove->Attach(GetDlgItem(hWnd, IDC_BTNREMOVE)); this->btnRemove->GetPos(this->btnRemoveX, this->btnRemoveY); this->btnRemoveX -= width;
+
+    this->btnWords = new TButton(this);
+    this->btnWords->Attach(GetDlgItem(hWnd, IDC_BTNWORDS)); this->btnWords->GetPos(this->btnWordsX, this->btnWordsY); this->btnWordsX -= width;
+
+    this->btnWalkTest = new TButton(this);
+    this->btnWalkTest->Attach(GetDlgItem(hWnd, IDC_BTNWALKTEST)); this->btnWalkTest->GetPos(this->btnWalkTestX, this->btnWalkTestY); this->btnWalkTestX -= width; this->btnWalkTestY -= height;
 
     this->btnExit = new TButton(this);
     this->btnExit->Attach(GetDlgItem(hWnd, IDC_BTNEXIT)); this->btnExit->GetPos(this->btnExitX, this->btnExitY); this->btnExitX -= width; this->btnExitY -= height;
@@ -107,8 +155,44 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     this->tbVocab = new TEdit(this);
     this->tbVocab->Attach(GetDlgItem(hWnd, IDC_TBVOCAB)); this->tbVocab->GetSize(this->tbVocabX, this->tbVocabY); this->tbVocabX -= width;
 
+    this->tbSoundfont = new TEdit(this);
+    this->tbSoundfont->Attach(GetDlgItem(hWnd, IDC_TBSOUNDFONT));
+
+    this->tbMusicProject = new TEdit(this);
+    this->tbMusicProject->Attach(GetDlgItem(hWnd, IDC_TBMUSICPROJECT));
+
+    this->tbFluidsynth = new TEdit(this);
+    this->tbFluidsynth->Attach(GetDlgItem(hWnd, IDC_TBFLUIDSYNTH));
+
+    this->tbFfmpeg = new TEdit(this);
+    this->tbFfmpeg->Attach(GetDlgItem(hWnd, IDC_TBFFMPEG));
+
     this->listbox = new TListBox(this);
     this->listbox->Attach(GetDlgItem(hWnd, IDC_LISTBOX)); this->listbox->GetSize(this->listboxX, this->listboxY); this->listboxX -= width; this->listboxY -= height;
+
+    this->dropSoundtrackMode = new TComboBox(this);
+    this->dropSoundtrackMode->Attach(GetDlgItem(hWnd, IDC_DROPSOUNDMODE));
+
+    this->dropSampleRate = new TComboBox(this);
+    this->dropSampleRate->Attach(GetDlgItem(hWnd, IDC_DROPSAMPLERATE));
+
+    // Soundtrack preparation is CLI-only now, so keep these GUI controls hidden.
+    HideDialogItem(hWnd, IDC_LABEL8);
+    HideDialogItem(hWnd, IDC_LABEL9);
+    HideDialogItem(hWnd, IDC_LABEL10);
+    HideDialogItem(hWnd, IDC_LABEL11);
+    HideDialogItem(hWnd, IDC_LABEL12);
+    HideDialogItem(hWnd, IDC_LABEL13);
+    HideDialogItem(hWnd, IDC_DROPSOUNDMODE);
+    HideDialogItem(hWnd, IDC_DROPSAMPLERATE);
+    HideDialogItem(hWnd, IDC_TBSOUNDFONT);
+    HideDialogItem(hWnd, IDC_TBMUSICPROJECT);
+    HideDialogItem(hWnd, IDC_TBFLUIDSYNTH);
+    HideDialogItem(hWnd, IDC_TBFFMPEG);
+    HideDialogItem(hWnd, IDC_BTNBROWSESOUNDFONT);
+    HideDialogItem(hWnd, IDC_BTNBROWSEMUSICPROJECT);
+    HideDialogItem(hWnd, IDC_BTNBROWSEFLUIDSYNTH);
+    HideDialogItem(hWnd, IDC_BTNBROWSEFFMPEG);
 
     OPENFILENAME ofnSaveOut;
     ZeroMemory(&ofnSaveOut, sizeof(OPENFILENAME)); // dlgSaveOut
@@ -155,6 +239,21 @@ void TFormMain::OnInitDialog(HWND hWnd) {
     ofnOpenInp.lpstrDefExt = _T("");
     ofnOpenInp.lpstrInitialDir = _T("");
     this->dlgOpenInp = new TOpenDialog(this, ofnOpenInp);
+
+    OPENFILENAME ofnOpenWalk;
+    ZeroMemory(&ofnOpenWalk, sizeof(OPENFILENAME)); // dlgOpenWalk
+    ofnOpenWalk.hwndOwner = hWnd;
+    ofnOpenWalk.lStructSize = sizeof(OPENFILENAME);
+    ofnOpenWalk.Flags = 0x0000 | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ENABLESIZING;
+    ofnOpenWalk.lpstrFile = new TCHAR[260];
+    ofnOpenWalk.nMaxFile = 260;
+    _tcscpy(ofnOpenWalk.lpstrFile, _T(""));
+    ofnOpenWalk.lpstrFilter = _T("Walkthrough Text (*.txt;*.md;*.log)\0*.txt;*.md;*.log\0All Files\0*.*\0");
+    ofnOpenWalk.nFilterIndex = 0;
+    ofnOpenWalk.lpstrTitle = _T("");
+    ofnOpenWalk.lpstrDefExt = _T("txt");
+    ofnOpenWalk.lpstrInitialDir = _T("");
+    this->dlgOpenWalk = new TOpenDialog(this, ofnOpenWalk);
 }
 
 void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
@@ -167,6 +266,16 @@ void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
 
     if (LOWORD(wParam) == IDC_BTNREMOVE && HIWORD(wParam) == BN_CLICKED) {
         this->btnRemoveClick(this);
+    }
+
+    if (LOWORD(wParam) == IDC_BTNWORDS && HIWORD(wParam) == BN_CLICKED) {
+        this->btnWordsClick(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_BTNWALKTEST && HIWORD(wParam) == BN_CLICKED) {
+        this->btnWalkTestClick(this);
+        this->UpdateControls();
     }
 
     if (LOWORD(wParam) == IDC_BTNEXIT && HIWORD(wParam) == BN_CLICKED) {
@@ -193,8 +302,37 @@ void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
         this->UpdateControls();
     }
 
+    if (LOWORD(wParam) == IDC_BTNBROWSESOUNDFONT && HIWORD(wParam) == BN_CLICKED) {
+        this->btnBrowseSoundfontClick(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_BTNBROWSEMUSICPROJECT && HIWORD(wParam) == BN_CLICKED) {
+        this->btnBrowseMusicProjectClick(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_BTNBROWSEFLUIDSYNTH && HIWORD(wParam) == BN_CLICKED) {
+        this->btnBrowseFluidsynthClick(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_BTNBROWSEFFMPEG && HIWORD(wParam) == BN_CLICKED) {
+        this->btnBrowseFfmpegClick(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_LISTBOX && HIWORD(wParam) == LBN_SELCHANGE) {
+        this->UpdateControls();
+    }
+
     if (LOWORD(wParam) == IDC_TBOUTPUT && HIWORD(wParam) == EN_CHANGE) {
         this->tbOutputChange(this);
+        this->UpdateControls();
+    }
+
+    if (LOWORD(wParam) == IDC_DROPSOUNDMODE && HIWORD(wParam) == CBN_SELCHANGE) {
+        this->dropSoundtrackModeChange(this);
         this->UpdateControls();
     }
 
@@ -206,6 +344,7 @@ void TFormMain::OnCommand(WPARAM wParam, LPARAM lParam) {
 BOOL TFormMain::OnSize(UINT width, UINT height) {
     this->btnExit ->Move(width + this->btnExitX , height + this->btnExitY );
     this->btnBuild->Move(width + this->btnBuildX, height + this->btnBuildY);
+    this->btnWalkTest->Move(width + this->btnWalkTestX, height + this->btnWalkTestY);
     this->Panel11 ->Move(width + this->Panel11X , height + this->Panel11Y );
     this->listbox ->Size(width + this->listboxX , height + this->listboxY );
 
@@ -220,6 +359,7 @@ BOOL TFormMain::OnSize(UINT width, UINT height) {
 
     this->btnAdd   ->Move(width + this->btnAddX   , this->btnAddY          );
     this->btnRemove->Move(width + this->btnRemoveX, this->btnRemoveY       );
+    this->btnWords ->Move(width + this->btnWordsX , this->btnWordsY        );
     this->Label7   ->Size(width + this->Label7X   , this->Label7Y          );
 
     this->tbOutput->Size(width + this->tbOutputX, this->tbOutputY);

@@ -20,6 +20,7 @@
 #define INTERUPT_C
 
 #include "gbagi.h"
+#include "enhanced_audio.h"
 
 extern fp intr_main;
 //these are my function definitios to let the c compiler know what I am talking about
@@ -105,7 +106,6 @@ fp IntrTable[]  =
 
 void VBLANK()
 {	
-	
 	REG_IF |= INT_VBLANK;
 		
 }
@@ -149,6 +149,7 @@ void TIMER0(void)
 }
 void TIMER1(void)
 {
+	AudioBackendTimerTick();
 	REG_IF |= INT_TIMER1;
 
 }
@@ -179,122 +180,113 @@ const unsigned int freqNumerator=181, freqDenominator=153;
 void TIMER2(void)
 {
 	U16 len;
-	int i;
+	note_event note;
 	
 	if(TestFlag(fSOUND)&&sndBuf) {
 		// tonal channels
 		if(pSnds[0]&&!sndWaits[0]--) {
+				memset(&note, 0, sizeof(note));
+				note.voice = 0;
 				if((len = pSnds[0][0]+(pSnds[0][1]<<8))==0xFFFF) {
-					REG_SOUND1CNT_L=0;
-					REG_SOUND1CNT_H=0;
-					REG_SOUND1CNT_X=SOUND1INIT+0;
-					REG_SOUND1CNT_X=0;
+					note.is_end = 1;
+					play_sound_event(&note);
 					freq=1;
 					pSnds[0]=NULL;
 				} else {
 					sndWaits[0]=len-1;
-					len =0;
-					envinit=volumes[((pSnds[0][4]&0xF))^0xF];
-					if (envinit==0) {
-						REG_SOUND1CNT_L=0;
-						REG_SOUND1CNT_H=0;
-						REG_SOUND1CNT_X=SOUND1INIT+0;
-						REG_SOUND1CNT_X=0;
+					note.duration = len;
+					note.attenuation = (pSnds[0][4]&0xF);
+					note.volume=volumes[(note.attenuation)^0xF];
+					if (note.volume==0) {
+						note.is_silent = 1;
 					} else {
-						nfreq = (((U16)pSnds[0][2] & 0x3F) << 4) | (U16)(pSnds[0][3] & 0xF);
+						note.raw_frequency = (((U16)pSnds[0][2] & 0x3F) << 4) | (U16)(pSnds[0][3] & 0xF);
+						nfreq = note.raw_frequency;
 						nfreq = (nfreq * freqNumerator + freqDenominator/2) / freqDenominator;
 						if (nfreq==0) nfreq=1;
-						freq = 0x800 - nfreq;
-						REG_SOUND1CNT_L=0;//(sweeptime<<4)+(sweepdir<<3)+sweepshifts;
-						REG_SOUND1CNT_H=(envinit<<12)+(envdir<<11)+(envsteptime<<8)+(waveduty<<6);
-						REG_SOUND1CNT_X=SOUND1INIT+(loopmode<<14)+freq;
+						note.gba_frequency = 0x800 - nfreq;
 					}
+					play_sound_event(&note);
 					pSnds[0]+=5;
 				}
 				//RectFill(2, 156-24, 4, 156, 0);
 				//	RectFill(2, 156-(sndWaits[0]>>2), 4, 156, envinit);
 		}
 		if(pSnds[1]&&!sndWaits[1]--) {
+				memset(&note, 0, sizeof(note));
+				note.voice = 1;
 				if((len = pSnds[1][0]+(pSnds[1][1]<<8))==0xFFFF) {
-					REG_SOUND2CNT_L=0;
-					REG_SOUND2CNT_H=SOUND2INIT+0;
-					REG_SOUND2CNT_H=0;
+					note.is_end = 1;
+					play_sound_event(&note);
 					freq=1;
 					pSnds[1]=NULL;
 				} else {
 					sndWaits[1]=len-1;
-					len =0;
-					envinit=volumes[((pSnds[1][4]&0xF))^0xF];
-					if (envinit==0) {
-						REG_SOUND2CNT_L=0;
-						REG_SOUND2CNT_H=SOUND2INIT+0;
-						REG_SOUND2CNT_H=0;
+					note.duration = len;
+					note.attenuation = (pSnds[1][4]&0xF);
+					note.volume=volumes[(note.attenuation)^0xF];
+					if (note.volume==0) {
+						note.is_silent = 1;
 					} else {
-						nfreq = (((U16)pSnds[1][2] & 0x3F) << 4) | (U16)(pSnds[1][3] & 0xF);
+						note.raw_frequency = (((U16)pSnds[1][2] & 0x3F) << 4) | (U16)(pSnds[1][3] & 0xF);
+						nfreq = note.raw_frequency;
 						nfreq = (nfreq * freqNumerator + freqDenominator/2) / freqDenominator;
 						if (nfreq==0) nfreq=1;
-						freq = 0x800 - nfreq;
-						REG_SOUND2CNT_L=(envinit<<12)+(envdir<<11)+(envsteptime<<8)+(waveduty<<6);
-						REG_SOUND2CNT_H=SOUND2INIT+(loopmode<<14)+freq;
+						note.gba_frequency = 0x800 - nfreq;
 					}
+					play_sound_event(&note);
 					pSnds[1]+=5;
 				}
 				//RectFill(6, 156-24, 8, 156, 0);
 				//RectFill(6, 156-(sndWaits[1]>>2), 8, 156, envinit);
 		}
 		if(pSnds[2]&&!sndWaits[2]--) {
+				memset(&note, 0, sizeof(note));
+				note.voice = 2;
 				if((len = pSnds[2][0]+(pSnds[2][1]<<8))==0xFFFF) {
-					REG_SOUND3CNT_L=0;
-					REG_SOUND3CNT_H=SOUND3INIT+0;
-					REG_SOUND3CNT_H=0;
-					REG_SOUND3CNT_X=0;
+					note.is_end = 1;
+					play_sound_event(&note);
 					pSnds[2]=NULL;
 				} else {
 					sndWaits[2]=len-1;
-					len =0;
-					envinit = volumes3[((pSnds[2][4]&0xF))^0xF];
-					if (envinit==0) {
-						REG_SOUND3CNT_L=0;
-						REG_SOUND3CNT_H=0;
-						REG_SOUND3CNT_X=SOUND3INIT+0;
-						REG_SOUND3CNT_X=0;
+					note.duration = len;
+					note.attenuation = (pSnds[2][4]&0xF);
+					note.volume = volumes3[(note.attenuation)^0xF];
+					if (note.volume==0) {
+						note.is_silent = 1;
 					} else {
-						nfreq = (((U16)pSnds[2][2] & 0x3F) << 4) | (U16)(pSnds[2][3] & 0xF);
+						note.raw_frequency = (((U16)pSnds[2][2] & 0x3F) << 4) | (U16)(pSnds[2][3] & 0xF);
+						nfreq = note.raw_frequency;
 						nfreq = (nfreq * freqNumerator + freqDenominator/2) / freqDenominator;
 						if (nfreq==0) nfreq=1;
-						freq = 0x800 - nfreq;
-						REG_SOUND3CNT_L=           SOUND3SETBANK1+SOUND3BANK32; // select bank 0 for writing (bank 1 for playing)
-						for (i=0; i<4; i++)
-							(&REG_WAVE_RAM0)[i] = i&1 ? 0 : 0xFFFFFFFF;
-						REG_SOUND3CNT_L=SOUND3PLAY+SOUND3SETBANK0+SOUND3BANK32; // select bank 0 for playing
-						REG_SOUND3CNT_H=(envinit<<13)+0;
-						REG_SOUND3CNT_X=SOUND3INIT+SOUND3PLAYLOOP+freq;
+						note.gba_frequency = 0x800 - nfreq;
 					}
+					play_sound_event(&note);
 					pSnds[2]+=5;
 				}
 		}
 		// noise channel
 		if(pSnds[3]&&!sndWaits[3]--) {
+				memset(&note, 0, sizeof(note));
+				note.voice = 3;
+				note.is_noise = 1;
 				if((len = pSnds[3][0]+(pSnds[3][1]<<8))==0xFFFF) {
-					REG_SOUND4CNT_L=0;
-					REG_SOUND4CNT_H=SOUND4INIT+0;
-					REG_SOUND4CNT_H=0;
+					note.is_end = 1;
+					play_sound_event(&note);
 					freq=1;
 					pSnds[3]=NULL;
 				} else {
 					sndWaits[3] = len-1;
-					len =0;
-					envinit=volumes2[((pSnds[3][4]&0xF))^0xF];
-					if(envinit==0) {
-						REG_SOUND4CNT_L=0;
-						REG_SOUND4CNT_H=SOUND4INIT+0;
-						REG_SOUND4CNT_H=0;
+					note.duration = len;
+					note.attenuation = (pSnds[3][4]&0xF);
+					note.volume=volumes2[(note.attenuation)^0xF];
+					if(note.volume==0) {
+						note.is_silent = 1;
 					} else {
-						nfreq = (U16)(pSnds[3][3] & 3);
-						freq = 1 << nfreq;
-						REG_SOUND4CNT_L=(volumes[envinit]<<12)+(envdir<<11)+(envsteptime<<8);
-						REG_SOUND4CNT_H=SOUND4INIT+(loopmode<<14)+(prestepper<<4)+(counterstages<<3)+freq;
+						note.noise_control = (U8)(pSnds[3][3] & 0x07);
+						note.noise_period = 1 << (U16)(pSnds[3][3] & 3);
 					}
+					play_sound_event(&note);
 					pSnds[3]+=5;
 				}
 		}

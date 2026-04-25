@@ -51,6 +51,12 @@
     <ClCompile Include="verdef.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vocabedit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vocabedit.form.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="vcl-shim\Form.cpp">
       <Filter>Header Files\vcl-shim</Filter>
     </ClCompile>
@@ -86,6 +92,9 @@
     <ClInclude Include="makerom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vocabedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="verdef.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -119,6 +128,9 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
     <ResourceCompile Include="main.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="vocabedit.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

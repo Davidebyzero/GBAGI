@@ -34,6 +34,7 @@
 #include "wingui.h"
 #include "parse.h"
 #include "gamedata.h"
+#include "lsl1hack.h"
 #include "saverestore.h"
 /*****************************************************************************/
 char sztmp[256];
@@ -1115,7 +1116,7 @@ void cFollowEgo()
 	VOBJ *v = &ViewObjs[ code[0] ];
 
 	v->motion 					= mtFOLLOW;
-	v->follow.stepSize 			= (code[1] <= v->stepSize)?v->stepSize:code[1];
+	v->follow.stepSize 			= code[1] ? code[1] : v->stepSize;
 	v->follow.count 			= 255;
 	v->flags 					|= oUPDATE;
 
@@ -1147,7 +1148,7 @@ void cWander()
 //	whatnot, it will now resume normal movement.
 void cNormalMotion()
 {
-	ViewObjs[ code[0] ].motion |= mtNONE;
+	ViewObjs[ code[0] ].motion = mtNONE;
 	code++;
 }
 /******************************************************************************/
@@ -1318,6 +1319,8 @@ void cStopSound()
 //	Otherwise, it will simply stay on until the player presses a button.
 void cPrint()
 {
+	LSL1MaybePlayKenSentMeClip(curLog->num, code[0]);
+	SQ2MaybePlayVohaulIntroClip(curLog->num, code[0]);
 	MessageBox(GetMessage(curLog,code[0]));
    	code++;
 }
@@ -1337,6 +1340,8 @@ void cPrint()
 //	Otherwise, it will simply stay on until the player presses a button.
 void cPrintV()
 {
+	LSL1MaybePlayKenSentMeClip(curLog->num, vars[ code[0] ]);
+	SQ2MaybePlayVohaulIntroClip(curLog->num, vars[ code[0] ]);
 	MessageBox(GetMessage(curLog,vars[ code[0] ]));
 	code++;
 }
@@ -1479,7 +1484,15 @@ void cSetString()
 //	sDest.
 void cGetString()
 {
-	ExecuteGetStringDialog(FALSE,code[0],GetMessage(curLog,code[1]),code[4]+1);
+	char *msg = GetMessage(curLog,code[1]);
+	int maxLen = code[4]+1;
+	if(code[0] < MAX_STRINGS &&
+	   !LSL1CheckWineOrderAutofill(msg, strings[code[0]], maxLen)) {
+		ExecuteGetStringDialog(FALSE,code[0],msg,maxLen);
+		LSL1NormalizePhoneNumberInput(msg, strings[code[0]]);
+	} else if(code[0] < MAX_STRINGS) {
+		LSL1NormalizePhoneNumberInput(msg, strings[code[0]]);
+	}
 	code += 5;
 }
 /******************************************************************************/
@@ -1641,8 +1654,8 @@ void cRestartGame()
 {
 	if(	TestFlag(fRESTARTMODE) ||
     	MessageBox(
-			"Press „… to restart\nthe game.\n\n"
-			"Press †‡ to continue\nthis game."
+			"Press â€žâ€¦ to restart\nthe game.\n\n"
+			"Press â€ â€¡ to continue\nthis game."
 		)) {
 		cCancelLine();
 		AGIInit(TRUE);
@@ -1721,7 +1734,7 @@ void cObjStatusV()
 //	presses Enter (A) it will quit, otherwise if they press ESC (B) it will not.
 void cQuit()
 {
-	if(code[0] || MessageBox("Press „… to quit.\nPress †‡ to keep playing.")) {
+	if(code[0] || MessageBox("Press â€žâ€¦ to quit.\nPress â€ â€¡ to keep playing.")) {
     	//AGIExit();
         QUIT_FLAG = TRUE;
         code = NULL;
@@ -1742,7 +1755,7 @@ void cShowMem()
 //	to press a button or key to close it.
 void cPause()
 {
-	MessageBox("      Game paused.\nPress „… to continue.");
+	MessageBox("      Game paused.\nPress â€žâ€¦ to continue.");
 }
 /******************************************************************************/
 //echo.line();
@@ -2230,3 +2243,15 @@ void cAdjEgoMoveToXY()
     code=code;
 }
 /******************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+

@@ -22,14 +22,23 @@
 #include "wingui.h"
 #include "parse.h"
 #include "gamedata.h"
+#include "invobj.h"
 #include "system.h"
 #include "screen.h"
+#include "lsl1hack.h"
 #include "text.h"
 #include "commands.h"
 #include "screen.h"
+#include "lsl1hack.h"
 /*****************************************************************************/
 #define MAX_INPUT_LEN	40
 char szInput[MAX_INPUT_LEN+1], szInputClean[MAX_INPUT_LEN+1], szString[MAX_INPUT_LEN+1];
+#define INPUT_HISTORY_SIZE 3
+static char szPrevInputs[INPUT_HISTORY_SIZE][MAX_INPUT_LEN+1];
+static int prevInputCount;
+static int prevInputBrowseIndex;
+static BOOL prevInputRecallActive;
+static BOOL prevInputManualLock;
 /*****************************************************************************/
 S16 wnInputProc(WND *w, U16 msg, U16 wParam, U32 lParam);
 S16 wnGetStringProc(WND *w, U16 msg, U16 wParam, U32 lParam);
@@ -142,7 +151,7 @@ int wordCount;
 BOOL MORE_MODE;
 char *wordStrings[MAX_INPUT];
 
-#define TOTAL_FAV	7
+#define TOTAL_FAV	8
 char *favWords[TOTAL_FAV] = {
  	"look",
     "open",
@@ -150,10 +159,240 @@ char *favWords[TOTAL_FAV] = {
     "talk",
     "use",
     "take",
-    "give"
+    "give",
+    "wear"
 };
 
 char *spaceChars=" ,?!();:[]{}`-\"";
+/*****************************************************************************/
+static const char *hiddenDebugWords[] = {
+	"tp", "sp", "var", "xy", "sv", "sf", "h", "hn", "sn", "cm", NULL
+};
+/*****************************************************************************/
+static BOOL IsHiddenDebugWord(const char *word)
+{
+	const char **debugWord;
+
+	if(TestFlag(fDEBUG))
+		return FALSE;
+
+	debugWord = hiddenDebugWords;
+	while(*debugWord) {
+		if(!strcmp(word, *debugWord))
+			return TRUE;
+		debugWord++;
+	}
+	return FALSE;
+}
+/*****************************************************************************/
+static BOOL IsWordHiddenInPicker(U8 *entry)
+{
+    long offset;
+
+    if(!entry || !wordFlags || !wordData)
+        return FALSE;
+
+    offset = (long)(entry - (U8*)wordData);
+    if(offset < 0)
+        return FALSE;
+
+    return (wordFlags[offset] & 0x01) ? TRUE : FALSE;
+}
+/*****************************************************************************/
+static int GetWordPickerVisibility(U8 *entry)
+{
+    long offset;
+
+    if(!entry || !wordFlags || !wordData)
+        return -1;
+
+    offset = (long)(entry - (U8*)wordData);
+    if(offset < 0)
+        return -1;
+
+    if(wordFlags[offset] & 0x04)
+        return 1;
+    if(wordFlags[offset] & 0x02)
+        return 0;
+    return -1;
+}
+/*****************************************************************************/
+static BOOL ListBoxContainsText(WND *w, const char *text)
+{
+    LISTITEM *item;
+
+    if(!w || !text)
+        return FALSE;
+
+    item = w->ext.listbox.itemFirst;
+    while(item) {
+        if(item->text && strcmp(item->text, text) == 0)
+            return TRUE;
+        item = item->next;
+    }
+    return FALSE;
+}
+/*****************************************************************************/
+static void AddPickerEntry(U8 *entry)
+{
+    char *text;
+    WND *list;
+
+    if(!entry)
+        return;
+
+    text = (char*)(entry + 3);
+    if(!text || !*text)
+        return;
+    if(IsHiddenDebugWord(text))
+        return;
+    if(IsWordHiddenInPicker(entry))
+        return;
+
+    list = (bGetW(entry + 1) & 0x8000) ? &lbSelWords : &lbWords;
+    if(!ListBoxContainsText(list, text))
+        ListBoxAdd(list, text);
+}
+/*****************************************************************************/
+static void AddPickerWordIfPresent(const char *word)
+{
+    char *entryText;
+
+    if(!word || !*word)
+        return;
+
+    entryText = FindWord((char*)word);
+    if(entryText)
+        AddPickerEntry((U8*)(entryText - 3));
+}
+/*****************************************************************************/
+static void AddFavoriteWordsToPicker(void)
+{
+    int i;
+
+    for(i=0;i<TOTAL_FAV;i++)
+        AddPickerWordIfPresent(favWords[i]);
+}
+/*****************************************************************************/
+static void AddDebugWordsToPicker(int mode)
+{
+	const char **debugWord;
+
+	if(!mode || TestFlag(fDEBUG))
+		return;
+
+	debugWord = hiddenDebugWords;
+	while(*debugWord) {
+		AddPickerWordIfPresent(*debugWord);
+		debugWord++;
+	}
+}
+/*****************************************************************************/
+static void AddInventoryWordsToPicker(void)
+{
+    int i;
+
+    for(i=0;i<MAX_IOBJ;i++) {
+        char *normalized;
+
+        if(invObjRooms[i] != 0xFF || !objNames[i] || !objNames[i][0])
+            continue;
+
+        normalized = StripInput(objNames[i]);
+        if(normalized[0])
+            AddPickerWordIfPresent(normalized);
+    }
+}
+/*****************************************************************************/
+static void ResetInputState(void)
+{
+	memset(input,0,sizeof(input));
+	inpos = wordCount = 0;
+	memset(wordStrings,0,sizeof(wordStrings));
+	szInput[0]='\0';
+}
+/*****************************************************************************/
+static void ResetPreviousInputBrowse(void)
+{
+	prevInputBrowseIndex = -1;
+	prevInputRecallActive = FALSE;
+	prevInputManualLock = FALSE;
+}
+/*****************************************************************************/
+static void SavePreviousInput(const char *text)
+{
+	int i;
+
+	if(!text || !*text)
+		return;
+
+	for(i=0;i<prevInputCount;i++) {
+		if(strcmp(szPrevInputs[i], text)==0) {
+			while(i>0) {
+				strcpy(szPrevInputs[i], szPrevInputs[i-1]);
+				i--;
+			}
+			strncpy(szPrevInputs[0], text, MAX_INPUT_LEN);
+			szPrevInputs[0][MAX_INPUT_LEN] = '\0';
+			ResetPreviousInputBrowse();
+			return;
+		}
+	}
+
+	if(prevInputCount < INPUT_HISTORY_SIZE)
+		prevInputCount++;
+
+	for(i=prevInputCount-1;i>0;i--)
+		strcpy(szPrevInputs[i], szPrevInputs[i-1]);
+
+	strncpy(szPrevInputs[0], text, MAX_INPUT_LEN);
+	szPrevInputs[0][MAX_INPUT_LEN] = '\0';
+	ResetPreviousInputBrowse();
+}
+/*****************************************************************************/
+static BOOL RestorePreviousInput(void)
+{
+	char restoreInput[MAX_INPUT_LEN+1];
+	char *s,*szWord;
+	int l,group;
+
+	if(prevInputCount<=0)
+		return FALSE;
+
+	if(prevInputBrowseIndex < 0)
+		prevInputBrowseIndex = 0;
+	else
+		prevInputBrowseIndex = (prevInputBrowseIndex + 1) % prevInputCount;
+
+	strncpy(restoreInput, szPrevInputs[prevInputBrowseIndex], MAX_INPUT_LEN);
+	restoreInput[MAX_INPUT_LEN] = '\0';
+
+	ResetInputState();
+	s = restoreInput;
+	while(*s && inpos < MAX_INPUT) {
+		if((szWord = FindWordN(s))==NULL)
+			break;
+
+		group = bGetW(szWord-2)&0x1FFF;
+		l = szWord[-3]-4;
+		if(group!=9999) {
+			input[inpos] = group;
+			wordStrings[inpos+1] = szInput+strlen(szInput);
+			strcat(szInput, szWord);
+			strcat(szInput, " ");
+			inpos++;
+		}
+		if(!s[l])
+			break;
+		s += l+1;
+	}
+	wordCount = inpos;
+	if(inpos) {
+		prevInputRecallActive = TRUE;
+		wDrawWnd(&edInput,TRUE);
+	}
+	return (BOOL)(inpos != 0);
+}
 /*****************************************************************************/
 char *StripInput(char *sStart)
 {
@@ -175,6 +414,10 @@ char *ParseInput(char *sStart)
 {
 	char *s=StripInput(sStart),*szWord;
     int l,group;
+
+    if(*s)
+    	SavePreviousInput(s);
+
     wordCount = 0;
 	while(*s) {
     	l=0;
@@ -251,10 +494,10 @@ char *FindWordN(char *szWord)
 /*****************************************************************************/
 void InitParseSystem()
 {
-	memset(input,0,sizeof(input));
-	inpos = wordCount = 0;
-	memset(wordStrings,0,sizeof(wordStrings));
-    szInput[0]='\0';
+	memset(szPrevInputs,0,sizeof(szPrevInputs));
+	prevInputCount = 0;
+	ResetInputState();
+	ResetPreviousInputBrowse();
 }
 /*****************************************************************************/
 void FillListBox(int mode)
@@ -263,7 +506,7 @@ void FillListBox(int mode)
     U8 *p;
     int g,a;
 
-	bnMore.caption = (mode)?"‰ Less":"More ˆ";
+	bnMore.caption = (mode)?"< Less":"More >";
 
 	WndStopUpdate(&lbWords);
 	WndStopUpdate(&lbSelWords);
@@ -275,16 +518,43 @@ void FillListBox(int mode)
         	if(!p) continue;
         	while(*p) {
         		g = bGetW(p+1);
-        	    if((((xflg[(g&0x1FFF)>>2]>>(((g&0x1FFF)&3)<<1))&1 ))||(mode&&( ((xflg[(g&0x1FFF)>>2]>>(((g&0x1FFF)&3)<<1))&3 )/*==2*/))) {
-        	    		if((g&0x8000))
+                {
+                    int baseGroup = g & 0x1FFF;
+                    int pickerVisibility = GetWordPickerVisibility(p);
+                    int roomBits = (xflg[baseGroup>>2] >> ((baseGroup&3)<<1)) & 3;
+                    BOOL forceShow = (baseGroup == 218 || baseGroup == 348);
+                    BOOL showWord = FALSE;
+                    if(forceShow)
+                        showWord = TRUE;
+                    else if(pickerVisibility == 0)
+                        showWord = TRUE;
+                    else if(pickerVisibility == 1)
+                        showWord = mode ? TRUE : FALSE;
+                    else if(roomBits & 1)
+                        showWord = TRUE;
+                    else if(mode && roomBits)
+                        showWord = TRUE;
+        	if(showWord) {
+                    if(!mode && IsHiddenDebugWord((char*)(p+3))) {
+                        p+=*p;
+                        continue;
+                    }
+                    if(!forceShow && IsWordHiddenInPicker(p)) {
+                        p+=*p;
+                        continue;
+                    }
+	    	    		if((g&0x8000))
                     		ListBoxAdd(&lbSelWords,(char*)(p+3));
                     	else
         	    			ListBoxAdd(&lbWords,(char*)(p+3));
-                }
+                } }
          	   p+=*p;
         	}
         }
     }
+    AddFavoriteWordsToPicker();
+    AddDebugWordsToPicker(mode);
+    AddInventoryWordsToPicker();
 	ListBoxSetScrollbar(&lbWords,&sbWords);
 	ListBoxSelect(&lbWords,0);
 	ListBoxSetScrollbar(&lbSelWords,&sbWordsSel);
@@ -302,8 +572,12 @@ void ExecuteInputDialog(BOOL CLEAR)
     if(CLEAR) {
  		inpos=0;
     	szInput[0] = '\0';
+		prevInputRecallActive = FALSE;
+		prevInputManualLock = FALSE;
     } else {
      	inpos = wordCount;
+		prevInputRecallActive = FALSE;
+		prevInputManualLock = (BOOL)(inpos != 0);
     }
 
     AddWindow(&wnInput);
@@ -324,6 +598,17 @@ S16 wnInputProc(WND *w, U16 msg, U16 wParam, U32 lParam)
 {
 	U8 *p;
 	switch(msg) {
+		case wmBUTTON_PRESS:
+			if(wParam==KEY_LEFT &&
+			   !prevInputManualLock &&
+			   ((!inpos) || prevInputRecallActive) &&
+			   (w==&lbWords || w==&lbSelWords) &&
+			   w->ext.listbox.itemActive &&
+			   LIFindIndex(w, w->ext.listbox.itemActive)==0) {
+				if(RestorePreviousInput())
+					return FALSE;
+			}
+			break;
     	case wmLISTBOX_CLICK:
         	//if(w==&lbWords) {
              	if(wParam==KEY_ENTER) {
@@ -333,12 +618,16 @@ S16 wnInputProc(WND *w, U16 msg, U16 wParam, U32 lParam)
                         wordStrings[inpos]=szInput+strlen(szInput);
              			strcat(szInput,(char*)p);
              			strcat(szInput," ");
+						prevInputRecallActive = FALSE;
+						prevInputManualLock = TRUE;
              			wDrawWnd(&edInput,TRUE);
                     }
              	} else if(wParam==KEY_ESC) {
                     if(inpos) {
                         wordStrings[inpos][0]='\0';
              			inpos--;
+						prevInputRecallActive = FALSE;
+						prevInputManualLock = TRUE;
              			wDrawWnd(&edInput,TRUE);
                     }
              	}
@@ -373,18 +662,20 @@ void ExecuteGetStringDialog(BOOL _GET_INT, U8 _dest, char *msg, int maxLen)
      	if(maxLen >= MAX_STRINGS_LEN)
         	maxLen = MAX_STRINGS_LEN;
      	edGSEdit.style &= ~esDIGITONLY;
+		strings[dest][0] = '\0';
     }
-    AddWindow(&wnGetString);
-    AddWindow(&edGSEdit);
-    AddWindow(&txGSMessage);
+    memset(szString,0,sizeof(szString));
+    memset(textField,0,sizeof(textField));
+    edGSEdit.caption = szString;
 
 	wnGetString.caption = GET_INT?"Enter a Number":"Enter a String";
     maxWidth = 38;
     szMsg = WordWrap(msg);
+    maxLen = LSL1AdjustGetStringMaxLen(msg, maxLen);
 
     edGSEdit.ext.edit.maxLen = maxLen;
-    edGSEdit.ext.edit.col=0;
-    szInput[0]='\0';
+    edGSEdit.ext.edit.col = 0;
+    szInput[0] = '\0';
 
     if(maxLen>maxWidth)
     	maxLen = maxWidth;
@@ -400,9 +691,13 @@ void ExecuteGetStringDialog(BOOL _GET_INT, U8 _dest, char *msg, int maxLen)
     CalcWndRect(&txGSMessage);
 	edGSEdit.width		= (maxLen+1)*CHAR_WIDTH;
 	edGSEdit.y			= txGSMessage.rect.bottom+4;
-    szString[0]			= '\0';
+    memset(szString,0,sizeof(szString));
     edGSEdit.caption	= szString;
     CalcWndRect(&edGSEdit);
+
+    AddWindow(&wnGetString);
+    AddWindow(&edGSEdit);
+    AddWindow(&txGSMessage);
 
 	WinGUIDoit();
 
@@ -415,6 +710,7 @@ S16 wnGetStringProc(WND *w, U16 msg, U16 wParam, U32 lParam)
 	switch(msg) {
     	case wmBUTTON_CLICK:
         	if(wParam==KEY_START||wParam==KEY_A) {
+                LSL1TrackPhoneEasterEggInput(szString);
                 if(GET_INT) {
                    	val = StrIsInt(szString)?StrToInt(szString):0;
                     vars[dest] = (val>255)?0:val;
@@ -428,4 +724,8 @@ S16 wnGetStringProc(WND *w, U16 msg, U16 wParam, U32 lParam)
 	return TRUE;
 }
 /*****************************************************************************/
+
+
+
+
 

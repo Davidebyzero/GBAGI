@@ -27,6 +27,7 @@
 #include "picture.h"
 #include "screen.h"
 #include "text.h"
+#include "saverestore.h"
 #ifdef _WINDOWS
 #include <windows.h>
 #endif
